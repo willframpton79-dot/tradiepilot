@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0F1923;
+  --color-navy-surface: #162030;
+  --color-navy-elevated: #1E2D40;
+  --color-navy-border: #2A3A50;
+  --color-amber: #F59E0B;
+  --color-amber-50: #FFFBEB;
+  --color-amber-100: #FEF3C7;
+  --color-amber-200: #FDE68A;
+  --color-amber-300: #FCD34D;
+  --color-amber-400: #FBBF24;
+  --color-amber-500: #F59E0B;
+  --color-amber-600: #D97706;
+  --color-amber-700: #B45309;
+  --color-amber-800: #92400E;
+  --color-amber-900: #78350F;
+  --color-profit-green: #10B981;
+  --color-profit-amber: #F59E0B;
+  --color-profit-red: #EF4444;
+  --font-heading: "Barlow Semi Condensed", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --font-body: "DM Sans", sans-serif;
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  body {
+    background-color: #0F1923;
+    color: white;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom utility classes */
+.financial-figure {
+  font-family: var(--font-mono);
+  letter-spacing: -0.025em;
+}
+
+.card {
+  background-color: #162030;
+  border: 1px solid #2A3A50;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+.card-elevated {
+  background-color: #1E2D40;
+  border: 1px solid #2A3A50;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #2A3A50 transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #2A3A50;
+  border-radius: 20px;
+}
+
+/* Progress bar color classes */
+.bar-green { background-color: #10B981; }
+.bar-amber { background-color: #F59E0B; }
+.bar-red { background-color: #EF4444; }
+
+/* Badge variants */
+.badge { display: inline-flex; align-items: center; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+.badge-green { background-color: rgba(16, 185, 129, 0.1); color: #10B981; }
+.badge-amber { background-color: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+.badge-red { background-color: rgba(239, 68, 68, 0.1); color: #EF4444; }
