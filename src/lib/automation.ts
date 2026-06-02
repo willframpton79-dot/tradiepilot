@@ -13,8 +13,8 @@
 import { connectDB } from '@/lib/db';
 import { Quote } from '@/models/Quote';
 import { Invoice } from '@/models/Invoice';
-import { Job } from '@/models/Job';
-import sampleData, { type Quote as QuoteType, type Invoice as InvoiceType, type JobDetail, type Job } from '@/lib/sampleData';
+import { Job as MongooseJob } from '@/models/Job';
+import sampleData, { type Quote as QuoteType, type Invoice as InvoiceType, type JobDetail, type Job as SampleJob } from '@/lib/sampleData';
 import insightsData from '@/lib/insightsData';
 
 const DB_ENABLED = !!process.env.MONGODB_URI;
@@ -367,7 +367,7 @@ export async function runAutomationEngine(): Promise<AutomationSummary> {
       await connectDB();
       quotes = await Quote.find({}).lean();
       invoices = await Invoice.find({}).lean();
-      jobs = await Job.find({}).lean();
+      jobs = await MongooseJob.find({}).lean();
     } catch {
       // Fallback to static data
       quotes = sampleData.quotes;
@@ -420,7 +420,7 @@ export async function runProfitLeakAnalysis(): Promise<{ leaks: FollowUpAction[]
   if (DB_ENABLED) {
     try {
       await connectDB();
-      jobs = await Job.find({ status: 'active' }).lean();
+      jobs = await MongooseJob.find({ status: 'active' }).lean();
     } catch {
       jobs = Object.values(sampleData.jobDetails).filter(j => j.status === 'active');
     }
@@ -429,4 +429,21 @@ export async function runProfitLeakAnalysis(): Promise<{ leaks: FollowUpAction[]
   }
 
   return analyzeProfitLeaks(jobs);
-}
+}/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
