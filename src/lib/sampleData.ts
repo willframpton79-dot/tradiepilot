@@ -519,3 +519,12 @@ export const jobDetails: Record<string, JobDetail> = {
 export function getJobDetail(id: string): JobDetail | undefined {
   return jobDetails[id];
 }
+export const sampleData = {
+  stats,
+  jobs: activeJobs,
+  quotes,
+  invoices,
+  jobDetails
+};
+
+export default sampleData;
