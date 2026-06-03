@@ -1,62 +1,80 @@
-import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const DATA_DIR = '/home/team/shared';
-
-function readJSON(filename: string) {
-  const filePath = path.join(DATA_DIR, filename);
-  try {
-    const content = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(content);
-  } catch {
-    return null;
-  }
-}
+import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/db";
+import { Job } from "@/models/Job";
+import { Quote } from "@/models/Quote";
+import { Invoice } from "@/models/Invoice";
+import { Insight } from "@/models/Insight";
+import { requireAuth } from "@/lib/session";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const type = searchParams.get('type') || 'all';
+  try {
+    const userEmail = await requireAuth();
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type") || "all";
 
-  if (type === 'jobs') {
-    const data = readJSON('tradiepilo_demo_data.json');
-    return NextResponse.json(data?.jobs || []);
-  }
-  if (type === 'quotes') {
-    const data = readJSON('tradiepilo_demo_data.json');
-    return NextResponse.json(data?.quotes || []);
-  }
-  if (type === 'invoices') {
-    const data = readJSON('tradiepilo_demo_data.json');
-    return NextResponse.json(data?.invoices || []);
-  }
-  if (type === 'insights') {
-    const data = readJSON('tradiepilo_insights.json');
-    return NextResponse.json(data || {});
-  }
-  if (type === 'alerts') {
-    const data = readJSON('tradiepilo_insights.json');
-    return NextResponse.json(data?.profit_alerts || {});
-  }
-  if (type === 'dashboard') {
-    const demo = readJSON('tradiepilo_demo_data.json');
-    const insights = readJSON('tradiepilo_insights.json');
-    return NextResponse.json({
-      jobs: demo?.jobs || [],
-      quotes: demo?.quotes || [],
-      invoices: demo?.invoices || [],
-      dashboard_summary: demo?.dashboard_summary || {},
-      profit_alerts: insights?.profit_alerts || {},
-      quote_hot_leads: insights?.quote_hot_leads || {},
-      customer_ltv: insights?.customer_ltv || {},
-      suburb_hotspots: insights?.suburb_hotspots || {},
-      marketing_tips: insights?.marketing_tips || {},
-      growth_forecast: insights?.growth_forecast || {},
-    });
-  }
+    await connectDB();
 
-  // Return all
-  const demo = readJSON('tradiepilo_demo_data.json');
-  const insights = readJSON('tradiepilo_insights.json');
-  return NextResponse.json({ ...demo, ...insights });
+    if (type === "jobs") {
+      const jobs = await Job.find({ userEmail }).lean();
+      return NextResponse.json(jobs);
+    }
+
+    if (type === "quotes") {
+      const quotes = await Quote.find({ userEmail }).lean();
+      return NextResponse.json(quotes);
+    }
+
+    if (type === "invoices") {
+      const invoices = await Invoice.find({ userEmail }).lean();
+      return NextResponse.json(invoices);
+    }
+
+    if (type === "insights" || type === "alerts" || type === "dashboard") {
+      const insight = await Insight.findOne({ userEmail }).lean();
+      
+      if (type === "alerts") {
+        return NextResponse.json(insight?.profit_alerts || {});
+      }
+      
+      if (type === "insights") {
+        return NextResponse.json(insight || {});
+      }
+
+      if (type === "dashboard") {
+        const [jobs, quotes, invoices] = await Promise.all([
+          Job.find({ userEmail }).lean(),
+          Quote.find({ userEmail }).lean(),
+          Invoice.find({ userEmail }).lean(),
+        ]);
+
+        return NextResponse.json({
+          jobs,
+          quotes,
+          invoices,
+          dashboard_summary: insight?.dashboard_summary || {},
+          profit_alerts: insight?.profit_alerts || {},
+          quote_hot_leads: insight?.quote_hot_leads || {},
+          customer_ltv: insight?.customer_ltv || {},
+          suburb_hotspots: insight?.suburb_hotspots || {},
+          marketing_tips: insight?.marketing_tips || {},
+          growth_forecast: insight?.growth_forecast || {},
+        });
+      }
+    }
+
+    const [jobs, quotes, invoices, insight] = await Promise.all([
+      Job.find({ userEmail }).lean(),
+      Quote.find({ userEmail }).lean(),
+      Invoice.find({ userEmail }).lean(),
+      Insight.findOne({ userEmail }).lean(),
+    ]);
+
+    return NextResponse.json({ jobs, quotes, invoices, ...insight });
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    console.error("GET /api/data error:", error);
+    return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
+  }
 }
