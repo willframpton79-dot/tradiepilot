@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import {
   LayoutDashboard,
@@ -16,6 +17,7 @@ import {
   Receipt,
   DollarSign,
   TrendingUp as GrowthIcon,
+  LogOut,
 } from "lucide-react";
 
 const navItems = [
@@ -31,22 +33,19 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
 
-  // Helper to determine if a nav item is active
+  // Hide sidebar on auth pages
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
+  if (isAuthPage) return null;
+
   const isActive = (href: string) => {
     if (href === "#") return false;
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
 
-  const toggleCollapsed = () => {
-    setCollapsed(!collapsed);
-  };
-
-  const handleNavClick = (label: string) => {
-    alert(`Navigating to ${label} page (placeholder)`);
-    setMobileOpen(false);
-  };
+  const toggleCollapsed = () => setCollapsed(!collapsed);
 
   return (
     <>
@@ -75,15 +74,22 @@ export default function Sidebar() {
             href={item.href}
             onClick={() => setMobileOpen(false)}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
-              isActive(item.href)
-                ? "text-amber"
-                : "text-gray-400 hover:text-white"
+              isActive(item.href) ? "text-amber" : "text-gray-400 hover:text-white"
             }`}
           >
             <item.icon className="w-5 h-5" />
             <span className="text-[10px] font-medium">{item.label}</span>
           </Link>
         ))}
+        {session && (
+          <button
+            onClick={() => signOut()}
+            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400 hover:text-white transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="text-[10px] font-medium">Logout</span>
+          </button>
+        )}
       </nav>
 
       {/* Desktop Sidebar */}
@@ -129,6 +135,36 @@ export default function Sidebar() {
             </Link>
           ))}
         </nav>
+
+        {/* User & Logout */}
+        {session && (
+          <div className="p-2 border-t border-navy-border">
+            <div className="flex items-center gap-2 px-3 py-2 mb-1">
+              <div className="w-7 h-7 rounded-full bg-amber/20 flex items-center justify-center shrink-0">
+                <span className="text-xs font-bold text-amber">
+                  {session.user?.name?.charAt(0) || "J"}
+                </span>
+              </div>
+              {!collapsed && (
+                <div className="overflow-hidden">
+                  <p className="text-xs font-medium text-white truncate">
+                    {session.user?.name || "Joe Tradie"}
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    {session.user?.email || ""}
+                  </p>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => signOut()}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-navy-elevated transition-colors text-sm"
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              {!collapsed && <span>Sign Out</span>}
+            </button>
+          </div>
+        )}
 
         {/* Collapse Toggle */}
         <div className="p-2 border-t border-navy-border">

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, Search, Phone, Send, FileText, Filter, TrendingUp, TrendingDown, DollarSign, Clock, CheckCircle, XCircle, MessageSquare } from "lucide-react";
-import { quotes } from "@/lib/sampleData";
+import { ArrowLeft, Search, Phone, Send, FileText, Filter, TrendingUp, TrendingDown, DollarSign, Clock, CheckCircle, XCircle, MessageSquare, Loader2 } from "lucide-react";
+import { api } from "@/lib/api";
 import type { Quote } from "@/lib/sampleData";
 
 const statusStyles: Record<string, { label: string; color: string; bg: string }> = {
@@ -29,28 +29,36 @@ const filterMap: Record<FilterType, string[]> = {
 export default function QuotesDashboard() {
   const [activeFilter, setActiveFilter] = useState<FilterType>("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [allQuotes, setAllQuotes] = useState<Quote[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.getQuotes().then((data: any) => {
+      setAllQuotes(data || []);
+    }).catch(console.error).finally(() => setLoading(false));
+  }, []);
 
   const stats = useMemo(() => {
-    const total = quotes.length;
-    const won = quotes.filter((q) => q.status === "won").length;
-    const lost = quotes.filter((q) => q.status === "lost").length;
-    const pending = quotes.filter((q) => q.status === "pending" || q.status === "followed-up").length;
-    const noResponse = quotes.filter((q) => q.status === "urgent").length;
+    const total = allQuotes.length;
+    const won = allQuotes.filter((q) => q.status === "won").length;
+    const lost = allQuotes.filter((q) => q.status === "lost").length;
+    const pending = allQuotes.filter((q) => q.status === "pending" || q.status === "followed-up").length;
+    const noResponse = allQuotes.filter((q) => q.status === "urgent").length;
     const winRate = total > 0 ? ((won / (won + lost)) * 100).toFixed(1) : "0";
     return { total, won, lost, pending, noResponse, winRate };
-  }, []);
+  }, [allQuotes]);
 
   const filteredQuotes = useMemo(() => {
     const allowed = filterMap[activeFilter];
-    let result = allowed.length === 0 ? quotes : quotes.filter((q) => allowed.includes(q.status));
+    let result = allowed.length === 0 ? allQuotes : allQuotes.filter((q) => allowed.includes(q.status));
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
-        (q) => q.client.toLowerCase().includes(term) || q.job.toLowerCase().includes(term) || q.category.toLowerCase().includes(term)
+        (q) => q.client?.toLowerCase().includes(term) || q.job?.toLowerCase().includes(term) || (q as any).category?.toLowerCase().includes(term)
       );
     }
     return result;
-  }, [activeFilter, searchTerm]);
+  }, [activeFilter, searchTerm, allQuotes]);
 
   return (
     <div className="p-4 lg:p-6 pb-24 lg:pb-6">
@@ -164,4 +172,21 @@ export default function QuotesDashboard() {
       </div>
     </div>
   );
-}
+}/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
