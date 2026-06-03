@@ -65,6 +65,7 @@ const ReceiptEntrySchema = new Schema({
 }, { _id: false });
 
 const JobSchema = new Schema({
+  userEmail: { type: String, required: true, index: true },
   jobId: { type: String, required: true, unique: true, index: true },
   title: { type: String, required: true },
   description: { type: String, default: '' },
@@ -96,4 +97,9 @@ const JobSchema = new Schema({
   timestamps: true,
 });
 
-export const Job = mongoose.models.Job || mongoose.model<IJob>('Job', JobSchema);
+export const Job = mongoose.models.Job || mongoose.model<IJob>('Job', JobSchema);/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

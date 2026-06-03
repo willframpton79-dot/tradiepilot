@@ -13,6 +13,7 @@ export interface IInvoice extends Document {
 }
 
 const InvoiceSchema = new Schema({
+  userEmail: { type: String, required: true, index: true },
   invoiceId: { type: String, required: true, unique: true, index: true },
   invoiceNumber: { type: String, default: '' },
   job: { type: String, required: true },
@@ -28,4 +29,9 @@ const InvoiceSchema = new Schema({
   },
 }, { timestamps: true });
 
-export const Invoice = mongoose.models.Invoice || mongoose.model<IInvoice>('Invoice', InvoiceSchema);
+export const Invoice = mongoose.models.Invoice || mongoose.model<IInvoice>('Invoice', InvoiceSchema);/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

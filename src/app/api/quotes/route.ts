@@ -1,47 +1,56 @@
-import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/db";
-import { Quote } from "@/models/Quote";
+import { NextRequest, NextResponse } from 'next/server';
+import { connectDB } from '@/lib/db';
+import { Quote } from '@/models/Quote';
+import { requireAuth } from '@/lib/session';
 
-// GET /api/quotes — list all quotes
+// GET /api/quotes — list all quotes for current user
 export async function GET() {
   try {
+    const userEmail = await requireAuth();
     await connectDB();
-    const quotes = await Quote.find({}).sort({ daysSince: -1 }).lean();
+    const quotes = await Quote.find({ userEmail }).sort({ daysSince: -1 }).lean();
     return NextResponse.json(quotes);
-  } catch (error) {
-    console.error("GET /api/quotes error:", error);
-    return NextResponse.json({ error: "Failed to fetch quotes" }, { status: 500 });
+  } catch (error: any) {
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    console.error('GET /api/quotes error:', error);
+    return NextResponse.json({ error: 'Failed to fetch quotes' }, { status: 500 });
   }
 }
 
 // PATCH /api/quotes — update quote status (for follow-up tracking)
 export async function PATCH(request: NextRequest) {
   try {
+    const userEmail = await requireAuth();
     await connectDB();
     const body = await request.json();
     const { quoteId, status, followups } = body;
 
     if (!quoteId) {
-      return NextResponse.json({ error: "quoteId is required" }, { status: 400 });
+      return NextResponse.json({ error: 'quoteId is required' }, { status: 400 });
     }
 
     const updateData: any = {};
     if (status) updateData.status = status;
-    if (typeof followups === "number") updateData.followups = followups;
+    if (typeof followups === 'number') updateData.followups = followups;
 
     const updated = await Quote.findOneAndUpdate(
-      { quoteId },
+      { quoteId, userEmail },
       { $set: updateData },
       { new: true }
     ).lean();
 
     if (!updated) {
-      return NextResponse.json({ error: "Quote not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Quote not found' }, { status: 404 });
     }
 
     return NextResponse.json(updated);
-  } catch (error) {
-    console.error("PATCH /api/quotes error:", error);
-    return NextResponse.json({ error: "Failed to update quote" }, { status: 500 });
+  } catch (error: any) {
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    console.error('PATCH /api/quotes error:', error);
+    return NextResponse.json({ error: 'Failed to update quote' }, { status: 500 });
   }
 }

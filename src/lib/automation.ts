@@ -247,7 +247,7 @@ export function analyzeProfitLeaks(jobs: { jobId?: string; id?: string; title: s
   return { actions, analyses };
 }
 
-export async function runAutomationEngine(): Promise<AutomationSummary> {
+export async function runAutomationEngine(userEmail?: string): Promise<AutomationSummary> {
   let quotes: any[];
   let invoices: any[];
   let jobs: any[];
@@ -255,9 +255,10 @@ export async function runAutomationEngine(): Promise<AutomationSummary> {
   if (DB_ENABLED) {
     try {
       await connectDB();
-      quotes = await Quote.find({}).lean();
-      invoices = await Invoice.find({}).lean();
-      jobs = await MongooseJob.find({}).lean();
+      const filter = userEmail ? { userEmail } : {};
+      quotes = await Quote.find(filter).lean();
+      invoices = await Invoice.find(filter).lean();
+      jobs = await MongooseJob.find(filter).lean();
     } catch {
       quotes = sampleData.quotes;
       invoices = sampleData.invoices;
@@ -293,13 +294,14 @@ export async function runAutomationEngine(): Promise<AutomationSummary> {
   };
 }
 
-export async function runProfitLeakAnalysis(): Promise<{ actions: FollowUpAction[]; analyses: ProfitLeakAnalysis[] }> {
+export async function runProfitLeakAnalysis(userEmail?: string): Promise<{ actions: FollowUpAction[]; analyses: ProfitLeakAnalysis[] }> {
   let jobs: any[];
 
   if (DB_ENABLED) {
     try {
       await connectDB();
-      jobs = await MongooseJob.find({ status: 'active' }).lean();
+      const filter = userEmail ? { userEmail, status: 'active' } : { status: 'active' };
+      jobs = await MongooseJob.find(filter).lean();
     } catch {
       jobs = Object.values(sampleData.jobDetails).filter(j => j.status === 'active');
     }
@@ -307,5 +309,16 @@ export async function runProfitLeakAnalysis(): Promise<{ actions: FollowUpAction
     jobs = Object.values(sampleData.jobDetails).filter(j => j.status === 'active');
   }
 
-  return analyzeProfitLeaks(jobs);
-}
+  const { actions, analyses } = analyzeProfitLeaks(jobs); return { leaks: actions, analyses };
+}/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
