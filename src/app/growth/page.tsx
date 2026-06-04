@@ -3,31 +3,56 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { AlertTriangle, TrendingUp, Lightbulb, ArrowRight, DollarSign, MapPin, Star, Target, Award, Zap, Loader2 } from "lucide-react";
+import { AlertTriangle, TrendingUp, Lightbulb, ArrowRight, DollarSign, MapPin, Star, Target, Award, Zap, Loader2, Bug, Ban } from "lucide-react";
 import { api } from "@/lib/api";
 
 export default function GrowthPage() {
   const [data, setData] = useState<any>(null);
+  const [profitLeaks, setProfitLeaks] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.getInsights().then(setData).catch(console.error).finally(() => setLoading(false));
+    async function loadData() {
+      try {
+        const [insightsResult, leaksResult] = await Promise.allSettled([
+          api.getInsights(),
+          api.getProfitLeaks(),
+        ]);
+
+        if (insightsResult.status === "fulfilled") setData(insightsResult.value);
+        else console.warn("Insights API failed:", insightsResult.reason);
+
+        if (leaksResult.status === "fulfilled") setProfitLeaks(leaksResult.value);
+        else console.warn("Profit leaks API failed:", leaksResult.reason);
+      } catch (e) {
+        setError("Failed to load growth data");
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
   }, []);
 
   if (loading) {
     return (
       <div className="p-6 flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 text-amber animate-spin" />
-        <span className="ml-3 text-gray-400">Loading growth data...</span>
+        <span className="ml-3 text-gray-400">Loading growth intelligence...</span>
       </div>
     );
   }
 
-  const customerLTV = data?.customer_ltv?.customers || [];
-  const suburbHotspots = data?.suburb_hotspots?.suburbs || [];
-  const marketingTips = data?.marketing_tips?.tips || [];
-  const growthForecast = data?.growth_forecast || {};
+  const customerLTV = data?.customer_ltv?.customers || data?.customerLTV || [];
+  const suburbHotspots = data?.suburb_hotspots?.suburbs || data?.suburbHotspots || [];
+  const marketingTips = data?.marketing_tips?.tips || data?.marketingTips || [];
+  const growthForecast = data?.growth_forecast || data?.growthForecast || {};
   const forecastMonths = growthForecast?.forecast_months || [];
+
+  // Profit leaks from automation API
+  const leakAnalyses = profitLeaks?.analyses || profitLeaks?.leaks || [];
+  const leakActions = profitLeaks?.actions || [];
 
   const tierColors: Record<string, string> = {
     Platinum: "text-purple-400 bg-purple-400/10 border-purple-400/30",
@@ -40,6 +65,13 @@ export default function GrowthPage() {
     Growth: "text-amber bg-amber/10 border-amber/30",
     Emerging: "text-blue-400 bg-blue-400/10 border-blue-400/30",
     Monitor: "text-profit-red bg-profit-red/10 border-profit-red/30",
+  };
+
+  const riskColors: Record<string, string> = {
+    critical: "text-profit-red bg-profit-red/10 border-profit-red/30",
+    high: "text-profit-amber bg-profit-amber/10 border-profit-amber/30",
+    medium: "text-yellow-400 bg-yellow-400/10 border-yellow-400/30",
+    low: "text-profit-green bg-profit-green/10 border-profit-green/30",
   };
 
   const effortColors: Record<string, string> = {
@@ -74,22 +106,117 @@ export default function GrowthPage() {
         </div>
 
         {/* Forecast chart */}
-        <div className="grid grid-cols-6 gap-2 mt-6 max-w-xl mx-auto">
-          {forecastMonths.map((m: any, i: number) => {
-            const maxVal = Math.max(...forecastMonths.map((x: any) => x.weighted_total || 0), 1);
-            const heightPct = ((m.weighted_total || 0) / maxVal) * 100;
-            return (
-              <div key={m.month} className="flex flex-col items-center gap-1">
-                <div className="w-full bg-navy-surface rounded-t flex items-end justify-center" style={{ height: 60 }}>
-                  <div className="w-4/5 bg-amber rounded-t transition-all duration-500" style={{ height: `${heightPct}%`, minHeight: 12 }} />
+        {forecastMonths.length > 0 && (
+          <div className="grid grid-cols-6 gap-2 mt-6 max-w-xl mx-auto">
+            {forecastMonths.map((m: any, i: number) => {
+              const maxVal = Math.max(...forecastMonths.map((x: any) => x.weighted_total || 0), 1);
+              const heightPct = ((m.weighted_total || 0) / maxVal) * 100;
+              return (
+                <div key={m.month} className="flex flex-col items-center gap-1">
+                  <div className="w-full bg-navy-surface rounded-t flex items-end justify-center" style={{ height: 60 }}>
+                    <div className="w-4/5 bg-amber rounded-t transition-all duration-500" style={{ height: `${heightPct}%`, minHeight: 12 }} />
+                  </div>
+                  <span className="financial-figure text-[9px] text-gray-400">${((m.weighted_total || 0) / 1000).toFixed(1)}k</span>
+                  <span className="text-[8px] text-gray-500">{m.month?.split(' ')[0]?.slice(0, 3) || ''}</span>
                 </div>
-                <span className="financial-figure text-[9px] text-gray-400">${((m.weighted_total || 0) / 1000).toFixed(1)}k</span>
-                <span className="text-[8px] text-gray-500">{m.month?.split(' ')[0]?.slice(0, 3) || ''}</span>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
+        {forecastMonths.length === 0 && (
+          <p className="text-xs text-gray-500 mt-4">Forecast data not yet available.</p>
+        )}
       </motion.div>
+
+      {/* Profit Leak Detection — from /api/automation/profit-leaks */}
+      {leakAnalyses.length > 0 && (
+        <div className="mb-6">
+          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-lg font-heading font-bold text-white mb-3 flex items-center gap-2">
+            <Bug className="w-5 h-5 text-profit-red" /> Profit Leak Detection
+          </motion.h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {leakAnalyses.map((leak: any, i: number) => (
+              <motion.div
+                key={leak.jobId || i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className={`card border ${leak.riskLevel === 'critical' ? 'border-profit-red/20' : leak.riskLevel === 'high' ? 'border-profit-amber/20' : 'border-navy-border'}`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-white truncate">{leak.jobTitle}</h3>
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${riskColors[leak.riskLevel] || riskColors.low}`}>
+                        {leak.riskLevel}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-0.5">{leak.customer}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-3">
+                  <div>
+                    <p className="text-[10px] text-gray-500 uppercase">Quoted</p>
+                    <p className="financial-figure text-sm font-bold text-white">${(leak.quotedTotal || 0).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-500 uppercase">Projected Final</p>
+                    <p className="financial-figure text-sm font-bold text-profit-red">${(leak.estimatedFinalCost || 0).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-500 uppercase">Quoted Margin</p>
+                    <p className={`financial-figure text-sm font-bold ${(leak.quotedMarginPct || 0) >= 0 ? 'text-profit-green' : 'text-profit-red'}`}>
+                      {(leak.quotedMarginPct || 0).toFixed(1)}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-500 uppercase">Projected Margin</p>
+                    <p className={`financial-figure text-sm font-bold ${(leak.projectedMarginPct || 0) >= 0 ? 'text-profit-green' : 'text-profit-red'}`}>
+                      {(leak.projectedMarginPct || 0).toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+
+                {/* Slippage */}
+                {(leak.slippageAmount || 0) > 0 && (
+                  <div className="mt-2 pt-2 border-t border-navy-border">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-400">Slippage:</span>
+                      <span className="financial-figure text-profit-red font-bold">${(leak.slippageAmount || 0).toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
+
+                {leak.recommendations && leak.recommendations.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-navy-border">
+                    <p className="text-[10px] text-gray-500 uppercase mb-1">Recommendations</p>
+                    {leak.recommendations.map((r: string, ri: number) => (
+                      <p key={ri} className="text-xs text-gray-400 flex items-start gap-1.5 mt-0.5">
+                        <ArrowRight className="w-3 h-3 text-amber shrink-0 mt-0.5" />
+                        {r}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Opportunity Metrics Placeholder (when profit leaks aren't available) */}
+      {leakAnalyses.length === 0 && !loading && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card mb-6">
+          <div className="flex items-center gap-3">
+            <Ban className="w-5 h-5 text-gray-400" />
+            <div>
+              <h3 className="text-sm font-semibold text-white">No Profit Leaks Detected</h3>
+              <p className="text-xs text-gray-400 mt-1">All active jobs are tracking within budget. Your margins look healthy!</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Customer LTV */}
       {customerLTV.length > 0 && (
@@ -186,6 +313,15 @@ export default function GrowthPage() {
               </motion.div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && customerLTV.length === 0 && suburbHotspots.length === 0 && marketingTips.length === 0 && leakAnalyses.length === 0 && (
+        <div className="card text-center py-10">
+          <Loader2 className="w-10 h-10 text-amber mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">No growth data available yet.</p>
+          <p className="text-xs text-gray-500 mt-1">Start tracking jobs to generate insights.</p>
         </div>
       )}
     </div>

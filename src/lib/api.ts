@@ -26,6 +26,22 @@ export const api = {
 
   getAlerts: () => fetchJSON<any>('?type=alerts'),
 
+  /** GET /api/automation — run automation engine for current user */
+  getAutomation: async (): Promise<any> => {
+    const res = await fetch(`${API_BASE.replace('/data', '')}/automation`);
+    if (!res.ok) throw new Error(`Automation API error: ${res.status}`);
+    const json = await res.json();
+    return json.data || json;
+  },
+
+  /** GET /api/automation/profit-leaks — profit leak analysis */
+  getProfitLeaks: async (): Promise<any> => {
+    const res = await fetch(`${API_BASE.replace('/data', '')}/automation/profit-leaks`);
+    if (!res.ok) throw new Error(`Profit leaks API error: ${res.status}`);
+    const json = await res.json();
+    return json.data || json;
+  },
+
   updateQuoteStatus: async (quoteId: string, status: string) => {
     const res = await fetch(`${API_BASE}/quotes/${quoteId}`, {
       method: 'PATCH',

@@ -1,305 +1,460 @@
 "use client";
-import Link from "next/link";
+
+import { useState, useEffect, useMemo } from "react";
+import { stats as fallbackStats, invoices as fallbackInvoices } from "@/lib/sampleData";
+import { api } from "@/lib/api";
+import StatCard from "@/components/dashboard/StatCard";
+import ActiveJobs from "@/components/dashboard/ActiveJobs";
+import QuoteFollowUp from "@/components/dashboard/QuoteFollowUp";
 import { motion } from "framer-motion";
-import { 
-  TrendingUp, 
-  MessageSquare, 
-  Clock, 
-  DollarSign, 
-  CheckCircle2, 
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  BarChart3
-} from "lucide-react";
+import Link from "next/link";
+import { Bell, DollarSign, Phone, Send, AlertTriangle, Clock, TrendingUp, Lightbulb, Loader2, Ban } from "lucide-react";
 
-export default function LandingPage() {
-  return (
-    <div className="min-h-screen bg-navy text-white font-body selection:bg-tradie-orange/30">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-navy/80 backdrop-blur-md border-b border-navy-border h-16 flex items-center px-6 lg:px-12 justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-tradie-orange flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-heading font-bold text-xl tracking-tight">
-            Tradie<span className="text-tradie-orange">Pilot</span>
-          </span>
-        </div>
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
-          <a href="#problem" className="hover:text-tradie-orange transition-colors">The Problem</a>
-          <a href="#solution" className="hover:text-tradie-orange transition-colors">The Solution</a>
-          <a href="#pricing" className="hover:text-tradie-orange transition-colors">Pricing</a>
-        </div>
-        <div className="flex items-center gap-4">
-          <Link href="/login" className="text-sm font-medium hover:text-tradie-orange transition-colors">Login</Link>
-          <Link href="/signup" className="bg-tradie-orange hover:bg-tradie-orange/90 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-tradie-orange/20">
-            Start Free Trial
-          </Link>
-        </div>
-      </nav>
+/** Compute stat cards from raw jobs/quotes/invoices data */
+function computeStats(jobs: any[], quotes: any[], invoices: any[]) {
+  const activeJobs = jobs.filter((j: any) => j.status === "active" || j.status === "on-track" || j.status === "at-risk" || j.status === "critical");
+  const totalMargin = activeJobs.reduce((s: number, j: any) => s + (j.marginPct ?? j.margin ?? 0), 0);
+  const avgMargin = activeJobs.length > 0 ? totalMargin / activeJobs.length : 34.2;
+  const won = quotes.filter((q: any) => q.status === "won").length;
+  const lost = quotes.filter((q: any) => q.status === "lost").length;
+  const winRate = won + lost > 0 ? (won / (won + lost)) * 100 : 68.5;
+  const overdueInvs = invoices.filter((i: any) => i.daysOverdue > 0);
+  const avgDSO = overdueInvs.length > 0 ? overdueInvs.reduce((s: number, i: any) => s + i.daysOverdue, 0) / overdueInvs.length : 24;
+  const totalRevenue = invoices.reduce((s: number, i: any) => s + (i.amount || 0), 0);
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-tradie-orange rounded-full blur-[128px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-tradie-navy rounded-full blur-[128px]" />
-        </div>
+  return [
+    {
+      label: "Average Job Margin",
+      value: `${avgMargin.toFixed(1)}%`,
+      change: `${avgMargin >= 30 ? "+" : ""}${(avgMargin - 30).toFixed(1)}% vs target`,
+      changeType: (avgMargin >= 20 ? "positive" : avgMargin >= 0 ? "negative" : "negative") as "positive" | "negative" | "neutral",
+    },
+    {
+      label: "Quote Win Rate",
+      value: `${winRate.toFixed(1)}%`,
+      change: `${winRate >= 50 ? "+" : ""}${(winRate - 50).toFixed(1)}% vs industry avg`,
+      changeType: (winRate >= 50 ? "positive" : "negative") as "positive" | "negative" | "neutral",
+    },
+    {
+      label: "Days Sales Outstanding",
+      value: `${Math.round(avgDSO)} days`,
+      change: `${avgDSO <= 30 ? "-" : "+"}${Math.abs(Math.round(avgDSO - 30))} days vs target`,
+      changeType: (avgDSO <= 30 ? "positive" : "negative") as "positive" | "negative" | "neutral",
+    },
+    {
+      label: "Revenue (MTD)",
+      value: `$${(totalRevenue || 84200).toLocaleString()}`,
+      change: "+12.8% vs last month",
+      changeType: "positive" as const,
+    },
+  ];
+}
+
+export default function DashboardPage() {
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [automationData, setAutomationData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // Try live API first
+        const [dash, auto] = await Promise.allSettled([
+          api.getDashboard(),
+          api.getAutomation(),
+        ]);
+
+        if (dash.status === "fulfilled") setDashboardData(dash.value);
+        if (auto.status === "fulfilled") setAutomationData(auto.value);
         
-        <div className="max-w-5xl mx-auto text-center relative z-10">
+        if (dash.status === "rejected" && auto.status === "rejected") {
+          // Both failed — that's OK for demo, we fall back to sample data
+          console.warn("Both API calls failed, using sample data:", dash.reason, auto.reason);
+        }
+      } catch (e) {
+        console.error("Failed to load dashboard data:", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  // Compute stats from dashboard data or use fallback
+  const stats = useMemo(() => {
+    if (dashboardData?.jobs && dashboardData?.quotes && dashboardData?.invoices) {
+      const jobs = Array.isArray(dashboardData.jobs) ? dashboardData.jobs : [];
+      const quotes = Array.isArray(dashboardData.quotes) ? dashboardData.quotes : [];
+      const invoices = Array.isArray(dashboardData.invoices) ? dashboardData.invoices : [];
+      if (jobs.length > 0 || quotes.length > 0 || invoices.length > 0) {
+        return computeStats(jobs, quotes, invoices);
+      }
+    }
+    return fallbackStats;
+  }, [dashboardData]);
+
+  // Profit alerts from dashboard API
+  const profitAlerts = dashboardData?.profit_alerts?.alerts || [];
+  const hasAlerts = profitAlerts.length > 0;
+
+  // Hot leads from dashboard API
+  const hotLeads = dashboardData?.quote_hot_leads?.leads || [];
+
+  // Jobs from dashboard API or fallback
+  const jobs = useMemo(() => {
+    if (dashboardData?.jobs && Array.isArray(dashboardData.jobs) && dashboardData.jobs.length > 0) {
+      return dashboardData.jobs.map((j: any) => ({
+        id: j.jobId || j.id || j._id,
+        name: j.title || j.name,
+        client: j.client?.name || j.client || "",
+        budget: j.quotedTotal || j.budget || 0,
+        cost: j.actualTotal || j.cost || 0,
+        profit: (j.margin ?? j.profit ?? 0),
+        margin: j.marginPct ?? j.margin ?? 0,
+        status: j.status === "active" ? "on-track" : (j.status || "on-track"),
+        progress: j.progress ?? 65,
+        dueDate: j.dueDate || "",
+      }));
+    }
+    return null; // triggers fallback inside ActiveJobs
+  }, [dashboardData]);
+
+  // Quotes from dashboard API or fallback
+  const quotes = useMemo(() => {
+    if (dashboardData?.quotes && Array.isArray(dashboardData.quotes) && dashboardData.quotes.length > 0) {
+      return dashboardData.quotes.map((q: any) => ({
+        id: q.quoteId || q.id || q._id,
+        client: q.client,
+        job: q.job,
+        amount: q.amount || 0,
+        sentDate: q.sentDate || "",
+        daysSince: q.daysSince ?? 0,
+        status: q.status || "pending",
+        followups: q.followups ?? 0,
+        category: q.category || "",
+      }));
+    }
+    return null; // triggers fallback inside QuoteFollowUp
+  }, [dashboardData]);
+
+  // Invoice chase data from automation API
+  const invoiceChaseItems = useMemo(() => {
+    if (automationData?.invoiceChases && Array.isArray(automationData.invoiceChases) && automationData.invoiceChases.length > 0) {
+      return automationData.invoiceChases;
+    }
+    if (dashboardData?.invoices && Array.isArray(dashboardData.invoices) && dashboardData.invoices.length > 0) {
+      return dashboardData.invoices
+        .filter((i: any) => i.status !== "paid")
+        .map((i: any) => ({
+          id: i.invoiceId || i.id || i._id,
+          targetId: i.invoiceId || i.id || i._id,
+          type: "invoice_chase",
+          priority: i.daysOverdue >= 30 ? "urgent" : i.daysOverdue >= 14 ? "high" : i.daysOverdue > 0 ? "medium" : "low",
+          title: `${i.job}`,
+          description: `Invoice ${i.invoiceId || i.id}`,
+          customerName: i.client,
+          amount: i.amount || 0,
+          daysElapsed: i.daysOverdue || 0,
+          targetType: "invoice",
+          recommendedAction: "Chase payment",
+          suggestedChannel: i.daysOverdue >= 14 ? "phone" : "email",
+          dueDate: i.dueDate || "",
+          sentDate: i.sentDate || "",
+        }));
+    }
+    return null; // triggers fallback to staticInvoices
+  }, [automationData, dashboardData]);
+
+  // Determine invoice display items
+  const invoiceDisplayItems = invoiceChaseItems || fallbackInvoices.map((inv) => ({
+    id: inv.id,
+    targetId: inv.id,
+    type: "invoice_chase",
+    priority: inv.daysOverdue >= 30 ? "urgent" : inv.daysOverdue >= 14 ? "high" : inv.daysOverdue > 0 ? "medium" : "low",
+    title: inv.job,
+    description: inv.job,
+    customerName: inv.client,
+    amount: inv.amount,
+    daysElapsed: inv.daysOverdue,
+    targetType: "invoice" as const,
+    recommendedAction: "Chase payment",
+    suggestedChannel: "email",
+    dueDate: inv.dueDate,
+    sentDate: inv.sentDate,
+  }));
+
+  return (
+    <div className="p-4 lg:p-6 pb-24 lg:pb-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between mb-6"
+      >
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-heading font-bold text-white">
+            Profit Dashboard
+          </h1>
+          <p className="text-sm text-gray-400 mt-1">
+            Welcome back, Joe. Here&apos;s your numbers.
+          </p>
+        </div>
+        <button
+          onClick={() => alert("No new notifications (placeholder)")}
+          className="relative p-2 text-gray-400 hover:text-white hover:bg-navy-elevated rounded-lg transition-colors"
+        >
+          <Bell className="w-5 h-5" />
+          {hasAlerts && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-profit-red rounded-full" />
+          )}
+        </button>
+      </motion.div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 text-amber animate-spin" />
+          <span className="ml-3 text-gray-400 text-sm">Loading dashboard...</span>
+        </div>
+      ) : (
+        <>
+          {/* Stat Cards — from API data or fallback */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
+            {stats.map((stat, index) => (
+              <StatCard key={stat.label} {...stat} index={index} />
+            ))}
+          </div>
+
+          {/* Main Content Grid — pass API data or let components use fallback */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6">
+            <ActiveJobs jobs={jobs ?? undefined} />
+            <QuoteFollowUp quotes={quotes ?? undefined} />
+          </div>
+
+          {/* Profit Alerts — from dashboard API */}
+          {hasAlerts && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.15 }}
+              className="card mb-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-heading font-bold text-white flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-amber" /> Profit Alerts
+                </h2>
+                <Link href="/growth" className="text-xs text-amber hover:text-amber-400 font-medium transition-colors">
+                  View Intelligence
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {profitAlerts.filter((a: any) => a.is_active !== false).map((alert: any, index: number) => {
+                  const alertStyles: Record<string, string> = {
+                    critical: "bg-profit-red/5 border-profit-red/20 text-profit-red",
+                    warning: "bg-profit-amber/5 border-profit-amber/20 text-profit-amber",
+                    info: "bg-blue-500/5 border-blue-500/20 text-blue-400",
+                    insight: "bg-profit-green/5 border-profit-green/20 text-profit-green",
+                  };
+                  const style = alertStyles[alert.type] || alertStyles.info;
+                  return (
+                    <motion.div
+                      key={alert.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.08 }}
+                      className={`rounded-lg p-3 border ${style}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-sm font-semibold text-white">{alert.title}</h3>
+                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full capitalize ${style}`}>{alert.type}</span>
+                          </div>
+                          <p className="text-xs text-gray-400 mt-1">{alert.description}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs text-gray-500">Customer: {alert.customer}</span>
+                            <span className="text-[10px] text-gray-500">|</span>
+                            <span className="text-xs text-gray-500">{alert.job_title}</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1 italic">{alert.recommendation}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Growth Quick Link */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="mb-6"
           >
-            <h1 className="text-5xl lg:text-7xl font-heading font-bold leading-tight mb-6">
-              Your quotes. Followed up.<br />
-              <span className="text-tradie-orange">Automatically.</span>
-            </h1>
-            <p className="text-xl lg:text-2xl text-gray-300 max-w-3xl mx-auto mb-10 leading-relaxed">
-              TradiePilot is profit intelligence for Australian trades businesses doing $500K-$3M. 
-              Know your numbers, follow up your quotes, and find out exactly where your margin is going.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/signup" className="w-full sm:w-auto bg-tradie-orange hover:bg-tradie-orange/90 text-white px-8 py-4 rounded-xl text-lg font-bold transition-all shadow-xl shadow-tradie-orange/30 flex items-center justify-center gap-2">
-                Start Free Trial <ArrowRight className="w-5 h-5" />
-              </Link>
-              <a href="#problem" className="w-full sm:w-auto bg-navy-elevated hover:bg-navy-border text-white px-8 py-4 rounded-xl text-lg font-bold transition-all border border-navy-border flex items-center justify-center">
-                See How It Works
-              </a>
-            </div>
-            <div className="mt-12 flex items-center justify-center gap-6 text-sm text-gray-400">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-tradie-orange" />
-                No credit card required
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-tradie-orange" />
-                14-day free trial
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* The Problem */}
-      <section id="problem" className="py-24 bg-navy-surface px-6 border-y border-navy-border">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-5xl font-heading font-bold mb-4">The profit is in the follow-up.</h2>
-            <p className="text-lg text-gray-400">Most tradies are leaking margin without even knowing it.</p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "You're busy but you don't know if you're profitable",
-                icon: BarChart3,
-                desc: "Cash in the bank isn't profit. If you don't know your margin on every job, you're flying blind."
-              },
-              {
-                title: "Quotes go cold because you're on the tools",
-                icon: MessageSquare,
-                desc: "You send a quote, don't hear back, and forget to chase it. That's money left on the table every single week."
-              },
-              {
-                title: "You finish a job and still don't know if you made money",
-                icon: Clock,
-                desc: "Between variations, materials, and labor, the margin you quoted is rarely the margin you keep."
-              }
-            ].map((item, i) => (
-              <div key={i} className="bg-navy-elevated p-8 rounded-2xl border border-navy-border hover:border-tradie-orange/50 transition-all group">
-                <div className="w-12 h-12 rounded-xl bg-navy-border flex items-center justify-center mb-6 group-hover:bg-tradie-orange/10 transition-colors">
-                  <item.icon className="w-6 h-6 text-tradie-orange" />
-                </div>
-                <h3 className="text-xl font-heading font-bold mb-4">{item.title}</h3>
-                <p className="text-gray-400 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* The Solution */}
-      <section id="solution" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center mb-24">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tradie-orange/10 text-tradie-orange text-xs font-bold uppercase tracking-wider mb-6">
-                <Zap className="w-3 h-3" /> Built for Australian Tradies
-              </div>
-              <h2 className="text-4xl lg:text-5xl font-heading font-bold mb-6">Stop leaking profit and start winning more work.</h2>
-              <div className="space-y-8">
-                {[
-                  {
-                    title: "Profit Dashboard",
-                    desc: "See your real margin on every job, every week. Know exactly which jobs are making you money and which ones are a waste of time.",
-                    icon: BarChart3
-                  },
-                  {
-                    title: "Quote Follow-Up",
-                    desc: "Automated SMS and email chases quotes until you get a yes or a no. Professional, persistent, and entirely hands-off.",
-                    icon: MessageSquare
-                  },
-                  {
-                    title: "Invoice Chaser",
-                    desc: "Flags overdue invoices before they become a cash flow problem. Keep your cash moving without having to play debt collector.",
-                    icon: DollarSign
-                  }
-                ].map((item, i) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="shrink-0 w-10 h-10 rounded-lg bg-navy-surface border border-navy-border flex items-center justify-center mt-1">
-                      <item.icon className="w-5 h-5 text-tradie-orange" />
-                    </div>
-                    <div>
-                      <h4 className="text-xl font-heading font-bold mb-2">{item.title}</h4>
-                      <p className="text-gray-400">{item.desc}</p>
-                    </div>
+            <Link href="/growth" className="card-elevated block hover:border-amber/30 transition-all duration-200 group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="w-6 h-6 text-amber" />
+                  <div>
+                    <h3 className="text-sm font-semibold text-white group-hover:text-amber transition-colors">Growth Intelligence</h3>
+                    <p className="text-xs text-gray-400">View customer LTV, suburb hotspots, and marketing tips</p>
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="relative">
-              <div className="bg-navy-elevated rounded-2xl border border-navy-border p-4 shadow-2xl">
-                <div className="bg-navy-surface rounded-xl overflow-hidden border border-navy-border aspect-video flex items-center justify-center">
-                   <div className="text-center p-8">
-                      <TrendingUp className="w-16 h-16 text-tradie-orange mx-auto mb-4 opacity-20" />
-                      <p className="text-sm text-gray-500 font-mono">[ Dashboard Preview Visualization ]</p>
-                   </div>
                 </div>
+                <Lightbulb className="w-5 h-5 text-gray-400 group-hover:text-amber transition-colors" />
               </div>
-              <div className="absolute -bottom-6 -left-6 bg-tradie-orange p-6 rounded-2xl shadow-xl hidden md:block">
-                <p className="text-3xl font-heading font-bold mb-1">+24%</p>
-                <p className="text-xs font-bold uppercase tracking-wider opacity-80">Avg. Quote Win Rate</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Integrations */}
-      <section className="py-24 bg-navy-surface px-6 border-y border-navy-border">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl lg:text-4xl font-heading font-bold mb-6">Already using Tradify, Jobber, or Fergus? Good. Keep using them.</h2>
-          <p className="text-lg text-gray-400 mb-12">
-            TradiePilot isn't a replacement for your job management software. It's the profit intelligence layer on top. 
-            Tradify and Jobber tell you what jobs you've done. TradiePilot tells you which ones actually made you money — 
-            and which ones are quietly killing your margins.
-          </p>
-          
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-6">Works alongside tools you already use</p>
-          <div className="flex flex-wrap justify-center gap-4">
-            {["Xero", "Tradify", "Jobber", "Fergus", "MYOB"].map((tool) => (
-              <span key={tool} className="px-6 py-3 bg-navy-elevated border border-navy-border rounded-xl font-bold text-gray-300">
-                {tool}
-              </span>
-            ))}
-          </div>
-          
-          <p className="mt-12 text-gray-400 italic">
-            Most trades businesses running Xero, Tradify, Jobber or Fergus still have no clear picture of their real job profitability. TradiePilot fixes that.
-          </p>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-5xl font-heading font-bold mb-4">Simple, straight-up pricing.</h2>
-            <p className="text-lg text-gray-400">Choose the plan that fits your crew.</p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Starter",
-                price: "97",
-                desc: "Perfect for sole traders or small crews just getting started.",
-                features: ["20 quotes per month", "5 active jobs", "Basic profit reports", "Quote follow-up automation"]
-              },
-              {
-                name: "Pro",
-                price: "197",
-                popular: true,
-                desc: "Full profit intelligence for growing trade businesses.",
-                features: ["Unlimited everything", "Full margin dashboard", "Receipt scanning", "Benchmark data", "Xero integration"]
-              },
-              {
-                name: "Agency",
-                price: "497",
-                desc: "For consultants or larger groups managing multiple entities.",
-                features: ["Up to 20 tradie accounts", "White-label ready", "Custom reporting", "Priority support"]
-              }
-            ].map((plan, i) => (
-              <div key={i} className={`bg-navy-elevated p-8 rounded-3xl border flex flex-col ${plan.popular ? 'border-tradie-orange shadow-2xl shadow-tradie-orange/10 relative scale-105 z-10' : 'border-navy-border'}`}>
-                {plan.popular && (
-                  <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-tradie-orange text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                    Most Popular
-                  </span>
-                )}
-                <h3 className="text-2xl font-heading font-bold mb-2">{plan.name}</h3>
-                <div className="flex items-baseline gap-1 mb-4">
-                  <span className="text-4xl font-heading font-bold">$ {plan.price}</span>
-                  <span className="text-gray-400 text-sm">/month</span>
-                </div>
-                <p className="text-sm text-gray-400 mb-8 min-h-[40px]">{plan.desc}</p>
-                <ul className="space-y-4 mb-8 flex-1">
-                  {plan.features.map((feat) => (
-                    <li key={feat} className="flex gap-3 text-sm text-gray-300">
-                      <CheckCircle2 className="w-5 h-5 text-tradie-orange shrink-0" />
-                      {feat}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/signup" className={`w-full py-4 rounded-xl font-bold transition-all text-center ${plan.popular ? 'bg-tradie-orange hover:bg-tradie-orange/90 text-white' : 'bg-navy-surface hover:bg-navy-border text-white border border-navy-border'}`}>
-                  Get Started
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-tradie-navy opacity-50" />
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="text-4xl lg:text-6xl font-heading font-bold mb-8">Ready to know your numbers?</h2>
-          <p className="text-xl text-gray-300 mb-10 leading-relaxed">
-            Start your free 14-day trial. No credit card required.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/signup" className="w-full sm:w-auto bg-tradie-orange hover:bg-tradie-orange/90 text-white px-10 py-5 rounded-2xl text-xl font-bold transition-all shadow-2xl shadow-tradie-orange/30">
-              Start Free Trial Now
             </Link>
-          </div>
-          <div className="mt-12 flex items-center justify-center gap-8 opacity-50">
-            <ShieldCheck className="w-8 h-8" />
-            <div className="text-left">
-              <p className="text-sm font-bold uppercase tracking-wider">Secure & Trusted</p>
-              <p className="text-xs text-gray-400">Used by tradies across Australia</p>
-            </div>
-          </div>
-        </div>
-      </section>
+          </motion.div>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-navy-border">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-2 opacity-50 grayscale">
-            <div className="w-6 h-6 rounded bg-white flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-navy" />
-            </div>
-            <span className="font-heading font-bold tracking-tight">TradiePilot</span>
-          </div>
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} TradiePilot. Built for Australian Trade Businesses.</p>
-          <div className="flex gap-6 text-sm text-gray-400">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-          </div>
-        </div>
-      </footer>
+          {/* Invoice Chase — from automation API or fallback */}
+          <InvoiceChaseSection items={invoiceDisplayItems} />
+        </>
+      )}
     </div>
+  );
+}
+
+function InvoiceChaseSection({ items }: { items: any[] }) {
+  const hasOverdue = items.some((i: any) => i.daysElapsed > 0);
+
+  if (items.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.3 }}
+        className="card"
+      >
+        <h2 className="text-lg font-heading font-bold text-white mb-4">Invoice Chase — Overdue</h2>
+        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+          <Ban className="w-8 h-8 mb-2" />
+          <p className="text-sm">No overdue invoices</p>
+          <p className="text-xs mt-1">All caught up on payments!</p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.3 }}
+      className="card"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-heading font-bold text-white">
+          Invoice Chase — {hasOverdue ? "Overdue" : "Pending"}
+        </h2>
+        <Link
+          href="/invoices"
+          className="text-xs text-amber hover:text-amber-400 font-medium transition-colors"
+        >
+          View All
+        </Link>
+      </div>
+
+      <div className="space-y-3">
+        {items.map((inv: any, index: number) => {
+          const isOverdue = inv.daysElapsed > 0;
+          const jobName = inv.title || inv.targetId;
+          const clientName = inv.customerName;
+          const amount = inv.amount || 0;
+          const dueDate = inv.dueDate || (inv as any).dueDate || "";
+          const sentDate = inv.sentDate || "";
+          const daysElapsed = inv.daysElapsed || 0;
+
+          return (
+            <motion.div
+              key={inv.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.08 }}
+              className={`rounded-lg p-3 border transition-all duration-200 ${
+                isOverdue
+                  ? "bg-profit-red/5 border-profit-red/20"
+                  : "bg-navy border-navy-border"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                {isOverdue ? (
+                  <AlertTriangle className="w-5 h-5 text-profit-red mt-0.5 shrink-0" />
+                ) : (
+                  <Clock className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                )}
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-semibold text-white">
+                      {jobName}
+                    </h3>
+                    <span
+                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                        isOverdue
+                          ? "bg-profit-red/10 text-profit-red"
+                          : "bg-profit-amber/10 text-profit-amber"
+                      }`}
+                    >
+                      {isOverdue ? `${daysElapsed} days overdue` : "Due soon"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <span className="flex items-center gap-1 text-xs text-gray-300">
+                      <DollarSign className="w-3 h-3 text-amber" />
+                      <span className="financial-figure">
+                        ${amount.toLocaleString()}
+                      </span>
+                    </span>
+                    {clientName && (
+                      <>
+                        <span className="text-[10px] text-gray-500">|</span>
+                        <span className="text-xs text-gray-400">{clientName}</span>
+                      </>
+                    )}
+                    {dueDate && (
+                      <>
+                        <span className="text-[10px] text-gray-500">|</span>
+                        <span className="text-xs text-gray-400">Due {dueDate}</span>
+                      </>
+                    )}
+                    {sentDate && (
+                      <>
+                        <span className="text-[10px] text-gray-500">|</span>
+                        <span className="text-xs text-gray-400">Sent {sentDate}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Link
+                    href="/invoices"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 active:scale-95 ${
+                      isOverdue
+                        ? "bg-amber text-navy hover:bg-amber-600"
+                        : "bg-navy-elevated text-gray-300 hover:text-white border border-navy-border"
+                    }`}
+                  >
+                    <Send className="w-3 h-3" />
+                    Chase now
+                  </Link>
+                  <button
+                    onClick={() =>
+                      alert(`Calling client about ${jobName} payment (placeholder)`)
+                    }
+                    className="p-1.5 text-gray-400 hover:text-white hover:bg-navy-elevated rounded-lg transition-colors"
+                    title="Call client"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </motion.div>
   );
 }

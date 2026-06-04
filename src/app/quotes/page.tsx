@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, Search, Phone, Send, FileText, Filter, TrendingUp, TrendingDown, DollarSign, Clock, CheckCircle, XCircle, MessageSquare, Loader2 } from "lucide-react";
+import { ArrowLeft, Search, Phone, Send, FileText, TrendingUp, TrendingDown, DollarSign, Clock, CheckCircle, XCircle, MessageSquare, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import type { Quote } from "@/lib/sampleData";
 
@@ -60,6 +60,20 @@ export default function QuotesDashboard() {
     return result;
   }, [activeFilter, searchTerm, allQuotes]);
 
+  if (loading) {
+    return (
+      <div className="p-4 lg:p-6 pb-24 lg:pb-6">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-amber hover:text-amber-400 transition-colors text-sm mb-4">
+          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+        </Link>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 text-amber animate-spin" />
+          <span className="ml-3 text-gray-400 text-sm">Loading quotes...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 lg:p-6 pb-24 lg:pb-6">
       {/* Back */}
@@ -107,69 +121,72 @@ export default function QuotesDashboard() {
       </div>
 
       {/* Table */}
-      <div className="card overflow-hidden !p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-navy-border text-xs text-gray-400 uppercase tracking-wider">
-                <th className="text-left py-3 px-4 font-medium">Customer</th>
-                <th className="text-left py-3 px-4 font-medium">Job Type</th>
-                <th className="text-right py-3 px-4 font-medium">Value</th>
-                <th className="text-left py-3 px-4 font-medium">Sent</th>
-                <th className="text-center py-3 px-4 font-medium">Follow-ups</th>
-                <th className="text-left py-3 px-4 font-medium">Status</th>
-                <th className="text-right py-3 px-4 font-medium">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredQuotes.map((quote, index) => {
-                const s = statusStyles[quote.status];
-                return (
-                  <motion.tr key={quote.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.03 }} className="border-b border-navy-border last:border-0 hover:bg-navy-elevated/50 transition-colors">
-                    <td className="py-3 px-4">
-                      <p className="text-sm font-medium text-white">{quote.client}</p>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-xs text-gray-400">{quote.category}</span>
-                      <p className="text-xs text-gray-500 mt-0.5">{quote.job}</p>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <span className="financial-figure text-sm font-semibold text-white">${quote.amount.toLocaleString()}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-xs text-gray-400">{quote.sentDate}</span>
-                      <p className="text-[10px] text-gray-500">{quote.daysSince} days ago</p>
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <span className={`text-xs font-medium ${quote.followups >= 3 ? "text-profit-red" : quote.followups >= 1 ? "text-profit-amber" : "text-gray-500"}`}>
-                        {quote.followups}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${s.bg} ${s.color}`}>{s.label}</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center gap-1 justify-end">
-                        <button onClick={() => alert(`Following up with ${quote.client} (placeholder)`)} className={`p-1.5 rounded-lg transition-colors ${quote.status === "urgent" ? "bg-amber text-navy hover:bg-amber-600" : "text-gray-400 hover:text-white hover:bg-navy-elevated"}`}>
-                          <Send className="w-3.5 h-3.5" />
-                        </button>
-                        <button onClick={() => alert(`Calling ${quote.client} (placeholder)`)} className="p-1.5 text-gray-400 hover:text-white hover:bg-navy-elevated rounded-lg">
-                          <Phone className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        {filteredQuotes.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-400 text-sm">No quotes match your filter.</p>
+      {filteredQuotes.length > 0 ? (
+        <div className="card overflow-hidden !p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-navy-border text-xs text-gray-400 uppercase tracking-wider">
+                  <th className="text-left py-3 px-4 font-medium">Customer</th>
+                  <th className="text-left py-3 px-4 font-medium">Job Type</th>
+                  <th className="text-right py-3 px-4 font-medium">Value</th>
+                  <th className="text-left py-3 px-4 font-medium">Sent</th>
+                  <th className="text-center py-3 px-4 font-medium">Follow-ups</th>
+                  <th className="text-left py-3 px-4 font-medium">Status</th>
+                  <th className="text-right py-3 px-4 font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredQuotes.map((quote, index) => {
+                  const s = statusStyles[quote.status];
+                  return (
+                    <motion.tr key={quote.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.03 }} className="border-b border-navy-border last:border-0 hover:bg-navy-elevated/50 transition-colors">
+                      <td className="py-3 px-4">
+                        <p className="text-sm font-medium text-white">{quote.client}</p>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-xs text-gray-400">{quote.category}</span>
+                        <p className="text-xs text-gray-500 mt-0.5">{quote.job}</p>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <span className="financial-figure text-sm font-semibold text-white">${quote.amount.toLocaleString()}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-xs text-gray-400">{quote.sentDate}</span>
+                        <p className="text-[10px] text-gray-500">{quote.daysSince} days ago</p>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span className={`text-xs font-medium ${quote.followups >= 3 ? "text-profit-red" : quote.followups >= 1 ? "text-profit-amber" : "text-gray-500"}`}>
+                          {quote.followups}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${s.bg} ${s.color}`}>{s.label}</span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center gap-1 justify-end">
+                          <button onClick={() => alert(`Following up with ${quote.client} (placeholder)`)} className={`p-1.5 rounded-lg transition-colors ${quote.status === "urgent" ? "bg-amber text-navy hover:bg-amber-600" : "text-gray-400 hover:text-white hover:bg-navy-elevated"}`}>
+                            <Send className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => alert(`Calling ${quote.client} (placeholder)`)} className="p-1.5 text-gray-400 hover:text-white hover:bg-navy-elevated rounded-lg">
+                            <Phone className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="card text-center py-8">
+          <FileText className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+          <p className="text-gray-400 text-sm">No quotes match your filter.</p>
+          <p className="text-xs text-gray-500 mt-1">Send your first quote to get started.</p>
+        </div>
+      )}
     </div>
   );
 }
