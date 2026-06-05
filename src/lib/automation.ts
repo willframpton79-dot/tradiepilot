@@ -309,5 +309,5 @@ export async function runProfitLeakAnalysis(userEmail?: string): Promise<{ actio
     jobs = Object.values(sampleData.jobDetails).filter(j => j.status === 'active');
   }
 
-  const { actions, analyses } = analyzeProfitLeaks(jobs); return { leaks: actions, analyses };
+  const { actions, analyses } = analyzeProfitLeaks(jobs); return { actions, analyses };
 }
