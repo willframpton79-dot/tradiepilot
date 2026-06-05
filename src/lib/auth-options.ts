@@ -38,8 +38,8 @@ export const authOptions = {
     maxAge: 30 * 24 * 60 * 60,
   },
   pages: {
-    signIn: '/auth/signin',
-    error: '/auth/error',
+    signIn: '/login',
+    error: '/login',
   },
   callbacks: {
     async jwt({ token, user }: any) {
