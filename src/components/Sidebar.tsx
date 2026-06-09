@@ -21,11 +21,11 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/" },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Quotes", icon: FileText, href: "/quotes" },
   { label: "Growth", icon: GrowthIcon, href: "/growth" },
   { label: "Invoice Chaser", icon: DollarSign, href: "/invoices" },
-  { label: "Active Jobs", icon: ClipboardList, href: "/" },
+  { label: "Active Jobs", icon: ClipboardList, href: "/dashboard" },
   { label: "Settings", icon: Settings, href: "#" },
 ];
 
@@ -41,7 +41,7 @@ export default function Sidebar() {
 
   const isActive = (href: string) => {
     if (href === "#") return false;
-    if (href === "/") return pathname === "/";
+    if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
   };
 

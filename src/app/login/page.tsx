@@ -29,7 +29,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError("Invalid credentials. Please try again.");
     } else {
-      router.push("/");
+      router.push("/dashboard");
       router.refresh();
     }
   };
