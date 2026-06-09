@@ -11,15 +11,13 @@ import { Send, AlertTriangle, Lightbulb, Loader2, TrendingUp } from "lucide-reac
 
 export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<any>(null);
-  const [automationData, setAutomationData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [dash, auto] = await Promise.all([api.getDashboard(), api.getAutomation()]);
+        const [dash] = await Promise.all([api.getDashboard()]);
         setDashboardData(dash);
-        setAutomationData(auto);
       } catch (e) {
         console.error("Failed to load dashboard data:", e);
       } finally {
