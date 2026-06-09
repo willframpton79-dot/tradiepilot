@@ -74,7 +74,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
            {/* Logs */}
            <div className="grid md:grid-cols-2 gap-8">
               <TimeLog entries={job.timeLog} />
-              <ReceiptLog entries={job.receiptLog} />
+              <ReceiptLog receipts={job.receiptLog} />
            </div>
         </div>
 
