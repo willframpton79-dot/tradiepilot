@@ -5,7 +5,7 @@ export interface FetchOptions {
 }
 
 async function fetchJSON<T>(endpoint: string, options?: FetchOptions): Promise<T> {
-  const url = `${API_BASE}${endpoint}`;
+  const url = endpoint.startsWith('/') ? endpoint : `${API_BASE}${endpoint}`;
   const res = await fetch(url, {
     next: options?.revalidate ? { revalidate: options.revalidate } : undefined,
   });
@@ -14,18 +14,22 @@ async function fetchJSON<T>(endpoint: string, options?: FetchOptions): Promise<T
 }
 
 export const api = {
+  // Data endpoints (legacy style via ?type=)
   getJobs: () => fetchJSON<any[]>('?type=jobs'),
-
   getQuotes: () => fetchJSON<any[]>('?type=quotes'),
-
   getInvoices: () => fetchJSON<any[]>('?type=invoices'),
-
   getDashboard: () => fetchJSON<any>('?type=dashboard'),
-
-  getInsights: () => fetchJSON<any>('?type=insights'),
-
   getAlerts: () => fetchJSON<any>('?type=alerts'),
+  
+  // New structured endpoints
+  getAutomation: async () => {
+    const res = await fetchJSON<any>('/api/automation');
+    return res.success ? res.data : res;
+  },
+  getGrowth: () => fetchJSON<any>('/api/insights'), // Growth uses insights API
+  getInsights: () => fetchJSON<any>('/api/insights'),
 
+  // Actions
   updateQuoteStatus: async (quoteId: string, status: string) => {
     const res = await fetch(`${API_BASE}/quotes/${quoteId}`, {
       method: 'PATCH',
@@ -34,7 +38,6 @@ export const api = {
     });
     return res.json();
   },
-
   addReceipt: async (data: any) => {
     const res = await fetch(`${API_BASE}/receipts`, {
       method: 'POST',
@@ -43,7 +46,6 @@ export const api = {
     });
     return res.json();
   },
-
   logTime: async (data: any) => {
     const res = await fetch(`${API_BASE}/time-entries`, {
       method: 'POST',
@@ -52,7 +54,6 @@ export const api = {
     });
     return res.json();
   },
-
   createQuote: async (data: any) => {
     const res = await fetch(`${API_BASE}/quotes`, {
       method: 'POST',

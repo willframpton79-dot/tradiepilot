@@ -4,21 +4,28 @@
   --color-white: #ffffff;
   --color-surface: #f8fafc;
   --color-border: #e2e8f0;
-  --color-indigo: #6366f1;
-  --color-indigo-hover: #4f46e5;
+  
+  --color-indigo: #4f46e5;
+  --color-indigo-hover: #4338ca;
+  
   --color-slate-900: #0f172a;
   --color-slate-800: #1e293b;
   --color-slate-700: #334155;
   --color-slate-600: #475569;
   --color-slate-500: #64748b;
+  --color-slate-400: #94a3b8;
+  --color-slate-300: #cbd5e1;
+  --color-slate-200: #e2e8f0;
   --color-slate-100: #f1f5f9;
-  
-  /* Retain legacy variables for compatibility while mapping to new values */
+  --color-slate-50: #f8fafc;
+
+  /* Mappings for legacy names to prevent white-on-white */
+  --color-tradie-orange: #4f46e5; 
+  --color-tradie-navy: #0f172a;
   --color-navy: #ffffff;
   --color-navy-surface: #ffffff;
   --color-navy-elevated: #f8fafc;
   --color-navy-border: #e2e8f0;
-  --color-amber: #6366f1;
   
   --color-profit-green: #10b981;
   --color-profit-amber: #f59e0b;
@@ -26,79 +33,77 @@
 
   --font-heading: "Inter", -apple-system, sans-serif;
   --font-body: "Inter", -apple-system, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @layer base {
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    color: var(--color-slate-800);
+    color: #0f172a;
     font-weight: 600;
   }
-  
+
   body {
-    background-color: #f8fafc;
-    color: #475569;
+    background-color: #ffffff;
+    color: #334155;
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Updated utility classes for light theme */
-.card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 24px;
-}
-
-.card-elevated {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 24px;
-}
-
+/* Explicit Utility Classes */
 .btn-primary {
-  background-color: #6366f1;
-  color: #ffffff;
-  padding: 8px 16px;
-  border-radius: 6px;
+  background-color: #4f46e5 !important;
+  color: #ffffff !important;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
   font-weight: 500;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-primary:hover {
-  background-color: #4f46e5;
+  background-color: #4338ca !important;
 }
 
 .btn-secondary {
-  background-color: #ffffff;
-  color: #1e293b;
-  border: 1px solid #e2e8f0;
-  padding: 8px 16px;
-  border-radius: 6px;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
   font-weight: 500;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-secondary:hover {
-  background-color: #f1f5f9;
+  background-color: #f8fafc !important;
+}
+
+.price-text {
+  color: #0f172a !important;
+}
+
+.card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  font-size: 12px;
-  font-weight: 500;
+  @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border;
 }
 
-.badge-green { background-color: rgba(16, 185, 129, 0.1); color: #10b981; }
-.badge-amber { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-.badge-red { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.badge-green { @apply bg-emerald-50 text-emerald-600 border-emerald-100; }
+.badge-amber { @apply bg-amber-50 text-amber-600 border-amber-100; }
+.badge-red { @apply bg-rose-50 text-rose-600 border-rose-100; }
 
 .scrollbar-thin {
   scrollbar-width: thin;
