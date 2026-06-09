@@ -38,7 +38,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                {job.id}
              </span>
              <span className="flex items-center gap-1 text-[11px] text-slate-400 font-bold">
-               <Calendar className="w-3.5 h-3.5" /> Started {job.date || ''}
+               <Calendar className="w-3.5 h-3.5" /> Started {(job as any).startDate || ''}
              </span>
           </div>
           <h1 className="text-3xl font-bold text-slate-800 tracking-tight">{job.title}</h1>
