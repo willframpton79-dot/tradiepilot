@@ -1,193 +1,212 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import { AlertTriangle, TrendingUp, Lightbulb, ArrowRight, DollarSign, MapPin, Star, Target, Award, Zap, Loader2 } from "lucide-react";
+import { 
+  TrendingUp, Award, MapPin, Lightbulb, 
+  Zap, Star, Loader2, ArrowUpRight,
+  Target, Rocket, Users, BarChart3
+} from "lucide-react";
 import { api } from "@/lib/api";
+
+const tierColors: any = {
+  Platinum: "bg-indigo-50 text-indigo-600 border-indigo-100",
+  Gold: "bg-amber-50 text-amber-600 border-amber-100",
+  Silver: "bg-slate-50 text-slate-600 border-slate-100",
+};
+
+const effortColors: any = {
+  Low: "bg-emerald-50 text-emerald-600 border-emerald-100",
+  Medium: "bg-amber-50 text-amber-600 border-amber-100",
+  High: "bg-rose-50 text-rose-600 border-rose-100",
+};
 
 export default function GrowthPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getInsights().then(setData).catch(console.error).finally(() => setLoading(false));
+    async function loadData() {
+      try {
+        const res = await api.getGrowth();
+        setData(res);
+      } catch (e) {
+        console.error("Failed to load growth data:", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="p-6 flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 text-amber animate-spin" />
-        <span className="ml-3 text-gray-400">Loading growth data...</span>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <Loader2 className="w-8 h-8 text-indigo animate-spin" />
+    </div>
+  );
 
   const customerLTV = data?.customer_ltv?.customers || [];
   const suburbHotspots = data?.suburb_hotspots?.suburbs || [];
-  const marketingTips = data?.marketing_tips?.tips || [];
-  const growthForecast = data?.growth_forecast || {};
-  const forecastMonths = growthForecast?.forecast_months || [];
-
-  const tierColors: Record<string, string> = {
-    Platinum: "text-purple-400 bg-purple-400/10 border-purple-400/30",
-    Gold: "text-amber bg-amber/10 border-amber/30",
-    Silver: "text-gray-300 bg-gray-300/10 border-gray-300/30",
-  };
-
-  const suburbTierColors: Record<string, string> = {
-    Prime: "text-profit-green bg-profit-green/10 border-profit-green/30",
-    Growth: "text-amber bg-amber/10 border-amber/30",
-    Emerging: "text-blue-400 bg-blue-400/10 border-blue-400/30",
-    Monitor: "text-profit-red bg-profit-red/10 border-profit-red/30",
-  };
-
-  const effortColors: Record<string, string> = {
-    Low: "text-profit-green bg-profit-green/10",
-    Medium: "text-amber bg-amber/10",
-    High: "text-profit-red bg-profit-red/10",
-  };
+  const marketingTips = data?.marketing_insights?.tips || [];
 
   return (
-    <div className="p-4 lg:p-6 pb-24 lg:pb-6">
-      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-        <Link href="/" className="inline-flex items-center gap-1.5 text-amber hover:text-amber-400 transition-colors text-sm mb-4">
-          <ArrowRight className="w-4 h-4 rotate-180" /> Back to Dashboard
-        </Link>
-      </motion.div>
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold text-slate-800">Growth Intelligence</h1>
+        <p className="text-slate-500 text-sm mt-1">Data-driven insights to scale your business profitably.</p>
+      </header>
 
-      <motion.h1 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-heading font-bold text-white mb-6">
-        Growth Intelligence
-      </motion.h1>
-
-      {/* Growth Forecast */}
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="card-elevated mb-6 text-center py-6">
-        <Target className="w-8 h-8 text-amber mx-auto mb-2" />
-        <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Projected 6-Month Revenue</p>
-        <p className="financial-figure text-3xl lg:text-4xl font-bold text-white">
-          ${(growthForecast?.projected_6mo_revenue || 62892).toLocaleString()}
-        </p>
-        <div className="flex items-center justify-center gap-4 mt-3 text-xs text-gray-400">
-          <span className="flex items-center gap-1"><TrendingUp className="w-3.5 h-3.5 text-profit-green" />{(growthForecast?.monthly_growth_rate_pct || 8)}% monthly growth</span>
-          <span className="text-[10px] text-gray-500">|</span>
-          <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5 text-amber" />${(growthForecast?.current_monthly_runrate || 5500).toLocaleString()}/mo current</span>
+      {/* Main Insights Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="card bg-indigo-50/30 border-indigo-100">
+           <div className="w-10 h-10 rounded-xl bg-indigo flex items-center justify-center mb-4">
+              <Target className="w-6 h-6 text-white" />
+           </div>
+           <h3 className="text-lg font-bold text-slate-800">Strategic Target</h3>
+           <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+             Focus on <span className="font-bold text-indigo">Maintenance Plumbing</span> in <span className="font-bold text-indigo">Richmond</span> to maximize margin with minimal crew travel time.
+           </p>
         </div>
-
-        {/* Forecast chart */}
-        <div className="grid grid-cols-6 gap-2 mt-6 max-w-xl mx-auto">
-          {forecastMonths.map((m: any, i: number) => {
-            const maxVal = Math.max(...forecastMonths.map((x: any) => x.weighted_total || 0), 1);
-            const heightPct = ((m.weighted_total || 0) / maxVal) * 100;
-            return (
-              <div key={m.month} className="flex flex-col items-center gap-1">
-                <div className="w-full bg-navy-surface rounded-t flex items-end justify-center" style={{ height: 60 }}>
-                  <div className="w-4/5 bg-amber rounded-t transition-all duration-500" style={{ height: `${heightPct}%`, minHeight: 12 }} />
-                </div>
-                <span className="financial-figure text-[9px] text-gray-400">${((m.weighted_total || 0) / 1000).toFixed(1)}k</span>
-                <span className="text-[8px] text-gray-500">{m.month?.split(' ')[0]?.slice(0, 3) || ''}</span>
-              </div>
-            );
-          })}
+        <div className="card bg-emerald-50/30 border-emerald-100">
+           <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center mb-4">
+              <Rocket className="w-6 h-6 text-white" />
+           </div>
+           <h3 className="text-lg font-bold text-slate-800">Scale Opportunity</h3>
+           <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+             Increasing quote follow-up frequency by <span className="font-bold text-emerald-600">20%</span> is projected to add <span className="font-bold text-emerald-600">$12,400</span> to next month&apos;s revenue.
+           </p>
         </div>
-      </motion.div>
-
-      {/* Customer LTV */}
-      {customerLTV.length > 0 && (
-        <div className="mb-6">
-          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-lg font-heading font-bold text-white mb-3 flex items-center gap-2">
-            <Award className="w-5 h-5 text-amber" /> Customer Lifetime Value
-          </motion.h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {customerLTV.map((c: any, i: number) => (
-              <motion.div key={c.name || c.customer_name || i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="card">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">{c.name || c.customer_name}</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">{(c.job_count || 0)} job{(c.job_count || 0) !== 1 ? 's' : ''}</p>
-                  </div>
-                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${tierColors[c.tier] || tierColors.Silver}`}>
-                    <Star className="w-3 h-3 inline mr-0.5 -mt-0.5" />{c.tier}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4 mt-3">
-                  <div>
-                    <p className="text-[10px] text-gray-500 uppercase">Revenue</p>
-                    <p className="financial-figure text-sm font-bold text-white">${(c.total_revenue || 0).toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-gray-500 uppercase">Margin</p>
-                    <p className={`financial-figure text-sm font-bold ${(c.avg_margin_pct || 0) >= 0 ? 'text-profit-green' : 'text-profit-red'}`}>
-                      {(c.avg_margin_pct || 0).toFixed(1)}%
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-gray-500 uppercase">Predicted LTV</p>
-                    <p className="financial-figure text-sm font-bold text-amber">${(c.predicted_ltv || 0).toLocaleString()}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+        <div className="card bg-amber-50/30 border-amber-100">
+           <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center mb-4">
+              <BarChart3 className="w-6 h-6 text-white" />
+           </div>
+           <h3 className="text-lg font-bold text-slate-800">Profit Guard</h3>
+           <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+             Material cost variance is currently <span className="font-bold text-amber-600">+8%</span>. Review supplier pricing for copper fittings.
+           </p>
         </div>
-      )}
+      </div>
 
-      {/* Suburb Hotspots */}
-      {suburbHotspots.length > 0 && (
-        <div className="mb-6">
-          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-lg font-heading font-bold text-white mb-3 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-amber" /> Suburb Hotspots
-          </motion.h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {suburbHotspots.map((s: any, i: number) => (
-              <motion.div key={s.suburb || i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="card">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-amber" />
-                    <h3 className="text-sm font-semibold text-white">{s.suburb} {s.postcode || ''}</h3>
-                  </div>
-                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${suburbTierColors[s.tier] || suburbTierColors.Monitor}`}>{s.tier}</span>
-                </div>
-                <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
-                  <span>${(s.total_revenue || 0).toLocaleString()} revenue</span>
-                  <span className={`font-medium ${(s.avg_margin_pct || 0) >= 0 ? 'text-profit-green' : 'text-profit-red'}`}>{(s.avg_margin_pct || 0).toFixed(0)}% margin</span>
-                  <span>{(s.job_count || 0)} jobs</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-2 italic">{s.recommendation}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Marketing Tips */}
-      {marketingTips.length > 0 && (
+      <div className="grid lg:grid-cols-2 gap-8 mb-8">
+        {/* Customer LTV */}
         <div>
-          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-lg font-heading font-bold text-white mb-3 flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-amber" /> Marketing Tips
-          </motion.h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {marketingTips.map((tip: any, i: number) => (
-              <motion.div key={tip.id || i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="card hover:border-amber/20 transition-colors">
-                <div className="flex items-start gap-3">
-                  <Zap className="w-4 h-4 text-amber mt-0.5 shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">{tip.title}</h3>
-                    <p className="text-xs text-gray-400 mt-1">{tip.description}</p>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-profit-green/10 text-profit-green border border-profit-green/20">
-                        ROI: {tip.projected_roi || 'N/A'}
-                      </span>
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${effortColors[tip.effort] || effortColors.Medium}`}>
-                        {tip.effort || 'Medium'} effort
-                      </span>
+          <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 text-indigo" /> High-Value Customers
+          </h2>
+          <div className="space-y-3">
+            {customerLTV.map((c: any, i: number) => (
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, x: -10 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                transition={{ delay: i * 0.05 }} 
+                className="card p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold">
+                       {c.name?.charAt(0) || c.customer_name?.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800">{c.name || c.customer_name}</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">{c.job_count} jobs completed</p>
                     </div>
                   </div>
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded-full border ${tierColors[c.tier] || tierColors.Silver}`}>
+                    {c.tier}
+                  </span>
+                </div>
+                <div className="flex items-center gap-6 mt-4 pt-4 border-t border-slate-50">
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Revenue</p>
+                    <p className="text-sm font-bold text-slate-800">${(c.total_revenue || 0).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Avg Margin</p>
+                    <p className="text-sm font-bold text-emerald-600">{c.avg_margin_pct?.toFixed(1)}%</p>
+                  </div>
+                  <div className="ml-auto text-right">
+                    <p className="text-[10px] text-indigo font-bold uppercase tracking-wider">Predicted LTV</p>
+                    <p className="text-sm font-bold text-indigo">${(c.predicted_ltv || 0).toLocaleString()}</p>
+                  </div>
                 </div>
               </motion.div>
             ))}
           </div>
         </div>
-      )}
+
+        {/* Suburb Hotspots */}
+        <div>
+          <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-indigo" /> Profit Hotspots
+          </h2>
+          <div className="space-y-3">
+            {suburbHotspots.map((s: any, i: number) => (
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, x: 10 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                transition={{ delay: i * 0.05 }} 
+                className="card p-4"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-indigo-50 rounded-lg">
+                      <MapPin className="w-4 h-4 text-indigo" />
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-800">{s.suburb} {s.postcode}</h3>
+                  </div>
+                  <div className="flex items-center gap-1 text-emerald-600 font-bold text-xs">
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    {s.avg_margin_pct?.toFixed(0)}% Margin
+                  </div>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                   <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                     <Lightbulb className="w-3 h-3 inline mr-1 text-amber-500" />
+                     {s.recommendation}
+                   </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Marketing Tips */}
+      <div>
+        <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <Zap className="w-5 h-5 text-indigo" /> Marketing Insights
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {marketingTips.map((tip: any, i: number) => (
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, y: 10 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: i * 0.05 }} 
+              className="card border-slate-200 hover:border-indigo/30 transition-all flex flex-col"
+            >
+              <div className="flex items-start gap-4 flex-1">
+                <div className="p-2 bg-indigo-50 rounded-lg shrink-0">
+                   <Lightbulb className="w-5 h-5 text-indigo" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800">{tip.title}</h3>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">{tip.description}</p>
+                </div>
+              </div>
+              <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-50">
+                <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${effortColors[tip.effort] || effortColors.Medium}`}>
+                  {tip.effort} Effort
+                </span>
+                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
+                  ROI: {tip.projected_roi}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

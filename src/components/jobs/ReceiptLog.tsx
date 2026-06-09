@@ -1,79 +1,66 @@
 "use client";
-
 import { motion } from "framer-motion";
-import { Receipt, Store } from "lucide-react";
-import type { ReceiptEntry } from "@/lib/sampleData";
+import { Receipt, Store, Calendar, Plus } from "lucide-react";
 
 interface ReceiptLogProps {
-  entries: ReceiptEntry[];
+  receipts: any[];
 }
 
-const categoryColors: Record<string, string> = {
-  materials: "text-profit-green bg-profit-green/10",
-  supplies: "text-profit-amber bg-profit-amber/10",
-  equipment: "text-blue-400 bg-blue-400/10",
-  subcontractor: "text-purple-400 bg-purple-400/10",
-};
-
-export default function ReceiptLog({ entries }: ReceiptLogProps) {
-  const totalCost = entries.reduce((sum, e) => sum + e.cost, 0);
+export default function ReceiptLog({ receipts }: ReceiptLogProps) {
+  const total = receipts.reduce((sum, r) => sum + r.cost, 0);
 
   return (
     <div className="card">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-heading font-bold text-white">Receipt Log</h2>
-        <button
-          onClick={() => alert("Adding receipt (placeholder)")}
-          className="btn-primary text-xs px-3 py-1.5"
-        >
-          + Add Receipt
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-bold text-slate-800">Materials & Receipts</h2>
+        <button className="btn-primary text-xs flex items-center gap-2">
+           <Plus className="w-3.5 h-3.5" /> Log Receipt
         </button>
       </div>
 
-      {/* Summary */}
-      <div className="mb-4 pb-3 border-b border-navy-border">
-        <span className="text-xs text-gray-400">Total spent on materials & supplies: </span>
-        <span className="financial-figure text-white font-semibold text-sm">
-          ${totalCost.toLocaleString()}
-        </span>
+      <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 mb-6">
+         <div className="flex items-center gap-3">
+            <div className="p-2 bg-white rounded-lg border border-slate-100 shadow-sm">
+               <Receipt className="w-4 h-4 text-indigo" />
+            </div>
+            <div>
+               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Spent</p>
+               <p className="text-lg font-bold text-slate-800">${total.toLocaleString()}</p>
+            </div>
+         </div>
+         <div className="text-right">
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Items</p>
+            <p className="text-lg font-bold text-slate-800">{receipts.length}</p>
+         </div>
       </div>
 
-      {/* Entries */}
-      <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-thin pr-1">
-        {entries.map((entry, index) => {
-          const colorClass = categoryColors[entry.category] || "text-gray-400 bg-gray-400/10";
-          return (
-            <motion.div
-              key={entry.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="bg-navy rounded-lg p-3 border border-navy-border hover:border-amber/20 transition-colors"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm text-white font-medium">{entry.item}</p>
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${colorClass}`}>
-                      {entry.category}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="flex items-center gap-1 text-xs text-gray-400">
-                      <Store className="w-3 h-3" />
-                      {entry.supplier}
-                    </span>
-                    <span className="text-[10px] text-gray-500">|</span>
-                    <span className="text-xs text-gray-400">{entry.date}</span>
+      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
+        {receipts.map((receipt, i) => (
+          <motion.div 
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="group p-3 rounded-lg border border-slate-100 bg-white hover:border-indigo/20 hover:shadow-sm transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-slate-50 rounded-lg group-hover:bg-indigo-50 transition-colors">
+                  <Store className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 group-hover:text-indigo transition-colors">{receipt.item}</p>
+                  <div className="flex items-center gap-3 mt-1">
+                     <span className="text-[10px] text-slate-500 font-medium">{receipt.supplier}</span>
+                     <span className="text-[10px] text-slate-300">•</span>
+                     <span className="text-[10px] text-slate-500 font-medium">{receipt.date}</span>
                   </div>
                 </div>
-                <span className="financial-figure text-sm font-semibold text-white ml-2">
-                  ${entry.cost.toLocaleString()}
-                </span>
               </div>
-            </motion.div>
-          );
-        })}
+              <p className="text-sm font-bold text-slate-800">${receipt.cost.toLocaleString()}</p>
+            </div>
+          </motion.div>
+        ))}
       </div>
     </div>
   );

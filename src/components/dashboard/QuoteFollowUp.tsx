@@ -1,112 +1,90 @@
 "use client";
-
 import { motion } from "framer-motion";
-import { Phone, Send, AlertTriangle, Clock, DollarSign } from "lucide-react";
 import Link from "next/link";
-import { quotes } from "@/lib/sampleData";
+import { Clock, Send, Phone, AlertTriangle, DollarSign } from "lucide-react";
 
-const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  pending: { label: "Pending", color: "text-profit-amber", bg: "bg-profit-amber/10" },
-  "followed-up": { label: "Followed Up", color: "text-profit-green", bg: "bg-profit-green/10" },
-  urgent: { label: "Urgent", color: "text-profit-red", bg: "bg-profit-red/10" },
-  won: { label: "Won", color: "text-profit-green", bg: "bg-profit-green/10" },
-  lost: { label: "Lost", color: "text-gray-400", bg: "bg-gray-400/10" },
+interface QuoteFollowUpProps {
+  quotes?: any[];
+}
+
+const statusConfig: any = {
+  pending: { label: "Sent", color: "text-slate-600", bg: "bg-slate-100" },
+  urgent: { label: "Urgent", color: "text-rose-600", bg: "bg-rose-50" },
+  "followed-up": { label: "Followed Up", color: "text-indigo-600", bg: "bg-indigo-50" },
 };
 
-export default function QuoteFollowUp() {
+export default function QuoteFollowUp({ quotes = [] }: QuoteFollowUpProps) {
+  // Use sample if empty for demo feel, or just show empty
+  const displayQuotes = quotes.length > 0 ? quotes.slice(0, 3) : [];
+
   return (
-    <div className="card">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-heading font-bold text-white">
-          Quote Follow-Up
-        </h2>
-        <Link
-          href="/quotes"
-          className="text-xs text-amber hover:text-amber-400 font-medium transition-colors"
+    <div className="card h-full">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-slate-800">Quote Follow-Up</h2>
+        <Link 
+          href="/quotes" 
+          className="text-sm font-medium text-indigo hover:text-indigo-hover transition-colors"
         >
-          View All
+          View all
         </Link>
       </div>
 
-      <div className="space-y-3">
-        {quotes.map((quote, index) => {
-          const status = statusConfig[quote.status];
-          const isUrgent = quote.status === "urgent";
+      <div className="space-y-4">
+        {displayQuotes.length > 0 ? (
+          displayQuotes.map((quote, index) => {
+            const status = statusConfig[quote.status] || statusConfig.pending;
+            const isUrgent = quote.status === "urgent";
 
-          return (
-            <motion.div
-              key={quote.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.08 }}
-              className={`rounded-lg p-3 border transition-all duration-200 ${
-                isUrgent
-                  ? "bg-profit-red/5 border-profit-red/20"
-                  : "bg-navy border-navy-border hover:border-amber/20"
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                {/* Alert Icon */}
-                {isUrgent ? (
-                  <AlertTriangle className="w-5 h-5 text-profit-red mt-0.5 shrink-0" />
-                ) : (
-                  <Clock className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
-                )}
-
-                {/* Quote Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm font-semibold text-white">
-                      {quote.client}
-                    </h3>
-                    <span
-                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${status.bg} ${status.color}`}
-                    >
-                      {status.label}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-0.5">{quote.job}</p>
-                  <div className="flex items-center gap-3 mt-1.5">
-                    <span className="flex items-center gap-1 text-xs text-gray-300">
-                      <DollarSign className="w-3 h-3 text-amber" />
-                      <span className="financial-figure">
-                        ${quote.amount.toLocaleString()}
+            return (
+              <motion.div
+                key={quote.id || quote._id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.08 }}
+                className={`p-4 rounded-xl border transition-all duration-200 ${
+                  isUrgent ? "bg-rose-50/30 border-rose-100 shadow-sm shadow-rose-500/5" : "bg-white border-slate-100 hover:border-indigo/20 hover:shadow-sm"
+                }`}
+              >
+                <div className="flex items-start justify-between mb-3">
+                   <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${status.bg} ${status.color}`}>
+                        {status.label}
                       </span>
-                    </span>
-                    <span className="text-[10px] text-gray-500">|</span>
-                    <span className="text-xs text-gray-400">
-                      {quote.daysSince} days ago
-                    </span>
-                  </div>
+                      {isUrgent && <AlertTriangle className="w-3.5 h-3.5 text-rose-500 animate-pulse" />}
+                   </div>
+                   <div className="flex items-center gap-1.5">
+                      <button className="p-1.5 text-slate-400 hover:text-indigo hover:bg-indigo-50 rounded-lg transition-colors">
+                        <Phone className="w-3.5 h-3.5" />
+                      </button>
+                      <button className="p-1.5 text-slate-400 hover:text-indigo hover:bg-indigo-50 rounded-lg transition-colors">
+                        <Send className="w-3.5 h-3.5" />
+                      </button>
+                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Link
-                    href="/quotes"
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 active:scale-95 ${
-                      isUrgent
-                        ? "bg-amber text-navy hover:bg-amber-600"
-                        : "bg-navy-elevated text-gray-300 hover:text-white border border-navy-border"
-                    }`}
-                  >
-                    <Send className="w-3 h-3" />
-                    Follow up now
-                  </Link>
-                  <button
-                    onClick={() =>
-                      alert(`Calling ${quote.client} about ${quote.job} (placeholder)`)
-                    }
-                    className="p-1.5 text-gray-400 hover:text-white hover:bg-navy-elevated rounded-lg transition-colors"
-                    title="Call client"
-                  >
-                    <Phone className="w-3.5 h-3.5" />
-                  </button>
+                <div className="min-w-0 mb-3">
+                  <h3 className="text-sm font-semibold text-slate-800 truncate">{quote.client}</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">{quote.job}</p>
                 </div>
-              </div>
-            </motion.div>
-          );
-        })}
+
+                <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                  <div className="flex items-center gap-1 text-slate-700 font-semibold">
+                    <DollarSign className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="text-sm tracking-tight">${quote.amount?.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                    <Clock className="w-3 h-3" />
+                    {quote.daysSince} days ago
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })
+        ) : (
+          <div className="text-center py-10">
+            <p className="text-sm text-slate-400 italic">No quotes requiring follow-up.</p>
+          </div>
+        )}
       </div>
     </div>
   );

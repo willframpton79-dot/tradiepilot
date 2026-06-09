@@ -1,125 +1,65 @@
 "use client";
-
 import { motion } from "framer-motion";
-import { DollarSign, Wrench, PackageOpen, Users } from "lucide-react";
-
-interface CostRowProps {
-  label: string;
-  quoted: number;
-  actual: number;
-  icon: React.ReactNode;
-  delay: number;
-}
-
-function CostRow({ label, quoted, actual, icon, delay }: CostRowProps) {
-  const maxVal = Math.max(quoted, actual, 1);
-  const quotedWidth = (quoted / maxVal) * 100;
-  const actualWidth = (actual / maxVal) * 100;
-  const variance = actual - quoted;
-  const isOver = variance > 0;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.4, delay }}
-      className="space-y-2"
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-gray-400">{icon}</span>
-          <span className="text-sm font-medium text-white">{label}</span>
-        </div>
-        <span
-          className={`financial-figure text-xs font-medium ${
-            isOver ? "text-profit-red" : "text-profit-green"
-          }`}
-        >
-          {isOver ? "+" : ""}${variance.toLocaleString()}
-        </span>
-      </div>
-
-      {/* Quoted bar */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-400">Quoted</span>
-          <span className="financial-figure text-gray-300">${quoted.toLocaleString()}</span>
-        </div>
-        <div className="h-2 bg-navy-surface rounded-full overflow-hidden">
-          <motion.div
-            className="h-full rounded-full bg-amber/70"
-            initial={{ width: 0 }}
-            animate={{ width: `${quotedWidth}%` }}
-            transition={{ duration: 1, delay: delay + 0.2, ease: "easeOut" }}
-          />
-        </div>
-      </div>
-
-      {/* Actual bar */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-400">Actual</span>
-          <span className="financial-figure text-gray-300">${actual.toLocaleString()}</span>
-        </div>
-        <div className="h-2 bg-navy-surface rounded-full overflow-hidden">
-          <motion.div
-            className={`h-full rounded-full ${
-              isOver ? "bg-profit-red" : "bg-profit-green"
-            }`}
-            initial={{ width: 0 }}
-            animate={{ width: `${actualWidth}%` }}
-            transition={{ duration: 1, delay: delay + 0.4, ease: "easeOut" }}
-          />
-        </div>
-      </div>
-    </motion.div>
-  );
-}
 
 interface CostBreakdownProps {
-  quotedLabour: number;
-  actualLabour: number;
-  quotedMaterials: number;
-  actualMaterials: number;
-  quotedSubcontractors: number;
-  actualSubcontractors: number;
+  receipts: any[];
+  time: any[];
+  quoted: number;
 }
 
-export default function CostBreakdown({
-  quotedLabour,
-  actualLabour,
-  quotedMaterials,
-  actualMaterials,
-  quotedSubcontractors,
-  actualSubcontractors,
-}: CostBreakdownProps) {
+export default function CostBreakdown({ receipts, time, quoted }: CostBreakdownProps) {
+  const receiptTotal = receipts.reduce((sum, r) => sum + r.cost, 0);
+  const timeTotal = time.reduce((sum, t) => sum + t.cost, 0);
+  const totalActual = receiptTotal + timeTotal;
+  const margin = quoted - totalActual;
+  const marginPct = (margin / quoted) * 100;
+
+  const data = [
+    { label: "Materials", value: receiptTotal, color: "bg-indigo", pct: (receiptTotal / quoted) * 100 },
+    { label: "Labour", value: timeTotal, color: "bg-emerald-500", pct: (timeTotal / quoted) * 100 },
+    { label: "Margin", value: margin, color: "bg-slate-200", pct: (margin / quoted) * 100 },
+  ];
+
   return (
     <div className="card">
-      <h2 className="text-lg font-heading font-bold text-white mb-4">
-        Cost Breakdown
-      </h2>
-      <div className="space-y-5">
-        <CostRow
-          label="Labour"
-          quoted={quotedLabour}
-          actual={actualLabour}
-          icon={<Wrench className="w-4 h-4" />}
-          delay={0.1}
-        />
-        <CostRow
-          label="Materials"
-          quoted={quotedMaterials}
-          actual={actualMaterials}
-          icon={<PackageOpen className="w-4 h-4" />}
-          delay={0.2}
-        />
-        <CostRow
-          label="Subcontractors"
-          quoted={quotedSubcontractors}
-          actual={actualSubcontractors}
-          icon={<Users className="w-4 h-4" />}
-          delay={0.3}
-        />
+      <h2 className="text-lg font-bold text-slate-800 mb-6">Cost Breakdown</h2>
+      
+      <div className="space-y-6">
+        <div className="h-4 w-full flex rounded-full overflow-hidden bg-slate-100">
+          {data.map((item, i) => (
+            <motion.div 
+              key={i}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.max(0, item.pct)}%` }}
+              transition={{ duration: 1, delay: i * 0.2 }}
+              className={`${item.color} h-full`}
+            />
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          {data.map((item, i) => (
+            <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-slate-50 bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full ${item.color}`} />
+                <span className="text-sm font-semibold text-slate-700">{item.label}</span>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-slate-800">${Math.abs(item.value).toLocaleString()}</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{Math.round(item.pct)}% of quote</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-bold text-slate-800">Actual Margin</span>
+            <span className={`text-lg font-bold ${marginPct >= 30 ? 'text-emerald-500' : 'text-amber-500'}`}>
+              {marginPct.toFixed(1)}%
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

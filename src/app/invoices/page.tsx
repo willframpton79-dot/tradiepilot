@@ -1,55 +1,69 @@
 "use client";
-
-import { useMemo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, Phone, Send, Eye, DollarSign, AlertTriangle, Clock, FileText, TrendingDown } from "lucide-react";
+import { 
+  ArrowLeft, Clock, Send, Phone, 
+  AlertTriangle, DollarSign, TrendingDown,
+  Eye, FileText, Search, MoreHorizontal,
+  Mail, Calendar
+} from "lucide-react";
 import { invoices } from "@/lib/sampleData";
 
 const overdueColor = (days: number) => {
-  if (days >= 30) return { border: "border-profit-red", bg: "bg-profit-red/5", text: "text-profit-red", label: "Critical" };
-  if (days >= 7) return { border: "border-profit-amber", bg: "bg-profit-amber/5", text: "text-profit-amber", label: "Overdue" };
-  if (days > 0) return { border: "border-yellow-500", bg: "bg-yellow-500/5", text: "text-yellow-400", label: "Due Soon" };
-  return { border: "border-navy-border", bg: "bg-navy", text: "text-gray-400", label: "Pending" };
+  if (days > 14) return { text: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100", label: "Critical" };
+  if (days > 0) return { text: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100", label: "Overdue" };
+  return { text: "text-slate-500", bg: "bg-slate-50", border: "border-slate-100", label: "Upcoming" };
 };
 
-export default function InvoiceChaserDashboard() {
-  const stats = useMemo(() => {
-    const totalOutstanding = invoices.filter((i) => i.status !== "paid").reduce((s, i) => s + i.amount, 0);
-    const overdue = invoices.filter((i) => i.daysOverdue > 0);
-    const overdueTotal = overdue.reduce((s, i) => s + i.amount, 0);
-    const critical = invoices.filter((i) => i.daysOverdue >= 30).length;
-    return { totalOutstanding, overdueCount: overdue.length, overdueTotal, critical };
-  }, []);
+export default function InvoiceChaser() {
+  const stats = {
+    totalOutstanding: invoices.reduce((acc, inv) => acc + inv.amount, 0),
+    overdueCount: invoices.filter((inv) => inv.daysOverdue > 0).length,
+    overdueTotal: invoices.filter((inv) => inv.daysOverdue > 0).reduce((acc, inv) => acc + inv.amount, 0),
+    critical: invoices.filter((inv) => inv.daysOverdue > 14).length,
+  };
 
   return (
-    <div className="p-4 lg:p-6 pb-24 lg:pb-6">
-      {/* Back */}
-      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-        <Link href="/" className="inline-flex items-center gap-1.5 text-amber hover:text-amber-400 transition-colors text-sm mb-4">
-          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-        </Link>
-      </motion.div>
-
-      <motion.h1 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-heading font-bold text-white mb-6">
-        Invoice Chaser
-      </motion.h1>
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-800">Invoice Chaser</h1>
+          <p className="text-slate-500 text-sm mt-1">Get paid faster with automated reminders.</p>
+        </div>
+        <button className="btn-primary flex items-center gap-2 text-sm self-start sm:self-center">
+           <Mail className="w-4 h-4" /> Batch Reminders
+        </button>
+      </div>
 
       {/* Hero Outstanding */}
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="card-elevated mb-6 text-center py-6 lg:py-8">
-        <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Total Outstanding</p>
-        <p className="financial-figure text-4xl lg:text-5xl font-bold text-amber">${stats.totalOutstanding.toLocaleString()}</p>
-        <div className="flex items-center justify-center gap-4 mt-3 text-xs text-gray-400">
-          <span className="flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-profit-red" />{stats.overdueCount} overdue</span>
-          <span className="text-[10px] text-gray-500">|</span>
-          <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5 text-profit-amber" />${stats.overdueTotal.toLocaleString()} at risk</span>
-          <span className="text-[10px] text-gray-500">|</span>
-          <span className="flex items-center gap-1"><TrendingDown className="w-3.5 h-3.5 text-profit-red" />{stats.critical} critical</span>
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        className="card border-indigo-100 bg-indigo-50/20 mb-8 text-center py-10"
+      >
+        <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Total Outstanding</p>
+        <p className="text-5xl font-bold text-slate-800 tracking-tight">
+          ${stats.totalOutstanding.toLocaleString()}
+        </p>
+        <div className="flex items-center justify-center gap-6 mt-6">
+          <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-rose-100 shadow-sm">
+             <AlertTriangle className="w-4 h-4 text-rose-500" />
+             <span className="text-xs font-bold text-slate-700">{stats.overdueCount} Overdue</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-amber-100 shadow-sm">
+             <DollarSign className="w-4 h-4 text-amber-500" />
+             <span className="text-xs font-bold text-slate-700">${stats.overdueTotal.toLocaleString()} At Risk</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-rose-100 shadow-sm">
+             <TrendingDown className="w-4 h-4 text-rose-500" />
+             <span className="text-xs font-bold text-slate-700">{stats.critical} Critical</span>
+          </div>
         </div>
       </motion.div>
 
-      {/* Invoices */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {invoices
           .sort((a, b) => b.daysOverdue - a.daysOverdue)
           .map((inv, index) => {
@@ -60,59 +74,52 @@ export default function InvoiceChaserDashboard() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.06 }}
-                className={`rounded-xl border ${color.border} ${color.bg} p-4 lg:p-5`}
+                className={`card p-6 hover:shadow-md transition-shadow flex flex-col ${color.border}`}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">{inv.job}</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">{inv.client}</p>
-                  </div>
-                  {inv.daysOverdue > 0 && (
-                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${color.bg} ${color.text} border ${color.border}`}>
-                      {color.label}
-                    </span>
-                  )}
-                </div>
-
-                {/* Amount & Due */}
-                <div className="flex items-center gap-4 mb-3">
-                  <div>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-wider">Amount</p>
-                    <p className="financial-figure text-lg font-bold text-white">${inv.amount.toLocaleString()}</p>
-                  </div>
-                  <div className="w-px h-8 bg-navy-border" />
-                  <div>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-wider">Due Date</p>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-gray-400" />
-                      <span className={`text-sm font-medium ${inv.daysOverdue > 0 ? "text-profit-red" : "text-gray-300"}`}>
-                        {inv.dueDate}
-                      </span>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
+                      <FileText className="w-5 h-5" />
                     </div>
-                    {inv.daysOverdue > 0 && (
-                      <p className="text-[10px] text-profit-red mt-0.5">{inv.daysOverdue} days overdue</p>
-                    )}
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800">{inv.job}</h3>
+                      <p className="text-xs text-slate-500 mt-0.5 font-medium">{inv.client}</p>
+                    </div>
                   </div>
-                  <div className="w-px h-8 bg-navy-border" />
+                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${color.bg} ${color.text} ${color.border}`}>
+                    {color.label}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 py-4 border-y border-slate-50 my-2">
                   <div>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-wider">Sent</p>
-                    <p className="text-sm text-gray-300">{inv.sentDate}</p>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Amount</p>
+                    <p className="text-lg font-bold text-slate-800">${inv.amount.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Due Date</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                       <Calendar className="w-3 h-3 text-slate-400" />
+                       <span className={`text-xs font-bold ${inv.daysOverdue > 0 ? "text-rose-500" : "text-slate-600"}`}>
+                        {inv.dueDate}
+                       </span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Sent</p>
+                    <p className="text-xs text-slate-600 font-medium mt-1">{inv.sentDate}</p>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 pt-3 border-t border-navy-border">
-                  <button
-                    onClick={() => alert(`Sending payment reminder for ${inv.id} (placeholder)`)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95 ${inv.daysOverdue > 0 ? "bg-amber text-navy hover:bg-amber-600" : "bg-navy-elevated text-gray-300 hover:text-white border border-navy-border"}`}
-                  >
-                    <Send className="w-3 h-3" /> Send Reminder
+                <div className="flex items-center gap-2 mt-4">
+                  <button className="flex-1 btn-primary text-xs flex items-center justify-center gap-2">
+                    <Send className="w-3.5 h-3.5" /> Send Reminder
                   </button>
-                  <button onClick={() => alert(`Calling ${inv.client} about ${inv.job} (placeholder)`)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-navy-elevated text-gray-300 hover:text-white border border-navy-border transition-all">
-                    <Phone className="w-3 h-3" /> Call
+                  <button className="btn-secondary text-xs flex items-center justify-center gap-2">
+                    <Phone className="w-3.5 h-3.5" /> Call
                   </button>
-                  <button onClick={() => alert(`Viewing invoice ${inv.id} (placeholder)`)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-navy-elevated text-gray-300 hover:text-white border border-navy-border transition-all ml-auto">
-                    <Eye className="w-3 h-3" /> View
+                  <button className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-colors">
+                    <Eye className="w-4 h-4" />
                   </button>
                 </div>
               </motion.div>

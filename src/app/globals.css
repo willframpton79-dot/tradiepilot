@@ -1,90 +1,106 @@
 @import "tailwindcss";
 
 @theme {
-  --color-navy: #0F1923;
-  --color-navy-surface: #162030;
-  --color-navy-elevated: #1E2D40;
-  --color-navy-border: #2A3A50;
-  --color-tradie-navy: #1B3A6B;
-  --color-tradie-orange: #E8420A;
-  --color-amber: #F59E0B;
-  --color-amber-50: #FFFBEB;
-  --color-amber-100: #FEF3C7;
-  --color-amber-200: #FDE68A;
-  --color-amber-300: #FCD34D;
-  --color-amber-400: #FBBF24;
-  --color-amber-500: #F59E0B;
-  --color-amber-600: #D97706;
-  --color-amber-700: #B45309;
-  --color-amber-800: #92400E;
-  --color-amber-900: #78350F;
-  --color-profit-green: #10B981;
-  --color-profit-amber: #F59E0B;
-  --color-profit-red: #EF4444;
-  --font-heading: "Barlow Semi Condensed", sans-serif;
-  --font-mono: "DM Mono", monospace;
-  --font-body: "DM Sans", sans-serif;
+  --color-white: #ffffff;
+  --color-surface: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-indigo: #6366f1;
+  --color-indigo-hover: #4f46e5;
+  --color-slate-900: #0f172a;
+  --color-slate-800: #1e293b;
+  --color-slate-700: #334155;
+  --color-slate-600: #475569;
+  --color-slate-500: #64748b;
+  --color-slate-100: #f1f5f9;
+  
+  /* Retain legacy variables for compatibility while mapping to new values */
+  --color-navy: #ffffff;
+  --color-navy-surface: #ffffff;
+  --color-navy-elevated: #f8fafc;
+  --color-navy-border: #e2e8f0;
+  --color-amber: #6366f1;
+  
+  --color-profit-green: #10b981;
+  --color-profit-amber: #f59e0b;
+  --color-profit-red: #ef4444;
+
+  --font-heading: "Inter", -apple-system, sans-serif;
+  --font-body: "Inter", -apple-system, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @layer base {
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
+    color: var(--color-slate-800);
+    font-weight: 600;
   }
-
+  
   body {
-    background-color: #0F1923;
-    color: white;
+    background-color: #f8fafc;
+    color: #475569;
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Custom utility classes */
-.financial-figure {
-  font-family: var(--font-mono);
-  letter-spacing: -0.025em;
-}
-
+/* Updated utility classes for light theme */
 .card {
-  background-color: #162030;
-  border: 1px solid #2A3A50;
-  border-radius: 0.75rem;
-  padding: 1.25rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
 }
 
 .card-elevated {
-  background-color: #1E2D40;
-  border: 1px solid #2A3A50;
-  border-radius: 0.75rem;
-  padding: 1.25rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
 }
+
+.btn-primary {
+  background-color: #6366f1;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #4f46e5;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #f1f5f9;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-green { background-color: rgba(16, 185, 129, 0.1); color: #10b981; }
+.badge-amber { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.badge-red { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: #2A3A50 transparent;
+  scrollbar-color: #e2e8f0 transparent;
 }
-
-.scrollbar-thin::-webkit-scrollbar {
-  width: 4px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: #2A3A50;
-  border-radius: 20px;
-}
-
-/* Progress bar color classes */
-.bar-green { background-color: #10B981; }
-.bar-amber { background-color: #F59E0B; }
-.bar-red { background-color: #EF4444; }
-
-/* Badge variants */
-.badge { display: inline-flex; align-items: center; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
-.badge-green { background-color: rgba(16, 185, 129, 0.1); color: #10B981; }
-.badge-amber { background-color: rgba(245, 158, 11, 0.1); color: #F59E0B; }
-.badge-red { background-color: rgba(239, 68, 68, 0.1); color: #EF4444; }

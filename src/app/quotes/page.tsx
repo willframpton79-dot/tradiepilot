@@ -1,160 +1,177 @@
 "use client";
-
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import { ArrowLeft, Search, Phone, Send, FileText, Filter, TrendingUp, TrendingDown, DollarSign, Clock, CheckCircle, XCircle, MessageSquare, Loader2 } from "lucide-react";
-import { api } from "@/lib/api";
-import type { Quote } from "@/lib/sampleData";
+import { 
+  FileText, Search, Filter, Send, Phone, 
+  CheckCircle, XCircle, Clock, MessageSquare, 
+  TrendingUp, Download, Plus, AlertCircle,
+  MoreHorizontal, ChevronDown
+} from "lucide-react";
+import { quotes as sampleQuotes } from "@/lib/sampleData";
 
-const statusStyles: Record<string, { label: string; color: string; bg: string }> = {
-  pending: { label: "Pending", color: "text-profit-amber", bg: "bg-profit-amber/10" },
-  "followed-up": { label: "Followed Up", color: "text-blue-400", bg: "bg-blue-400/10" },
-  urgent: { label: "Urgent", color: "text-profit-red", bg: "bg-profit-red/10" },
-  won: { label: "Won", color: "text-profit-green", bg: "bg-profit-green/10" },
-  lost: { label: "Lost", color: "text-gray-400", bg: "bg-gray-400/10" },
+const statusStyles: any = {
+  won: { label: "Won", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
+  lost: { label: "Lost", color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100" },
+  pending: { label: "Sent", color: "text-slate-600", bg: "bg-slate-100", border: "border-slate-200" },
+  urgent: { label: "Urgent", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100" },
+  draft: { label: "Draft", color: "text-slate-400", bg: "bg-slate-50", border: "border-slate-100" },
 };
 
-const filters = ["All", "Pending", "Won", "Lost", "No Response"] as const;
-type FilterType = (typeof filters)[number];
+const filters = ["All Quotes", "Pending", "Won", "Lost", "Draft"];
 
-const filterMap: Record<FilterType, string[]> = {
-  "All": [],
-  "Pending": ["pending", "followed-up"],
-  "Won": ["won"],
-  "Lost": ["lost"],
-  "No Response": ["urgent"],
-};
-
-export default function QuotesDashboard() {
-  const [activeFilter, setActiveFilter] = useState<FilterType>("All");
+export default function QuotesPage() {
+  const [activeFilter, setActiveFilter] = useState("All Quotes");
   const [searchTerm, setSearchTerm] = useState("");
-  const [allQuotes, setAllQuotes] = useState<Quote[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.getQuotes().then((data: any) => {
-      setAllQuotes(data || []);
-    }).catch(console.error).finally(() => setLoading(false));
-  }, []);
-
-  const stats = useMemo(() => {
-    const total = allQuotes.length;
-    const won = allQuotes.filter((q) => q.status === "won").length;
-    const lost = allQuotes.filter((q) => q.status === "lost").length;
-    const pending = allQuotes.filter((q) => q.status === "pending" || q.status === "followed-up").length;
-    const noResponse = allQuotes.filter((q) => q.status === "urgent").length;
-    const winRate = total > 0 ? ((won / (won + lost)) * 100).toFixed(1) : "0";
-    return { total, won, lost, pending, noResponse, winRate };
-  }, [allQuotes]);
+  const [quotes] = useState(sampleQuotes);
 
   const filteredQuotes = useMemo(() => {
-    const allowed = filterMap[activeFilter];
-    let result = allowed.length === 0 ? allQuotes : allQuotes.filter((q) => allowed.includes(q.status));
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(
-        (q) => q.client?.toLowerCase().includes(term) || q.job?.toLowerCase().includes(term) || (q as any).category?.toLowerCase().includes(term)
-      );
-    }
-    return result;
-  }, [activeFilter, searchTerm, allQuotes]);
+    return quotes.filter(q => {
+      const matchesSearch = q.client.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                           q.job.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = activeFilter === "All Quotes" || q.status.toLowerCase() === activeFilter.toLowerCase();
+      return matchesSearch && matchesFilter;
+    });
+  }, [quotes, searchTerm, activeFilter]);
+
+  const stats = {
+    total: quotes.length,
+    won: quotes.filter(q => q.status === "won").length,
+    lost: quotes.filter(q => q.status === "lost").length,
+    pending: quotes.filter(q => q.status === "pending" || q.status === "urgent").length,
+    noResponse: quotes.filter(q => q.followups >= 3).length,
+    winRate: Math.round((quotes.filter(q => q.status === "won").length / (quotes.filter(q => q.status === "won" || q.status === "lost").length || 1)) * 100)
+  };
 
   return (
-    <div className="p-4 lg:p-6 pb-24 lg:pb-6">
-      {/* Back */}
-      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-        <Link href="/" className="inline-flex items-center gap-1.5 text-amber hover:text-amber-400 transition-colors text-sm mb-4">
-          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-        </Link>
-      </motion.div>
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-800">Quotes</h1>
+          <p className="text-slate-500 text-sm mt-1">Manage your pipeline and win more jobs.</p>
+        </div>
+        <div className="flex items-center gap-2">
+           <button className="btn-secondary flex items-center gap-2 text-sm">
+              <Download className="w-4 h-4" /> Export
+           </button>
+           <button className="btn-primary flex items-center gap-2 text-sm">
+              <Plus className="w-4 h-4" /> New Quote
+           </button>
+        </div>
+      </header>
 
-      <motion.h1 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-heading font-bold text-white mb-6">
-        Quotes Management
-      </motion.h1>
-
-      {/* Stats Bar */}
-      <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {[
-          { label: "Total Sent", value: stats.total.toString(), icon: FileText, color: "text-amber" },
-          { label: "Won", value: stats.won.toString(), icon: CheckCircle, color: "text-profit-green" },
-          { label: "Lost", value: stats.lost.toString(), icon: XCircle, color: "text-profit-red" },
-          { label: "Pending", value: stats.pending.toString(), icon: Clock, color: "text-profit-amber" },
-          { label: "No Response", value: stats.noResponse.toString(), icon: MessageSquare, color: "text-red-400" },
-          { label: "Win Rate", value: `${stats.winRate}%`, icon: TrendingUp, color: "text-profit-green" },
+          { label: "Total Sent", value: stats.total, icon: FileText, color: "text-indigo", bg: "bg-indigo-50" },
+          { label: "Won", value: stats.won, icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
+          { label: "Lost", value: stats.lost, icon: XCircle, color: "text-rose-500", bg: "bg-rose-50" },
+          { label: "Pending", value: stats.pending, icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
+          { label: "High Risk", value: stats.noResponse, icon: AlertCircle, color: "text-rose-500", bg: "bg-rose-50" },
+          { label: "Win Rate", value: `${stats.winRate}%`, icon: TrendingUp, color: "text-indigo", bg: "bg-indigo-50" },
         ].map((stat, i) => (
-          <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="card text-center">
-            <stat.icon className={`w-4 h-4 mx-auto ${stat.color}`} />
-            <p className="financial-figure text-xl font-bold text-white mt-1">{stat.value}</p>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">{stat.label}</p>
+          <motion.div 
+            key={stat.label} 
+            initial={{ opacity: 0, y: 10 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ delay: i * 0.05 }} 
+            className="card p-4 text-center"
+          >
+            <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center mx-auto mb-3`}>
+              <stat.icon className={`w-4 h-4 ${stat.color}`} />
+            </div>
+            <p className="text-xl font-bold text-slate-800">{stat.value}</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-1">{stat.label}</p>
           </motion.div>
         ))}
       </div>
 
       {/* Filter & Search */}
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="flex items-center gap-1.5 bg-navy-surface rounded-lg p-1 border border-navy-border">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg border border-slate-200">
           {filters.map((f) => (
-            <button key={f} onClick={() => setActiveFilter(f)} className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeFilter === f ? "bg-amber text-navy" : "text-gray-400 hover:text-white"}`}>
+            <button 
+              key={f} 
+              onClick={() => setActiveFilter(f)} 
+              className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                activeFilter === f ? "bg-white text-indigo shadow-sm" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
               {f}
             </button>
           ))}
         </div>
-        <div className="flex-1 min-w-[200px] relative ml-auto">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-          <input type="text" placeholder="Search quotes..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-navy-surface border border-navy-border rounded-lg pl-9 pr-3 py-1.5 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-amber/40" />
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input 
+            type="text" 
+            placeholder="Search quotes..." 
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)} 
+            className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo/10 focus:border-indigo" 
+          />
         </div>
       </div>
 
       {/* Table */}
-      <div className="card overflow-hidden !p-0">
+      <div className="card !p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-navy-border text-xs text-gray-400 uppercase tracking-wider">
-                <th className="text-left py-3 px-4 font-medium">Customer</th>
-                <th className="text-left py-3 px-4 font-medium">Job Type</th>
-                <th className="text-right py-3 px-4 font-medium">Value</th>
-                <th className="text-left py-3 px-4 font-medium">Sent</th>
-                <th className="text-center py-3 px-4 font-medium">Follow-ups</th>
-                <th className="text-left py-3 px-4 font-medium">Status</th>
-                <th className="text-right py-3 px-4 font-medium">Action</th>
+              <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] text-slate-500 uppercase tracking-wider font-bold">
+                <th className="text-left py-4 px-6 font-semibold">Customer</th>
+                <th className="text-left py-4 px-6 font-semibold">Job Details</th>
+                <th className="text-right py-4 px-6 font-semibold">Value</th>
+                <th className="text-left py-4 px-6 font-semibold">Sent</th>
+                <th className="text-center py-4 px-6 font-semibold">Follow-ups</th>
+                <th className="text-left py-4 px-6 font-semibold">Status</th>
+                <th className="text-right py-4 px-6 font-semibold">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100">
               {filteredQuotes.map((quote, index) => {
-                const s = statusStyles[quote.status];
+                const s = statusStyles[quote.status] || statusStyles.pending;
                 return (
-                  <motion.tr key={quote.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.03 }} className="border-b border-navy-border last:border-0 hover:bg-navy-elevated/50 transition-colors">
-                    <td className="py-3 px-4">
-                      <p className="text-sm font-medium text-white">{quote.client}</p>
+                  <motion.tr 
+                    key={quote.id} 
+                    initial={{ opacity: 0 }} 
+                    animate={{ opacity: 1 }} 
+                    transition={{ delay: index * 0.03 }} 
+                    className="group hover:bg-slate-50/80 transition-colors"
+                  >
+                    <td className="py-4 px-6">
+                      <p className="text-sm font-semibold text-slate-800">{quote.client}</p>
                     </td>
-                    <td className="py-3 px-4">
-                      <span className="text-xs text-gray-400">{quote.category}</span>
-                      <p className="text-xs text-gray-500 mt-0.5">{quote.job}</p>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono font-medium">{quote.category}</span>
+                        <p className="text-xs text-slate-500 truncate max-w-[150px]">{quote.job}</p>
+                      </div>
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <span className="financial-figure text-sm font-semibold text-white">${quote.amount.toLocaleString()}</span>
+                    <td className="py-4 px-6 text-right">
+                      <span className="text-sm font-bold text-slate-800">${quote.amount.toLocaleString()}</span>
                     </td>
-                    <td className="py-3 px-4">
-                      <span className="text-xs text-gray-400">{quote.sentDate}</span>
-                      <p className="text-[10px] text-gray-500">{quote.daysSince} days ago</p>
+                    <td className="py-4 px-6">
+                      <p className="text-xs text-slate-700 font-medium">{quote.sentDate}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">{quote.daysSince} days ago</p>
                     </td>
-                    <td className="py-3 px-4 text-center">
-                      <span className={`text-xs font-medium ${quote.followups >= 3 ? "text-profit-red" : quote.followups >= 1 ? "text-profit-amber" : "text-gray-500"}`}>
+                    <td className="py-4 px-6 text-center">
+                      <span className={`text-xs font-bold ${quote.followups >= 3 ? "text-rose-500" : quote.followups >= 1 ? "text-amber-500" : "text-slate-400"}`}>
                         {quote.followups}
                       </span>
                     </td>
-                    <td className="py-3 px-4">
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${s.bg} ${s.color}`}>{s.label}</span>
+                    <td className="py-4 px-6">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${s.bg} ${s.color} ${s.border}`}>{s.label}</span>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-4 px-6 text-right">
                       <div className="flex items-center gap-1 justify-end">
-                        <button onClick={() => alert(`Following up with ${quote.client} (placeholder)`)} className={`p-1.5 rounded-lg transition-colors ${quote.status === "urgent" ? "bg-amber text-navy hover:bg-amber-600" : "text-gray-400 hover:text-white hover:bg-navy-elevated"}`}>
-                          <Send className="w-3.5 h-3.5" />
+                        <button className="p-2 text-slate-400 hover:text-indigo hover:bg-white hover:shadow-sm rounded-lg transition-all">
+                          <Send className="w-4 h-4" />
                         </button>
-                        <button onClick={() => alert(`Calling ${quote.client} (placeholder)`)} className="p-1.5 text-gray-400 hover:text-white hover:bg-navy-elevated rounded-lg">
-                          <Phone className="w-3.5 h-3.5" />
+                        <button className="p-2 text-slate-400 hover:text-indigo hover:bg-white hover:shadow-sm rounded-lg transition-all">
+                          <Phone className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 text-slate-400 hover:text-slate-800 hover:bg-white hover:shadow-sm rounded-lg transition-all">
+                          <MoreHorizontal className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -165,8 +182,11 @@ export default function QuotesDashboard() {
           </table>
         </div>
         {filteredQuotes.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-400 text-sm">No quotes match your filter.</p>
+          <div className="text-center py-20 bg-slate-50/50">
+            <div className="bg-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100">
+               <FileText className="w-6 h-6 text-slate-300" />
+            </div>
+            <p className="text-slate-500 text-sm font-medium">No quotes found matching your criteria.</p>
           </div>
         )}
       </div>

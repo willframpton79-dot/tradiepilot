@@ -1,97 +1,68 @@
 "use client";
-
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Eye } from "lucide-react";
-import { activeJobs } from "@/lib/sampleData";
-import ProfitGauge from "./ProfitGauge";
+import { ChevronRight, Clock, AlertCircle } from "lucide-react";
 
-const statusConfig = {
-  "on-track": { label: "On Track", color: "text-profit-green" },
-  "at-risk": { label: "At Risk", color: "text-profit-amber" },
-  critical: { label: "Critical", color: "text-profit-red" },
-};
+interface ActiveJobsProps {
+  jobs?: any[];
+}
 
-const progressBarColor = (margin: number) => {
-  if (margin >= 30) return "bg-profit-green";
-  if (margin >= 20) return "bg-profit-amber";
-  return "bg-profit-red";
-};
-
-export default function ActiveJobs() {
+export default function ActiveJobs({ jobs = [] }: ActiveJobsProps) {
   return (
     <div className="card">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-heading font-bold text-white">
-          Active Jobs
-        </h2>
-        <button
-          onClick={() => alert("Viewing all active jobs (placeholder)")}
-          className="text-xs text-amber hover:text-amber-400 font-medium transition-colors"
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-slate-800">Active Jobs</h2>
+        <Link 
+          href="/dashboard" 
+          className="text-sm font-medium text-indigo hover:text-indigo-hover transition-colors"
         >
-          View All
-        </button>
+          View pipeline
+        </Link>
       </div>
-      <div className="space-y-3 max-h-[420px] overflow-y-auto scrollbar-thin pr-1">
-        {activeJobs.map((job, index) => {
-          const status = statusConfig[job.status];
-          return (
-            <Link
-              href={`/jobs/${job.id}`}
-              key={job.id}
-              className="block"
-            >
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.08 }}
-              className="bg-navy rounded-lg p-3 border border-navy-border hover:border-amber/20 transition-all duration-200 group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                {/* Profit Gauge */}
-                <ProfitGauge margin={job.margin} size={52} />
 
-                {/* Job Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-white truncate">
-                      {job.name}
+      <div className="space-y-1">
+        {jobs.length > 0 ? (
+          jobs.slice(0, 4).map((job, i) => (
+            <Link 
+              key={job.id || job._id} 
+              href={`/jobs/${job.id || job._id}`}
+              className="group block"
+            >
+              <div className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className={`w-2 h-10 rounded-full ${
+                    job.marginPct > 30 ? 'bg-emerald-400' : job.marginPct > 20 ? 'bg-amber-400' : 'bg-rose-400'
+                  }`} />
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-slate-800 truncate group-hover:text-indigo transition-colors">
+                      {job.title}
                     </h3>
-                    <span className={`text-[10px] font-medium ${status.color}`}>
-                      {status.label}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-0.5">{job.client}</p>
-                  <div className="flex items-center gap-3 mt-1.5">
-                    <span className="financial-figure text-xs text-gray-300">
-                      ${job.profit.toLocaleString()}
-                    </span>
-                    <span className="text-[10px] text-gray-500">|</span>
-                    <span className="text-xs text-gray-400">
-                      Due {job.dueDate}
-                    </span>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="mt-2 h-1.5 bg-navy-surface rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${progressBarColor(
-                        job.margin
-                      )}`}
-                      style={{ width: `${job.progress}%` }}
-                    />
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-xs text-slate-500 flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> {job.client?.name || 'Private Client'}
+                      </span>
+                      <span className="text-[10px] font-mono font-medium text-slate-400 px-1.5 py-0.5 bg-slate-100 rounded">
+                        {job.jobId}
+                      </span>
+                    </div>
                   </div>
                 </div>
-
-                {/* View Button */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-400">
-                  <Eye className="w-4 h-4" />
+                <div className="flex items-center gap-6 shrink-0">
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-slate-800">{job.marginPct}%</p>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Margin</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo transition-colors" />
                 </div>
               </div>
-            </motion.div>
             </Link>
-          );
-        })}
+          ))
+        ) : (
+          <div className="text-center py-8 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+             <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+             <p className="text-sm text-slate-500 font-medium">No active jobs found.</p>
+          </div>
+        )}
       </div>
     </div>
   );
