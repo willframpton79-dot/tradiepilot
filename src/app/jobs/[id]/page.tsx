@@ -16,7 +16,7 @@ import ReceiptLog from "@/components/jobs/ReceiptLog";
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const job = activeJobs.find((j) => j.id === id) || activeJobs[0];
+  const job = (activeJobs.find((j) => j.id === id) || activeJobs[0]) as any;
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto">
