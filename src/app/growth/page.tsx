@@ -27,7 +27,7 @@ export default function GrowthPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const res = await api.getGrowth();
+        const res = await api.getInsights();
         setData(res);
       } catch (e) {
         console.error("Failed to load growth data:", e);
