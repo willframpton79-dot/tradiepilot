@@ -41,8 +41,7 @@ export default function DashboardPage() {
   ] : staticStats;
 
   const profitAlerts = dashboardData?.profit_alerts?.alerts || [];
-  const chaseInvoices = automationData?.invoice_chase?.overdue_invoices || [];
-
+  const chaseInvoices = dashboardData?.invoice_chase?.overdue_invoices || [];
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
       <header>
