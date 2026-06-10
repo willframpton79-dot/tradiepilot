@@ -115,4 +115,5 @@ export default function ActiveJobs({ jobs: propJobs }: { jobs?: any[] }) {
         </div>
       )}
     </div>
-  );
+ );
+}
