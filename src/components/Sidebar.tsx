@@ -41,10 +41,15 @@ export default function Sidebar() {
     return pathname.startsWith(href);
   };
 
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
+
   return (
     <>
       {/* Mobile Menu Button */}
       <button
+        type="button"
         onClick={() => setMobileOpen(true)}
         className="fixed top-4 left-4 z-50 lg:hidden bg-white p-2 rounded-lg border border-slate-200 shadow-sm"
         aria-label="Open menu"
@@ -75,7 +80,11 @@ export default function Sidebar() {
               Tradie<span className="text-indigo-600">Pilot</span>
             </span>
           </div>
-          <button onClick={() => setMobileOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600">
+          <button 
+            type="button"
+            onClick={() => setMobileOpen(false)} 
+            className="p-1.5 text-slate-400 hover:text-slate-600"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -164,7 +173,8 @@ export default function Sidebar() {
               )}
             </div>
             <button
-              onClick={() => signOut()}
+              type="button"
+              onClick={handleSignOut}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors text-sm"
             >
               <LogOut className="w-4 h-4 shrink-0" />
@@ -176,6 +186,7 @@ export default function Sidebar() {
         {/* Collapse Toggle */}
         <div className="p-2 border-t border-slate-200">
           <button
+            type="button"
             onClick={() => setCollapsed(!collapsed)}
             className="w-full flex items-center justify-center gap-2 text-slate-400 hover:text-slate-600 px-3 py-2 rounded-lg transition-colors hover:bg-slate-50"
           >

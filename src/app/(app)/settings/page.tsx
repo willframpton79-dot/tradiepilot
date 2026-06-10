@@ -1,14 +1,24 @@
 'use client';
 
-import { Settings as SettingsIcon, Bell, Shield, CreditCard, User, Building2 } from 'lucide-react';
+import { 
+  Settings as SettingsIcon, 
+  Bell, 
+  Shield, 
+  CreditCard, 
+  User, 
+  Building2 
+} from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 const settingsSections = [
   {
     title: 'Account',
     description: 'Manage your personal profile and security.',
     icon: User,
-    items: ['Profile Information', 'Password & Security', 'Two-Factor Authentication'],
+    items: ['Profile Information', 'Password & Security', 'Email Preferences'],
   },
   {
     title: 'Business',
@@ -40,6 +50,25 @@ const stagger = {
 };
 
 export default function SettingsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    }
+  }, [status, router]);
+
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!session) return null;
+
   return (
     <div className="p-6 lg:p-8 max-w-5xl mx-auto">
       <motion.div
@@ -76,7 +105,6 @@ export default function SettingsPage() {
                 <div className="flex-1">
                   <h2 className="text-lg font-bold text-slate-900">{section.title}</h2>
                   <p className="text-sm text-slate-500 mt-1">{section.description}</p>
-                  
                   <ul className="mt-4 space-y-2">
                     {section.items.map((item) => (
                       <li key={item}>
