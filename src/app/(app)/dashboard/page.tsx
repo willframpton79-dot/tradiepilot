@@ -15,6 +15,7 @@ import StatCard from "@/components/dashboard/StatCard";
 import ActiveJobs from "@/components/dashboard/ActiveJobs";
 import QuoteFollowUp from "@/components/dashboard/QuoteFollowUp";
 import ProfitGauge from "@/components/dashboard/ProfitGauge";
+import UpgradeBanner from "@/components/dashboard/UpgradeBanner";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -53,6 +54,9 @@ export default function Dashboard() {
             </button>
           </div>
         </motion.div>
+
+        {/* Upgrade Banner (Conditional) */}
+        <UpgradeBanner />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

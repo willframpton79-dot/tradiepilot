@@ -405,12 +405,29 @@ function IndustriesGrid() {
 
 // ─── Pricing ───
 const plans = [
-  { name: "Starter", price: 97, desc: "For construction businesses getting started with profit tracking.", features: ["Up to 10 active jobs", "Profit dashboard", "Quote follow-up alerts", "Invoice chasing", "Email support"], popular: false },
-  { name: "Pro", price: 197, desc: "For growing teams that need the full toolkit.", features: ["Unlimited active jobs", "Everything in Starter", "Growth intelligence", "Xero & MYOB sync", "Priority support"], popular: true },
-  { name: "Enterprise", price: 497, desc: "For larger operations with advanced needs.", features: ["Everything in Pro", "Multi-crew management", "Custom integrations", "Dedicated account manager", "API access"], popular: false },
+  { id: "price_starter", name: "Starter", price: 97, desc: "For construction businesses getting started with profit tracking.", features: ["Up to 10 active jobs", "Profit dashboard", "Quote follow-up alerts", "Invoice chasing", "Email support"], popular: false },
+  { id: "price_pro", name: "Pro", price: 197, desc: "For growing teams that need the full toolkit.", features: ["Unlimited active jobs", "Everything in Starter", "Growth intelligence", "Xero & MYOB sync", "Priority support"], popular: true },
+  { id: "price_enterprise", name: "Enterprise", price: 497, desc: "For larger operations with advanced needs.", features: ["Everything in Pro", "Multi-crew management", "Custom integrations", "Dedicated account manager", "API access"], popular: false },
 ];
 
 function PricingSection() {
+  const handleCheckout = async (priceId: string) => {
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+      window.location.href = "/signup";
+    }
+  };
+
   return (
     <section id="pricing" className="bg-slate-50 py-16 lg:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -434,9 +451,12 @@ function PricingSection() {
                   </li>
                 ))}
               </ul>
-              <a href="/signup" className={`mt-6 block text-center font-semibold px-5 py-3 rounded-lg transition-all text-sm ${plan.popular ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>
+              <button 
+                onClick={() => handleCheckout(plan.id)}
+                className={`w-full mt-6 block text-center font-semibold px-5 py-3 rounded-lg transition-all text-sm ${plan.popular ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
+              >
                 {plan.name === "Enterprise" ? "Contact Sales" : "Start Free Trial"}
-              </a>
+              </button>
             </motion.div>
           ))}
         </motion.div>
