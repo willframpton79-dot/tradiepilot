@@ -1,81 +1,43 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-
-interface ProfitGaugeProps {
-  margin: number;
-  size?: number;
-}
-
-export default function ProfitGauge({ margin, size = 48 }: ProfitGaugeProps) {
-  const radius = 18;
+export default function ProfitGauge({ margin }: { margin: number }) {
+  const percentage = Math.max(0, Math.min(100, margin * 100));
+  const radius = 35;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (margin / 100) * circumference;
+  const offset = circumference - (percentage / 100) * circumference;
 
-  const getColor = (m: number) => {
-    if (m >= 30) return "#22c55e";
-    if (m >= 20) return "#f59e0b";
-    return "#ef4444";
-  };
-
-  const getLabel = (m: number) => {
-    if (m >= 30) return "Good";
-    if (m >= 20) return "Caution";
-    return "Critical";
-  };
-
-  const color = getColor(margin);
+  let color = "#22c55e"; // green
+  if (margin < 0.2) color = "#ef4444"; // red
+  else if (margin < 0.3) color = "#f59e0b"; // amber
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox="0 0 40 40">
-        {/* Background circle */}
+    <div className="flex flex-col items-center justify-center relative">
+      <svg className="w-32 h-32 transform -rotate-90">
         <circle
-          cx="20"
-          cy="20"
+          cx="64"
+          cy="64"
           r={radius}
-          fill="none"
-          stroke="#e2e8f0"
-          strokeWidth="3"
+          stroke="#f1f5f9"
+          strokeWidth="8"
+          fill="transparent"
         />
-        {/* Progress circle */}
-        <motion.circle
-          cx="20"
-          cy="20"
+        <circle
+          cx="64"
+          cy="64"
           r={radius}
-          fill="none"
           stroke={color}
-          strokeWidth="3"
-          strokeLinecap="round"
+          strokeWidth="8"
           strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          transform="rotate(-90 20 20)"
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          fill="transparent"
+          className="transition-all duration-1000 ease-out"
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <motion.span
-          className="financial-figure text-xs font-bold"
-          style={{ color }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.5 }}
-        >
-          {margin.toFixed(0)}%
-        </motion.span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-2xl font-bold text-slate-900">{percentage.toFixed(0)}%</span>
+        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Avg Margin</span>
       </div>
     </div>
   );
-}/home/engine/.bashrc: line 1: syntax error near unexpected token `('
-/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
-/home/engine/.bashrc: line 1: syntax error near unexpected token `('
-/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
-/home/engine/.bashrc: line 1: syntax error near unexpected token `('
-/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
-/home/engine/.bashrc: line 1: syntax error near unexpected token `('
-/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
-/home/engine/.bashrc: line 1: syntax error near unexpected token `('
-/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
-/home/engine/.bashrc: line 1: syntax error near unexpected token `('
-/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+}

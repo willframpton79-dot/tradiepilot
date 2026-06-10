@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
@@ -11,7 +11,6 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  TrendingUp,
   Menu,
   X,
   DollarSign,
@@ -25,8 +24,7 @@ const navItems = [
   { label: "Quotes", icon: FileText, href: "/quotes" },
   { label: "Growth", icon: GrowthIcon, href: "/growth" },
   { label: "Invoice Chaser", icon: DollarSign, href: "/invoices" },
-  { label: "Active Jobs", icon: ClipboardList, href: "/dashboard" },
-  { label: "Settings", icon: Settings, href: "#" },
+  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 export default function Sidebar() {
@@ -39,7 +37,6 @@ export default function Sidebar() {
   if (isAuthPage) return null;
 
   const isActive = (href: string) => {
-    if (href === "#") return false;
     if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
   };
@@ -82,6 +79,7 @@ export default function Sidebar() {
             <X className="w-5 h-5" />
           </button>
         </div>
+
         <nav className="py-3 px-3 space-y-1">
           {navItems.map((item) => (
             <Link
@@ -90,7 +88,7 @@ export default function Sidebar() {
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 isActive(item.href)
-                  ? "bg-indigo-50 text-indigo-700 border-l-3 border-indigo-600 ml-0"
+                  ? "bg-indigo-50 text-indigo-700 border-l-2 border-indigo-600 ml-0"
                   : "text-slate-500 hover:text-slate-700 hover:bg-slate-50 ml-0"
               }`}
             >
@@ -99,34 +97,7 @@ export default function Sidebar() {
             </Link>
           ))}
         </nav>
-        {session && (
-          <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-200">
-            <button
-              onClick={() => signOut()}
-              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <LogOut className="w-4.5 h-4.5" />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        )}
       </aside>
-
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-white border-t border-slate-200 flex justify-around py-2 px-1 shadow-[0_-2px_10px_rgba(0,0,0,0.04)]">
-        {navItems.slice(0, 5).map((item) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
-              isActive(item.href) ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
-            }`}
-          >
-            <item.icon className="w-5 h-5" />
-            <span className="text-[10px] font-medium">{item.label}</span>
-          </Link>
-        ))}
-      </nav>
 
       {/* Desktop Sidebar */}
       <aside
@@ -137,11 +108,11 @@ export default function Sidebar() {
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 h-16 border-b border-slate-200 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
-            <TrendingUp className="w-5 h-5 text-white" />
+            <BarChart3 className="w-5 h-5 text-white" />
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
-              <h1 className="font-heading font-bold text-lg leading-tight text-slate-800">
+              <h1 className="font-bold text-lg leading-tight text-slate-800">
                 Tradie<span className="text-indigo-600">Pilot</span>
               </h1>
               <p className="text-[10px] text-slate-400 font-medium tracking-wider uppercase">
@@ -159,8 +130,8 @@ export default function Sidebar() {
               href={item.href}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                 isActive(item.href)
-                  ? "bg-indigo-50 text-indigo-700 font-semibold border-l-3 border-indigo-600 rounded-l-none"
-                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50 border-l-3 border-transparent rounded-l-none"
+                  ? "bg-indigo-50 text-indigo-700 font-semibold border-l-2 border-indigo-600 rounded-l-none"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50 border-l-2 border-transparent rounded-l-none"
               }`}
               title={collapsed ? item.label : undefined}
             >
@@ -178,13 +149,13 @@ export default function Sidebar() {
             <div className="flex items-center gap-2 px-3 py-2 mb-1">
               <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
                 <span className="text-xs font-bold text-indigo-600">
-                  {session.user?.name?.charAt(0) || "J"}
+                  {session.user?.name?.charAt(0) || "U"}
                 </span>
               </div>
               {!collapsed && (
                 <div className="overflow-hidden">
                   <p className="text-xs font-medium text-slate-700 truncate">
-                    {session.user?.name || "Joe Tradie"}
+                    {session.user?.name || "User"}
                   </p>
                   <p className="text-[10px] text-slate-400 truncate">
                     {session.user?.email || ""}

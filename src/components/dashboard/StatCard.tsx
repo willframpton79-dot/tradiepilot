@@ -1,56 +1,39 @@
-"use client";
-
-import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, LucideIcon } from 'lucide-react';
 
 interface StatCardProps {
   label: string;
-  value: string;
-  change: string;
-  changeType: "positive" | "negative" | "neutral";
-  index: number;
+  value: string | number;
+  trend?: string;
+  trendType?: 'positive' | 'negative' | 'neutral';
+  icon?: LucideIcon;
 }
 
-const changeIcons = {
-  positive: TrendingUp,
-  negative: TrendingDown,
-  neutral: Minus,
-};
-
-const changeColors = {
-  positive: "text-green-600",
-  negative: "text-red-500",
-  neutral: "text-slate-400",
-};
-
-export default function StatCard({
-  label,
-  value,
-  change,
-  changeType,
-  index,
-}: StatCardProps) {
-  const Icon = changeIcons[changeType];
-
+export default function StatCard({ label, value, trend, trendType, icon: Icon }: StatCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
-      className="bg-white rounded-lg border border-slate-200 p-4 hover:border-indigo-200 hover:shadow-sm transition-all duration-200 cursor-default"
-    >
-      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-        {label}
-      </p>
-      <p className="financial-figure text-2xl font-bold text-slate-800 mt-2">
-        {value}
-      </p>
-      <div className="flex items-center gap-1.5 mt-2">
-        <Icon className={`w-3.5 h-3.5 ${changeColors[changeType]}`} />
-        <span className={`text-xs font-medium ${changeColors[changeType]}`}>
-          {change}
-        </span>
+    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+      <div className="flex justify-between items-start mb-4">
+        <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">{label}</p>
+        {Icon && (
+          <div className="p-2 rounded-lg bg-slate-50">
+            <Icon className="w-5 h-5 text-slate-400" />
+          </div>
+        )}
       </div>
-    </motion.div>
+      
+      <div className="flex items-end gap-3">
+        <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{value}</h3>
+        {trend && (
+          <div className={`flex items-center gap-0.5 text-sm font-semibold mb-1 ${
+            trendType === 'positive' ? 'text-green-600' : 
+            trendType === 'negative' ? 'text-red-600' : 
+            'text-slate-500'
+          }`}>
+            {trendType === 'positive' ? <ArrowUpRight className="w-4 h-4" /> : 
+             trendType === 'negative' ? <ArrowDownRight className="w-4 h-4" /> : null}
+            {trend}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

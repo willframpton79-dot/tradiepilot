@@ -1,114 +1,112 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Eye, Briefcase, Loader2 } from "lucide-react";
-import { activeJobs as fallbackJobs } from "@/lib/sampleData";
-import { api } from "@/lib/api";
-import ProfitGauge from "./ProfitGauge";
+import { ChevronRight, MoreHorizontal } from "lucide-react";
+import { type Job, fallbackJobs } from "@/lib/sampleData";
 
-const statusConfig: Record<string, { label: string; color: string }> = {
-  "on-track": { label: "On Track", color: "text-green-600" },
-  "at-risk": { label: "At Risk", color: "text-amber-500" },
-  critical: { label: "Critical", color: "text-red-500" },
-};
-
-const progressBarColor = (margin: number) => {
-  if (margin >= 30) return "bg-green-500";
-  if (margin >= 20) return "bg-amber-500";
-  return "bg-red-500";
-};
-
-export default function ActiveJobs({ jobs: propJobs }: { jobs?: any[] }) {
-  const [apiJobs, setApiJobs] = useState<any[] | null>(null);
-  const [loading, setLoading] = useState(false);
+export default function ActiveJobs({ jobs: propsJobs }: { jobs?: Job[] }) {
+  const [jobs, setJobs] = useState<Job[]>(propsJobs || []);
+  const [isLoading, setIsLoading] = useState(!propsJobs);
 
   useEffect(() => {
-    if (!propJobs) {
-      setLoading(true);
-      api.getJobs()
-        .then((data: any) => {
-          if (Array.isArray(data) && data.length > 0) setApiJobs(data);
-        })
-        .catch(() => { /* fallback */ })
-        .finally(() => setLoading(false));
-    }
-  }, [propJobs]);
+    if (propsJobs) return;
 
-  const items = propJobs && propJobs.length > 0
-    ? propJobs
-    : apiJobs && apiJobs.length > 0
-      ? apiJobs
-      : fallbackJobs;
+    async function fetchJobs() {
+      try {
+        const res = await fetch("/api/data");
+        const data = await res.json();
+        if (data.jobs && Array.isArray(data.jobs)) {
+          setJobs(data.jobs.slice(0, 5));
+        } else {
+          setJobs(fallbackJobs.slice(0, 5));
+        }
+      } catch (error) {
+        console.error("Failed to fetch jobs:", error);
+        setJobs(fallbackJobs.slice(0, 5));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchJobs();
+  }, [propsJobs]);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white border border-slate-200 rounded-xl p-6 h-[400px] flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center gap-2">
+          <div className="h-4 w-32 bg-slate-100 rounded"></div>
+          <div className="h-3 w-24 bg-slate-50 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-heading font-bold text-slate-800">
-          Active Jobs
-        </h2>
-        <button
-          onClick={() => alert("Viewing all active jobs (placeholder)")}
-          className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
-        >
-          View All
-        </button>
-      </div>
-      {items.length > 0 ? (
-        <div className="space-y-3 max-h-[420px] overflow-y-auto scrollbar-thin pr-1">
-          {items.map((job: any, index: number) => {
-            const status = statusConfig[job.status] || statusConfig["on-track"];
-            return (
-              <Link href={`/jobs/${job.id}`} key={job.id} className="block">
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.08 }}
-                  className="bg-white rounded-lg p-3 border border-slate-100 hover:border-indigo-200 hover:shadow-sm transition-all duration-200 group cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <ProfitGauge margin={job.margin} size={52} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-slate-800 truncate">
-                          {job.name}
-                        </h3>
-                        <span className={`text-[10px] font-medium ${status.color}`}>
-                          {status.label}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">{job.client}</p>
-                      <div className="flex items-center gap-3 mt-1.5">
-                        <span className="financial-figure text-xs text-slate-600">
-                          ${(job.profit || 0).toLocaleString()}
-                        </span>
-                        <span className="text-[10px] text-slate-300">|</span>
-                        <span className="text-xs text-slate-400">
-                          Due {job.dueDate}
-                        </span>
-                      </div>
-                      <div className="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-500 ${progressBarColor(job.margin)}`}
-                          style={{ width: `${job.progress || 0}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-slate-400">
-                      <Eye className="w-4 h-4" />
-                    </div>
-                  </div>
-                </motion.div>
-              </Link>
-            );
-          })}
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+      <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-bold text-slate-900">Active Jobs</h3>
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mt-0.5">Real-time profitability</p>
         </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-          <Briefcase className="w-8 h-8 mb-2" />
-          <p className="text-sm text-slate-500">No active jobs yet</p>
-          <p className="text-xs mt-1">Create your first job to get started.</p>
+        <Link href="/dashboard" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
+          View All
+        </Link>
+      </div>
+
+      <div className="divide-y divide-slate-50 overflow-y-auto scrollbar-thin">
+        {jobs.map((job) => (
+          <Link 
+            key={job.id} 
+            href={`/jobs/${job.id}`}
+            className="group flex items-center p-5 hover:bg-slate-50 transition-all duration-200"
+          >
+            <div className="flex-1 min-w-0 mr-4">
+              <div className="flex items-center gap-2 mb-1.5">
+                <h4 className="text-sm font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
+                  {job.name}
+                </h4>
+                {job.margin < 0.2 ? (
+                  <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                ) : job.margin < 0.3 ? (
+                  <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-amber-500" />
+                ) : (
+                  <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-green-500" />
+                )}
+              </div>
+              
+              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all duration-1000 ${
+                    job.margin < 0.2 ? 'bg-red-500' : 
+                    job.margin < 0.3 ? 'bg-amber-500' : 
+                    'bg-green-500'
+                  }`}
+                  style={{ width: `${Math.min(100, Math.max(0, job.margin * 100 * 2))}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="text-right mr-4 shrink-0">
+              <p className={`text-sm font-bold financial-figure ${
+                job.margin < 0.2 ? 'text-red-600' : 
+                job.margin < 0.3 ? 'text-amber-600' : 
+                'text-green-600'
+              }`}>
+                {(job.margin * 100).toFixed(1)}%
+              </p>
+              <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Margin</p>
+            </div>
+
+            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-400 transition-colors" />
+          </Link>
+        ))}
+      </div>
+      
+      {jobs.length === 0 && (
+        <div className="p-10 text-center flex-1 flex flex-col items-center justify-center">
+          <p className="text-slate-400 text-sm">No active jobs found.</p>
         </div>
       )}
     </div>

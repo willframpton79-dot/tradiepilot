@@ -1,118 +1,130 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useEffect } from "react";
-import { motion } from "framer-motion";
+import { 
+  DollarSign, 
+  Clock, 
+  AlertCircle, 
+  CheckCircle2, 
+  ArrowLeft, 
+  MoreHorizontal,
+  Mail,
+  Phone,
+  Eye,
+  Calendar
+} from "lucide-react";
 import Link from "next/link";
-import { ArrowLeft, Phone, Send, Eye, DollarSign, AlertTriangle, Clock, FileText, TrendingDown, Loader2 } from "lucide-react";
-import { invoices as fallbackInvoices } from "@/lib/sampleData";
-import { api } from "@/lib/api";
+import { motion } from "framer-motion";
 
-const overdueColor = (days: number) => {
-  if (days >= 30) return { border: "border-red-200", bg: "bg-red-50", text: "text-red-500", label: "Critical" };
-  if (days >= 7) return { border: "border-amber-200", bg: "bg-amber-50", text: "text-amber-500", label: "Overdue" };
-  if (days > 0) return { border: "border-yellow-200", bg: "bg-yellow-50", text: "text-yellow-500", label: "Due Soon" };
-  return { border: "border-slate-200", bg: "bg-white", text: "text-slate-400", label: "Pending" };
+const invoices = [
+  { id: '1', client: 'Sarah Johnson', project: 'Kitchen Electrical', amount: 8400, status: 'Overdue', daysOverdue: 14, dueDate: '2026-05-27', sentDate: '2026-05-13' },
+  { id: '2', client: 'John Smith', project: 'Bathroom Reno', amount: 12500, status: 'Pending', daysOverdue: 0, dueDate: '2026-06-15', sentDate: '2026-06-01' },
+  { id: '3', client: 'CBD Office Ltd', project: 'Office Fit-out', amount: 42000, status: 'Overdue', daysOverdue: 32, dueDate: '2026-05-09', sentDate: '2026-04-25' },
+  { id: '4', client: 'Emma Brown', project: 'Garden Design', amount: 5600, status: 'Overdue', daysOverdue: 5, dueDate: '2026-06-05', sentDate: '2026-05-22' },
+  { id: '5', client: 'Mike Wilson', project: 'Deck Build', amount: 12457, status: 'Pending', daysOverdue: 0, dueDate: '2026-06-20', sentDate: '2026-06-06' },
+];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
 };
 
-export default function InvoiceChaserDashboard() {
-  const [invoices, setInvoices] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+const stagger = {
+  visible: { transition: { staggerChildren: 0.1 } }
+};
 
-  useEffect(() => {
-    api.getInvoices()
-      .then((data: any) => setInvoices(Array.isArray(data) && data.length > 0 ? data : fallbackInvoices))
-      .catch(() => setInvoices(fallbackInvoices))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const stats = useMemo(() => {
-    const totalOutstanding = invoices.filter((i: any) => i.status !== "paid").reduce((s: number, i: any) => s + (i.amount || 0), 0);
-    const overdue = invoices.filter((i: any) => (i.daysOverdue || 0) > 0);
-    const overdueTotal = overdue.reduce((s: number, i: any) => s + (i.amount || 0), 0);
-    const critical = invoices.filter((i: any) => (i.daysOverdue || 0) >= 30).length;
-    return { totalOutstanding, overdueCount: overdue.length, overdueTotal, critical };
-  }, [invoices]);
-
-  if (loading) {
-    return (
-      <div className="p-6 flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-        <span className="ml-3 text-slate-500">Loading invoices...</span>
-      </div>
-    );
-  }
-
+export default function InvoicesPage() {
   return (
-    <div className="p-4 lg:p-6 pb-24 lg:pb-6">
-      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-        <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 transition-colors text-sm mb-4">
-          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-        </Link>
-      </motion.div>
-
-      <motion.h1 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-heading font-bold text-slate-900 mb-6">
-        Invoice Chaser
-      </motion.h1>
-
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="card-elevated mb-6 text-center py-6 lg:py-8">
-        <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Total Outstanding</p>
-        <p className="financial-figure text-4xl lg:text-5xl font-bold text-indigo-600">${stats.totalOutstanding.toLocaleString()}</p>
-        <div className="flex items-center justify-center gap-4 mt-3 text-xs text-slate-500">
-          <span className="flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-red-500" />{stats.overdueCount} overdue</span>
-          <span className="text-[10px] text-slate-300">|</span>
-          <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5 text-amber-500" />${stats.overdueTotal.toLocaleString()} at risk</span>
-          <span className="text-[10px] text-slate-300">|</span>
-          <span className="flex items-center gap-1"><TrendingDown className="w-3.5 h-3.5 text-red-500" />{stats.critical} critical</span>
+    <div className="p-6 lg:p-10 max-w-6xl mx-auto">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={stagger}
+        className="space-y-10"
+      >
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors mb-4">
+              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+            </Link>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Invoice Chaser</h1>
+            <p className="text-slate-500 mt-1 font-medium">Auto-follow up on outstanding payments.</p>
+          </div>
+          <div className="bg-indigo-50 px-6 py-4 rounded-2xl border border-indigo-100 flex items-center gap-6">
+            <div>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Outstanding</p>
+              <p className="text-2xl font-bold text-indigo-700 financial-figure">$80,957</p>
+            </div>
+            <div className="w-px h-10 bg-indigo-200" />
+            <div>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Overdue</p>
+              <p className="text-2xl font-bold text-red-600 financial-figure">$28,157</p>
+            </div>
+          </div>
         </div>
-      </motion.div>
 
-      {invoices.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {[...invoices].sort((a: any, b: any) => (b.daysOverdue || 0) - (a.daysOverdue || 0)).map((inv: any, index: number) => {
-            const daysOverdue = inv.daysOverdue || 0;
-            const color = overdueColor(daysOverdue);
-            return (
-              <motion.div key={inv.id || inv.invoiceId || index} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.06 }}
-                className={`rounded-xl border ${color.border} ${color.bg} p-4 lg:p-5`}>
-                <div className="flex items-start justify-between mb-3">
-                  <div><h3 className="text-sm font-semibold text-slate-800">{inv.job}</h3><p className="text-xs text-slate-500 mt-0.5">{inv.client}</p></div>
-                  {daysOverdue > 0 && <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${color.bg} ${color.text} border ${color.border}`}>{color.label}</span>}
-                </div>
-                <div className="flex items-center gap-4 mb-3">
-                  <div><p className="text-[10px] text-slate-400 uppercase tracking-wider">Amount</p><p className="financial-figure text-lg font-bold text-slate-800">${(inv.amount || 0).toLocaleString()}</p></div>
-                  <div className="w-px h-8 bg-slate-200" />
-                  <div><p className="text-[10px] text-slate-400 uppercase tracking-wider">Due Date</p>
-                    <div className="flex items-center gap-1"><Clock className="w-3 h-3 text-slate-400" /><span className={`text-sm font-medium ${daysOverdue > 0 ? "text-red-500" : "text-slate-600"}`}>{inv.dueDate}</span></div>
-                    {daysOverdue > 0 && <p className="text-[10px] text-red-500 mt-0.5">{daysOverdue} days overdue</p>}
+        {/* Invoice List */}
+        <div className="grid grid-cols-1 gap-4">
+          {invoices.map((inv) => (
+            <motion.div 
+              key={inv.id}
+              variants={fadeUp}
+              className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow group"
+            >
+              <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                {/* Client Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="text-lg font-bold text-slate-900 truncate">{inv.client}</h3>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                      inv.status === 'Overdue' 
+                        ? 'bg-red-50 text-red-700 border-red-100' 
+                        : 'bg-amber-50 text-amber-700 border-amber-100'
+                    }`}>
+                      {inv.status}
+                    </span>
                   </div>
-                  <div className="w-px h-8 bg-slate-200" />
-                  <div><p className="text-[10px] text-slate-400 uppercase tracking-wider">Sent</p><p className="text-sm text-slate-600">{inv.sentDate}</p></div>
+                  <p className="text-sm text-slate-500 font-medium">{inv.project}</p>
                 </div>
-                <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
-                  <button onClick={() => alert(`Sending payment reminder for ${inv.id || inv.invoiceId} (placeholder)`)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95 ${daysOverdue > 0 ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm" : "bg-white border border-slate-200 text-slate-600 hover:border-indigo-300"}`}>
-                    <Send className="w-3 h-3" /> Send Reminder
+
+                {/* Amount & Dates */}
+                <div className="flex flex-wrap items-center gap-8">
+                  <div className="min-w-[120px]">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Amount</p>
+                    <p className="text-lg font-bold text-slate-900 financial-figure">${inv.amount.toLocaleString()}</p>
+                  </div>
+                  <div className="min-w-[120px]">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Due Date</p>
+                    <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      {new Date(inv.dueDate).toLocaleDateString('en-AU', { day: '2-digit', month: 'short' })}
+                    </div>
+                  </div>
+                  {inv.daysOverdue > 0 && (
+                    <div className="min-w-[100px]">
+                      <p className="text-[10px] text-red-400 font-bold uppercase tracking-wider mb-1">Overdue</p>
+                      <p className="text-sm font-bold text-red-600">{inv.daysOverdue} days</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 pt-4 lg:pt-0 lg:border-l lg:border-slate-100 lg:pl-6">
+                  <button className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all text-xs">
+                    <Mail className="w-3.5 h-3.5" /> Remind
                   </button>
-                  <button onClick={() => alert(`Calling ${inv.client} about ${inv.job} (placeholder)`)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-slate-200 text-slate-600 hover:border-indigo-300 transition-all">
-                    <Phone className="w-3 h-3" /> Call
+                  <button className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
+                    <Phone className="w-4 h-4" />
                   </button>
-                  <button onClick={() => alert(`Viewing invoice ${inv.id || inv.invoiceId} (placeholder)`)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-slate-200 text-slate-600 hover:border-indigo-300 transition-all ml-auto">
-                    <Eye className="w-3 h-3" /> View
+                  <button className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
+                    <Eye className="w-4 h-4" />
                   </button>
                 </div>
-              </motion.div>
-            );
-          })}
+              </div>
+            </motion.div>
+          ))}
         </div>
-      ) : (
-        <div className="bg-white rounded-lg border border-slate-200 p-6 text-center py-10">
-          <FileText className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-          <p className="text-slate-500 text-sm">No invoices yet</p>
-          <p className="text-xs text-slate-400 mt-1">Invoices will appear here once you create them.</p>
-        </div>
-      )}
+      </motion.div>
     </div>
   );
 }
