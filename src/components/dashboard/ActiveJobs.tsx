@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, MoreHorizontal } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { type Job, activeJobs as fallbackJobs } from "@/lib/sampleData";
 
 export default function ActiveJobs({ jobs: propsJobs }: { jobs?: Job[] }) {
@@ -11,7 +11,6 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: Job[] }) {
 
   useEffect(() => {
     if (propsJobs) return;
-
     async function fetchJobs() {
       try {
         const res = await fetch("/api/data");
@@ -22,13 +21,11 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: Job[] }) {
           setJobs(fallbackJobs.slice(0, 5));
         }
       } catch (error) {
-        console.error("Failed to fetch jobs:", error);
         setJobs(fallbackJobs.slice(0, 5));
       } finally {
         setIsLoading(false);
       }
     }
-
     fetchJobs();
   }, [propsJobs]);
 
@@ -57,8 +54,8 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: Job[] }) {
 
       <div className="divide-y divide-slate-50 overflow-y-auto scrollbar-thin">
         {jobs.map((job) => (
-          <Link 
-            key={job.id} 
+          <Link
+            key={job.id}
             href={`/jobs/${job.id}`}
             className="group flex items-center p-5 hover:bg-slate-50 transition-all duration-200"
           >
@@ -67,34 +64,33 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: Job[] }) {
                 <h4 className="text-sm font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
                   {job.name}
                 </h4>
-                {job.margin < 0.2 ? (
+                {job.margin < 20 ? (
                   <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                ) : job.margin < 0.3 ? (
+                ) : job.margin < 30 ? (
                   <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-amber-500" />
                 ) : (
                   <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-green-500" />
                 )}
               </div>
-              
               <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                <div 
+                <div
                   className={`h-full rounded-full transition-all duration-1000 ${
-                    job.margin < 0.2 ? 'bg-red-500' : 
-                    job.margin < 0.3 ? 'bg-amber-500' : 
+                    job.margin < 20 ? 'bg-red-500' :
+                    job.margin < 30 ? 'bg-amber-500' :
                     'bg-green-500'
                   }`}
-                  style={{ width: `${Math.min(100, Math.max(0, job.margin * 100 * 2))}%` }}
+                  style={{ width: `${Math.min(100, Math.max(0, job.margin * 2))}%` }}
                 />
               </div>
             </div>
 
             <div className="text-right mr-4 shrink-0">
               <p className={`text-sm font-bold financial-figure ${
-                job.margin < 0.2 ? 'text-red-600' : 
-                job.margin < 0.3 ? 'text-amber-600' : 
+                job.margin < 20 ? 'text-red-600' :
+                job.margin < 30 ? 'text-amber-600' :
                 'text-green-600'
               }`}>
-                {(job.margin * 100).toFixed(1)}%
+                {job.margin.toFixed(1)}%
               </p>
               <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Margin</p>
             </div>
@@ -103,7 +99,7 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: Job[] }) {
           </Link>
         ))}
       </div>
-      
+
       {jobs.length === 0 && (
         <div className="p-10 text-center flex-1 flex flex-col items-center justify-center">
           <p className="text-slate-400 text-sm">No active jobs found.</p>
