@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MessageSquare, Clock, ArrowRight } from "lucide-react";
-import { type Quote, fallbackQuotes } from "@/lib/sampleData";
-
+import { type Quote, quotes as fallbackQuotes } from "@/lib/sampleData";
 export default function QuoteFollowUp({ quotes: propsQuotes }: { quotes?: Quote[] }) {
   const [quotes, setQuotes] = useState<Quote[]>(propsQuotes || []);
   const [isLoading, setIsLoading] = useState(!propsQuotes);
@@ -48,15 +47,15 @@ export default function QuoteFollowUp({ quotes: propsQuotes }: { quotes?: Quote[
             <div className="flex justify-between items-start mb-3">
               <div>
                 <h4 className="text-sm font-bold text-slate-800">{quote.client}</h4>
-                <p className="text-xs text-slate-500 mt-0.5">{quote.project}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{quote.job}</p>
               </div>
               <div className="text-right">
                 <p className="text-sm font-bold text-slate-900 financial-figure">
-                  ${quote.value.toLocaleString()}
+                  ${quote.amount.toLocaleString()}
                 </p>
                 <div className="flex items-center gap-1 mt-0.5 text-[10px] text-slate-400 font-medium uppercase tracking-wider">
                   <Clock className="w-3 h-3" />
-                  <span>{quote.daysOpen}d ago</span>
+                  <span>{quote.daysSince}d ago</span>
                 </div>
               </div>
             </div>
