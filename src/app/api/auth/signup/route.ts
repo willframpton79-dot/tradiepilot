@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
+import { sendWelcomeEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,6 +29,13 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       name: name || email.split('@')[0],
     });
+
+    // Send Welcome Email (non-blocking / error-resilient)
+    try {
+      await sendWelcomeEmail(user.email, user.name || 'TradiePilot User');
+    } catch (emailErr) {
+      console.error('Failed to send welcome email on signup:', emailErr);
+    }
 
     return NextResponse.json({
       success: true,
