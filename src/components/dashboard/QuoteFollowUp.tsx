@@ -136,4 +136,5 @@ export default function QuoteFollowUp({ quotes: propQuotes }: { quotes?: any[] }
         </div>
       )}
     </div>
-  );
+ );
+}
