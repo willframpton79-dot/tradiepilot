@@ -9,15 +9,15 @@ import { api } from "@/lib/api";
 import ProfitGauge from "./ProfitGauge";
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  "on-track": { label: "On Track", color: "text-profit-green" },
-  "at-risk": { label: "At Risk", color: "text-profit-amber" },
-  critical: { label: "Critical", color: "text-profit-red" },
+  "on-track": { label: "On Track", color: "text-green-600" },
+  "at-risk": { label: "At Risk", color: "text-amber-500" },
+  critical: { label: "Critical", color: "text-red-500" },
 };
 
 const progressBarColor = (margin: number) => {
-  if (margin >= 30) return "bg-profit-green";
-  if (margin >= 20) return "bg-profit-amber";
-  return "bg-profit-red";
+  if (margin >= 30) return "bg-green-500";
+  if (margin >= 20) return "bg-amber-500";
+  return "bg-red-500";
 };
 
 export default function ActiveJobs({ jobs: propJobs }: { jobs?: any[] }) {
@@ -25,33 +25,32 @@ export default function ActiveJobs({ jobs: propJobs }: { jobs?: any[] }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // If no prop provided, try API with fallback
     if (!propJobs) {
       setLoading(true);
       api.getJobs()
         .then((data: any) => {
           if (Array.isArray(data) && data.length > 0) setApiJobs(data);
         })
-        .catch(() => { /* fallback to sampleData */ })
+        .catch(() => { /* fallback */ })
         .finally(() => setLoading(false));
     }
   }, [propJobs]);
 
-  // Priority: prop > API result > fallback sample data
-  const items = propJobs && propJobs.length > 0 
-    ? propJobs 
-    : apiJobs && apiJobs.length > 0 
-      ? apiJobs 
+  const items = propJobs && propJobs.length > 0
+    ? propJobs
+    : apiJobs && apiJobs.length > 0
+      ? apiJobs
       : fallbackJobs;
+
   return (
-    <div className="card">
+    <div className="bg-white rounded-lg border border-slate-200 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-heading font-bold text-white">
+        <h2 className="text-lg font-heading font-bold text-slate-800">
           Active Jobs
         </h2>
         <button
           onClick={() => alert("Viewing all active jobs (placeholder)")}
-          className="text-xs text-amber hover:text-amber-400 font-medium transition-colors"
+          className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
         >
           View All
         </button>
@@ -66,39 +65,37 @@ export default function ActiveJobs({ jobs: propJobs }: { jobs?: any[] }) {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.08 }}
-                  className="bg-navy rounded-lg p-3 border border-navy-border hover:border-amber/20 transition-all duration-200 group cursor-pointer"
+                  className="bg-white rounded-lg p-3 border border-slate-100 hover:border-indigo-200 hover:shadow-sm transition-all duration-200 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <ProfitGauge margin={job.margin} size={52} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-white truncate">
+                        <h3 className="text-sm font-semibold text-slate-800 truncate">
                           {job.name}
                         </h3>
                         <span className={`text-[10px] font-medium ${status.color}`}>
                           {status.label}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400 mt-0.5">{job.client}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{job.client}</p>
                       <div className="flex items-center gap-3 mt-1.5">
-                        <span className="financial-figure text-xs text-gray-300">
+                        <span className="financial-figure text-xs text-slate-600">
                           ${(job.profit || 0).toLocaleString()}
                         </span>
-                        <span className="text-[10px] text-gray-500">|</span>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-[10px] text-slate-300">|</span>
+                        <span className="text-xs text-slate-400">
                           Due {job.dueDate}
                         </span>
                       </div>
-                      <div className="mt-2 h-1.5 bg-navy-surface rounded-full overflow-hidden">
+                      <div className="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all duration-500 ${progressBarColor(
-                            job.margin
-                          )}`}
+                          className={`h-full rounded-full transition-all duration-500 ${progressBarColor(job.margin)}`}
                           style={{ width: `${job.progress || 0}%` }}
                         />
                       </div>
                     </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-400">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-slate-400">
                       <Eye className="w-4 h-4" />
                     </div>
                   </div>
@@ -108,12 +105,12 @@ export default function ActiveJobs({ jobs: propJobs }: { jobs?: any[] }) {
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+        <div className="flex flex-col items-center justify-center py-8 text-slate-400">
           <Briefcase className="w-8 h-8 mb-2" />
-          <p className="text-sm">No active jobs yet</p>
+          <p className="text-sm text-slate-500">No active jobs yet</p>
           <p className="text-xs mt-1">Create your first job to get started.</p>
         </div>
       )}
     </div>
- );
+  );
 }

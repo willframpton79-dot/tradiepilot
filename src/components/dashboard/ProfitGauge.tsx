@@ -13,9 +13,9 @@ export default function ProfitGauge({ margin, size = 48 }: ProfitGaugeProps) {
   const offset = circumference - (margin / 100) * circumference;
 
   const getColor = (m: number) => {
-    if (m >= 30) return "#10B981";
-    if (m >= 20) return "#F59E0B";
-    return "#EF4444";
+    if (m >= 30) return "#22c55e";
+    if (m >= 20) return "#f59e0b";
+    return "#ef4444";
   };
 
   const getLabel = (m: number) => {
@@ -35,7 +35,7 @@ export default function ProfitGauge({ margin, size = 48 }: ProfitGaugeProps) {
           cy="20"
           r={radius}
           fill="none"
-          stroke="#2A3A50"
+          stroke="#e2e8f0"
           strokeWidth="3"
         />
         {/* Progress circle */}
@@ -67,4 +67,15 @@ export default function ProfitGauge({ margin, size = 48 }: ProfitGaugeProps) {
       </div>
     </div>
   );
-}
+}/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

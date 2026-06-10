@@ -18,9 +18,9 @@ const changeIcons = {
 };
 
 const changeColors = {
-  positive: "text-profit-green",
-  negative: "text-profit-red",
-  neutral: "text-gray-400",
+  positive: "text-green-600",
+  negative: "text-red-500",
+  neutral: "text-slate-400",
 };
 
 export default function StatCard({
@@ -37,17 +37,12 @@ export default function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.1 }}
-      className="card hover:border-amber/20 transition-colors duration-300 group cursor-default"
+      className="bg-white rounded-lg border border-slate-200 p-4 hover:border-indigo-200 hover:shadow-sm transition-all duration-200 cursor-default"
     >
-      <div className="flex items-start justify-between">
-        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-          {label}
-        </p>
-        <Icon
-          className={`w-4 h-4 ${changeColors[changeType]} opacity-0 group-hover:opacity-100 transition-opacity`}
-        />
-      </div>
-      <p className="financial-figure text-2xl font-bold text-white mt-2">
+      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+        {label}
+      </p>
+      <p className="financial-figure text-2xl font-bold text-slate-800 mt-2">
         {value}
       </p>
       <div className="flex items-center gap-1.5 mt-2">
