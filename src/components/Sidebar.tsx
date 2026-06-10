@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
@@ -10,13 +11,13 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  TrendingUp,
   Menu,
   X,
-  Receipt,
   DollarSign,
   TrendingUp as GrowthIcon,
   LogOut,
+  BarChart3,
+  TrendingUp,
 } from "lucide-react";
 
 const navItems = [
@@ -24,8 +25,7 @@ const navItems = [
   { label: "Quotes", icon: FileText, href: "/quotes" },
   { label: "Growth", icon: GrowthIcon, href: "/growth" },
   { label: "Invoice Chaser", icon: DollarSign, href: "/invoices" },
-  { label: "Active Jobs", icon: ClipboardList, href: "/dashboard" },
-  { label: "Settings", icon: Settings, href: "#" },
+  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 export default function Sidebar() {
@@ -39,22 +39,24 @@ export default function Sidebar() {
   if (isAuthPage) return null;
 
   const isActive = (href: string) => {
-    if (href === "#") return false;
     if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
   };
 
-  const toggleCollapsed = () => setCollapsed(!collapsed);
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
 
   return (
     <>
       {/* Mobile Menu Button */}
       <button
+        type="button"
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 lg:hidden bg-white p-2 rounded-lg border border-border shadow-sm"
+        className="fixed top-4 left-4 z-50 lg:hidden bg-white p-2 rounded-lg border border-slate-200 shadow-sm"
         aria-label="Open menu"
       >
-        <Menu className="w-5 h-5 text-slate-600" />
+        <Menu className="w-5 h-5 text-slate-700" />
       </button>
 
       {/* Mobile Overlay */}
@@ -65,49 +67,66 @@ export default function Sidebar() {
         />
       )}
 
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-white border-t border-border flex justify-around py-2 px-1">
-        {navItems.slice(0, 4).map((item) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            onClick={() => setMobileOpen(false)}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
-              isActive(item.href) ? "text-indigo" : "text-slate-500 hover:text-slate-800"
-            }`}
+      {/* Mobile Sidebar Drawer */}
+      <aside
+        className={`fixed top-0 left-0 z-50 h-full w-[260px] bg-white border-r border-slate-200 shadow-lg transform transition-transform duration-300 lg:hidden ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 h-16 border-b border-slate-200">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-lg font-bold text-slate-800">
+              Tradie<span className="text-indigo-600">Pilot</span>
+            </span>
+          </div>
+          <button 
+            type="button"
+            onClick={() => setMobileOpen(false)} 
+            className="p-1.5 text-slate-400 hover:text-slate-600"
           >
-            <item.icon className="w-5 h-5" />
-            <span className="text-[10px] font-medium">{item.label}</span>
-          </Link>
-        ))}
-        {session && (
-          <button
-            onClick={() => signOut()}
-            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-slate-500 hover:text-slate-800 transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Logout</span>
+            <X className="w-5 h-5" />
           </button>
-        )}
-      </nav>
+        </div>
+
+        <nav className="py-3 px-3 space-y-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={() => setMobileOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                isActive(item.href)
+                  ? "bg-indigo-50 text-indigo-700 border-l-2 border-indigo-600"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              <item.icon className="w-5 h-5 shrink-0" />
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+      </aside>
 
       {/* Desktop Sidebar */}
       <aside
-        className={`hidden lg:flex flex-col bg-white border-r border-border min-h-screen transition-all duration-300 ${
+        className={`hidden lg:flex flex-col bg-white border-r border-slate-200 min-h-screen transition-all duration-300 ${
           collapsed ? "w-[72px]" : "w-[240px]"
         }`}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-4 h-16 border-b border-border shrink-0">
+        <div className="flex items-center gap-3 px-4 h-16 border-b border-slate-200 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-indigo flex items-center justify-center shrink-0">
             <TrendingUp className="w-5 h-5 text-white" />
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
-              <h1 className="font-heading font-semibold text-lg leading-tight text-slate-800">
+              <h1 className="font-heading font-bold text-lg leading-tight text-slate-800">
                 Tradie<span className="text-indigo">Pilot</span>
               </h1>
-              <p className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">
+              <p className="text-[10px] text-slate-400 font-medium tracking-wider uppercase">
                 Profit Intelligence
               </p>
             </div>
@@ -122,8 +141,8 @@ export default function Sidebar() {
               href={item.href}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
                 isActive(item.href)
-                  ? "bg-slate-100 text-indigo border-l-4 border-indigo rounded-l-none -ml-3 pl-5"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  ? "bg-indigo-50 text-indigo font-semibold border-l-2 border-indigo rounded-l-none"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50 border-l-2 border-transparent rounded-l-none"
               }`}
               title={collapsed ? item.label : undefined}
             >
@@ -137,27 +156,28 @@ export default function Sidebar() {
 
         {/* User & Logout */}
         {session && (
-          <div className="p-3 border-t border-border">
+          <div className="p-2 border-t border-slate-200">
             <div className="flex items-center gap-2 px-3 py-2 mb-1">
               <div className="w-8 h-8 rounded-full bg-indigo/10 flex items-center justify-center shrink-0 border border-indigo/20">
                 <span className="text-xs font-bold text-indigo">
-                  {session.user?.name?.charAt(0) || "J"}
+                  {session.user?.name?.charAt(0) || "U"}
                 </span>
               </div>
               {!collapsed && (
                 <div className="overflow-hidden">
-                  <p className="text-xs font-semibold text-slate-800 truncate">
-                    {session.user?.name || "Joe Tradie"}
+                  <p className="text-xs font-medium text-slate-700 truncate">
+                    {session.user?.name || "User"}
                   </p>
-                  <p className="text-[10px] text-slate-500 truncate">
+                  <p className="text-[10px] text-slate-400 truncate">
                     {session.user?.email || ""}
                   </p>
                 </div>
               )}
             </div>
             <button
-              onClick={() => signOut()}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors text-sm"
+              type="button"
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors text-sm"
             >
               <LogOut className="w-4 h-4 shrink-0" />
               {!collapsed && <span className="font-medium">Sign Out</span>}
@@ -166,10 +186,11 @@ export default function Sidebar() {
         )}
 
         {/* Collapse Toggle */}
-        <div className="p-3 border-t border-border text-center">
+        <div className="p-2 border-t border-slate-200">
           <button
-            onClick={toggleCollapsed}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors inline-block"
+            type="button"
+            onClick={() => setCollapsed(!collapsed)}
+            className="w-full flex items-center justify-center gap-2 text-slate-400 hover:text-slate-600 px-3 py-2 rounded-lg transition-colors hover:bg-slate-50"
           >
             {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           </button>

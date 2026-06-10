@@ -8,7 +8,7 @@ import { requireAuth } from "@/lib/session";
 
 export async function GET(request: Request) {
   try {
-    const userEmail = await requireAuth();
+    const auth = await requireAuth(); if (auth instanceof NextResponse) return auth; const userEmail = typeof auth === 'string' ? auth : auth?.email;
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type") || "all";
 

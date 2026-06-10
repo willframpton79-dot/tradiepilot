@@ -6,7 +6,16 @@
   --color-border: #e2e8f0;
   
   --color-indigo: #4f46e5;
-  --color-indigo-hover: #4338ca;
+  --color-indigo-50: #eef2ff;
+  --color-indigo-100: #e0e7ff;
+  --color-indigo-200: #c7d2fe;
+  --color-indigo-300: #a5b4fc;
+  --color-indigo-400: #818cf8;
+  --color-indigo-500: #6366f1;
+  --color-indigo-600: #4f46e5;
+  --color-indigo-700: #4338ca;
+  --color-indigo-800: #3730a3;
+  --color-indigo-900: #312e81;
   
   --color-slate-900: #0f172a;
   --color-slate-800: #1e293b;
@@ -27,12 +36,13 @@
   --color-navy-elevated: #f8fafc;
   --color-navy-border: #e2e8f0;
   
-  --color-profit-green: #10b981;
+  --color-profit-green: #22c55e;
   --color-profit-amber: #f59e0b;
   --color-profit-red: #ef4444;
 
   --font-heading: "Inter", -apple-system, sans-serif;
   --font-body: "Inter", -apple-system, sans-serif;
+  --font-mono: "DM Mono", monospace;
 }
 
 @layer base {
@@ -43,7 +53,7 @@
   }
 
   body {
-    background-color: #ffffff;
+    background-color: #f8fafc;
     color: #334155;
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
@@ -97,15 +107,45 @@
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
+.card-elevated {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
 .badge {
-  @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border;
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border;
 }
 
 .badge-green { @apply bg-emerald-50 text-emerald-600 border-emerald-100; }
 .badge-amber { @apply bg-amber-50 text-amber-600 border-amber-100; }
 .badge-red { @apply bg-rose-50 text-rose-600 border-rose-100; }
 
+/* Progress bar color classes */
+.bar-green { background-color: #22c55e; }
+.bar-amber { background-color: #f59e0b; }
+.bar-red { background-color: #ef4444; }
+
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: #e2e8f0 transparent;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 20px;
+}
+
+.financial-figure {
+  font-variant-numeric: tabular-nums;
 }

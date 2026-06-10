@@ -22,10 +22,22 @@ export const api = {
   getAlerts: () => fetchJSON<any>('?type=alerts'),
   
   // New structured endpoints
-  getAutomation: async () => {
-    const res = await fetchJSON<any>('/api/automation');
-    return res.success ? res.data : res;
+  /** GET /api/automation — run automation engine for current user */
+  getAutomation: async (): Promise<any> => {
+    const res = await fetch(`/api/automation`);
+    if (!res.ok) throw new Error(`Automation API error: ${res.status}`);
+    const json = await res.json();
+    return json.data || json;
   },
+
+  /** GET /api/automation/profit-leaks — profit leak analysis */
+  getProfitLeaks: async (): Promise<any> => {
+    const res = await fetch(`/api/automation/profit-leaks`);
+    if (!res.ok) throw new Error(`Profit leaks API error: ${res.status}`);
+    const json = await res.json();
+    return json.data || json;
+  },
+
   getGrowth: () => fetchJSON<any>('/api/insights'), // Growth uses insights API
   getInsights: () => fetchJSON<any>('/api/insights'),
 
