@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Phone, Send, AlertTriangle, Clock, DollarSign, FileText } from "lucide-react";
+import { Phone, Send, AlertTriangle, Clock, DollarSign, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { quotes as fallbackQuotes } from "@/lib/sampleData";
+import { api } from "@/lib/api";
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   pending: { label: "Pending", color: "text-profit-amber", bg: "bg-profit-amber/10" },
@@ -13,8 +15,27 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
   lost: { label: "Lost", color: "text-gray-400", bg: "bg-gray-400/10" },
 };
 
-export default function QuoteFollowUp({ quotes }: { quotes?: any[] }) {
-  const items = quotes && quotes.length > 0 ? quotes : fallbackQuotes;
+export default function QuoteFollowUp({ quotes: propQuotes }: { quotes?: any[] }) {
+  const [apiQuotes, setApiQuotes] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!propQuotes) {
+      setLoading(true);
+      api.getQuotes()
+        .then((data: any) => {
+          if (Array.isArray(data) && data.length > 0) setApiQuotes(data);
+        })
+        .catch(() => { /* fallback to sampleData */ })
+        .finally(() => setLoading(false));
+    }
+  }, [propQuotes]);
+
+  const items = propQuotes && propQuotes.length > 0
+    ? propQuotes
+    : apiQuotes && apiQuotes.length > 0
+      ? apiQuotes
+      : fallbackQuotes;
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-4">
@@ -116,4 +137,9 @@ export default function QuoteFollowUp({ quotes }: { quotes?: any[] }) {
       )}
     </div>
   );
-}
+}/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

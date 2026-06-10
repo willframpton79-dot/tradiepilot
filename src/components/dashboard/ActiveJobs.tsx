@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Eye, Briefcase } from "lucide-react";
+import { Eye, Briefcase, Loader2 } from "lucide-react";
 import { activeJobs as fallbackJobs } from "@/lib/sampleData";
+import { api } from "@/lib/api";
 import ProfitGauge from "./ProfitGauge";
 
 const statusConfig: Record<string, { label: string; color: string }> = {
@@ -18,8 +20,29 @@ const progressBarColor = (margin: number) => {
   return "bg-profit-red";
 };
 
-export default function ActiveJobs({ jobs }: { jobs?: any[] }) {
-  const items = jobs && jobs.length > 0 ? jobs : fallbackJobs;
+export default function ActiveJobs({ jobs: propJobs }: { jobs?: any[] }) {
+  const [apiJobs, setApiJobs] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // If no prop provided, try API with fallback
+    if (!propJobs) {
+      setLoading(true);
+      api.getJobs()
+        .then((data: any) => {
+          if (Array.isArray(data) && data.length > 0) setApiJobs(data);
+        })
+        .catch(() => { /* fallback to sampleData */ })
+        .finally(() => setLoading(false));
+    }
+  }, [propJobs]);
+
+  // Priority: prop > API result > fallback sample data
+  const items = propJobs && propJobs.length > 0 
+    ? propJobs 
+    : apiJobs && apiJobs.length > 0 
+      ? apiJobs 
+      : fallbackJobs;
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-4">
@@ -93,4 +116,9 @@ export default function ActiveJobs({ jobs }: { jobs?: any[] }) {
       )}
     </div>
   );
-}
+}/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

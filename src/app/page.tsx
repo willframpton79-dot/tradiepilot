@@ -1,460 +1,867 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { stats as fallbackStats, invoices as fallbackInvoices } from "@/lib/sampleData";
-import { api } from "@/lib/api";
-import StatCard from "@/components/dashboard/StatCard";
-import ActiveJobs from "@/components/dashboard/ActiveJobs";
-import QuoteFollowUp from "@/components/dashboard/QuoteFollowUp";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { Bell, DollarSign, Phone, Send, AlertTriangle, Clock, TrendingUp, Lightbulb, Loader2, Ban } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Menu, X, BarChart3, TrendingUp, DollarSign, Clock, CheckCircle,
+  ArrowRight, Star, ChevronDown, Quote, Layers, Zap, Shield,
+  Wrench, Building2, ZapIcon, Thermometer, HardDrive,
+  ChevronRight, Users, Briefcase, Play
+} from "lucide-react";
 
-/** Compute stat cards from raw jobs/quotes/invoices data */
-function computeStats(jobs: any[], quotes: any[], invoices: any[]) {
-  const activeJobs = jobs.filter((j: any) => j.status === "active" || j.status === "on-track" || j.status === "at-risk" || j.status === "critical");
-  const totalMargin = activeJobs.reduce((s: number, j: any) => s + (j.marginPct ?? j.margin ?? 0), 0);
-  const avgMargin = activeJobs.length > 0 ? totalMargin / activeJobs.length : 34.2;
-  const won = quotes.filter((q: any) => q.status === "won").length;
-  const lost = quotes.filter((q: any) => q.status === "lost").length;
-  const winRate = won + lost > 0 ? (won / (won + lost)) * 100 : 68.5;
-  const overdueInvs = invoices.filter((i: any) => i.daysOverdue > 0);
-  const avgDSO = overdueInvs.length > 0 ? overdueInvs.reduce((s: number, i: any) => s + i.daysOverdue, 0) / overdueInvs.length : 24;
-  const totalRevenue = invoices.reduce((s: number, i: any) => s + (i.amount || 0), 0);
+// ─── Reusable animation variants ───
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i = 0) => ({
+    opacity: 1, y: 0,
+    transition: { duration: 0.6, delay: i * 0.1, ease: "easeOut" },
+  }),
+};
 
-  return [
-    {
-      label: "Average Job Margin",
-      value: `${avgMargin.toFixed(1)}%`,
-      change: `${avgMargin >= 30 ? "+" : ""}${(avgMargin - 30).toFixed(1)}% vs target`,
-      changeType: (avgMargin >= 20 ? "positive" : avgMargin >= 0 ? "negative" : "negative") as "positive" | "negative" | "neutral",
-    },
-    {
-      label: "Quote Win Rate",
-      value: `${winRate.toFixed(1)}%`,
-      change: `${winRate >= 50 ? "+" : ""}${(winRate - 50).toFixed(1)}% vs industry avg`,
-      changeType: (winRate >= 50 ? "positive" : "negative") as "positive" | "negative" | "neutral",
-    },
-    {
-      label: "Days Sales Outstanding",
-      value: `${Math.round(avgDSO)} days`,
-      change: `${avgDSO <= 30 ? "-" : "+"}${Math.abs(Math.round(avgDSO - 30))} days vs target`,
-      changeType: (avgDSO <= 30 ? "positive" : "negative") as "positive" | "negative" | "neutral",
-    },
-    {
-      label: "Revenue (MTD)",
-      value: `$${(totalRevenue || 84200).toLocaleString()}`,
-      change: "+12.8% vs last month",
-      changeType: "positive" as const,
-    },
-  ];
-}
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12 } },
+};
 
-export default function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState<any>(null);
-  const [automationData, setAutomationData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+// ─── Navbar ───
+function Navbar() {
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        // Try live API first
-        const [dash, auto] = await Promise.allSettled([
-          api.getDashboard(),
-          api.getAutomation(),
-        ]);
-
-        if (dash.status === "fulfilled") setDashboardData(dash.value);
-        if (auto.status === "fulfilled") setAutomationData(auto.value);
-        
-        if (dash.status === "rejected" && auto.status === "rejected") {
-          // Both failed — that's OK for demo, we fall back to sample data
-          console.warn("Both API calls failed, using sample data:", dash.reason, auto.reason);
-        }
-      } catch (e) {
-        console.error("Failed to load dashboard data:", e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Compute stats from dashboard data or use fallback
-  const stats = useMemo(() => {
-    if (dashboardData?.jobs && dashboardData?.quotes && dashboardData?.invoices) {
-      const jobs = Array.isArray(dashboardData.jobs) ? dashboardData.jobs : [];
-      const quotes = Array.isArray(dashboardData.quotes) ? dashboardData.quotes : [];
-      const invoices = Array.isArray(dashboardData.invoices) ? dashboardData.invoices : [];
-      if (jobs.length > 0 || quotes.length > 0 || invoices.length > 0) {
-        return computeStats(jobs, quotes, invoices);
-      }
-    }
-    return fallbackStats;
-  }, [dashboardData]);
-
-  // Profit alerts from dashboard API
-  const profitAlerts = dashboardData?.profit_alerts?.alerts || [];
-  const hasAlerts = profitAlerts.length > 0;
-
-  // Hot leads from dashboard API
-  const hotLeads = dashboardData?.quote_hot_leads?.leads || [];
-
-  // Jobs from dashboard API or fallback
-  const jobs = useMemo(() => {
-    if (dashboardData?.jobs && Array.isArray(dashboardData.jobs) && dashboardData.jobs.length > 0) {
-      return dashboardData.jobs.map((j: any) => ({
-        id: j.jobId || j.id || j._id,
-        name: j.title || j.name,
-        client: j.client?.name || j.client || "",
-        budget: j.quotedTotal || j.budget || 0,
-        cost: j.actualTotal || j.cost || 0,
-        profit: (j.margin ?? j.profit ?? 0),
-        margin: j.marginPct ?? j.margin ?? 0,
-        status: j.status === "active" ? "on-track" : (j.status || "on-track"),
-        progress: j.progress ?? 65,
-        dueDate: j.dueDate || "",
-      }));
-    }
-    return null; // triggers fallback inside ActiveJobs
-  }, [dashboardData]);
-
-  // Quotes from dashboard API or fallback
-  const quotes = useMemo(() => {
-    if (dashboardData?.quotes && Array.isArray(dashboardData.quotes) && dashboardData.quotes.length > 0) {
-      return dashboardData.quotes.map((q: any) => ({
-        id: q.quoteId || q.id || q._id,
-        client: q.client,
-        job: q.job,
-        amount: q.amount || 0,
-        sentDate: q.sentDate || "",
-        daysSince: q.daysSince ?? 0,
-        status: q.status || "pending",
-        followups: q.followups ?? 0,
-        category: q.category || "",
-      }));
-    }
-    return null; // triggers fallback inside QuoteFollowUp
-  }, [dashboardData]);
-
-  // Invoice chase data from automation API
-  const invoiceChaseItems = useMemo(() => {
-    if (automationData?.invoiceChases && Array.isArray(automationData.invoiceChases) && automationData.invoiceChases.length > 0) {
-      return automationData.invoiceChases;
-    }
-    if (dashboardData?.invoices && Array.isArray(dashboardData.invoices) && dashboardData.invoices.length > 0) {
-      return dashboardData.invoices
-        .filter((i: any) => i.status !== "paid")
-        .map((i: any) => ({
-          id: i.invoiceId || i.id || i._id,
-          targetId: i.invoiceId || i.id || i._id,
-          type: "invoice_chase",
-          priority: i.daysOverdue >= 30 ? "urgent" : i.daysOverdue >= 14 ? "high" : i.daysOverdue > 0 ? "medium" : "low",
-          title: `${i.job}`,
-          description: `Invoice ${i.invoiceId || i.id}`,
-          customerName: i.client,
-          amount: i.amount || 0,
-          daysElapsed: i.daysOverdue || 0,
-          targetType: "invoice",
-          recommendedAction: "Chase payment",
-          suggestedChannel: i.daysOverdue >= 14 ? "phone" : "email",
-          dueDate: i.dueDate || "",
-          sentDate: i.sentDate || "",
-        }));
-    }
-    return null; // triggers fallback to staticInvoices
-  }, [automationData, dashboardData]);
-
-  // Determine invoice display items
-  const invoiceDisplayItems = invoiceChaseItems || fallbackInvoices.map((inv) => ({
-    id: inv.id,
-    targetId: inv.id,
-    type: "invoice_chase",
-    priority: inv.daysOverdue >= 30 ? "urgent" : inv.daysOverdue >= 14 ? "high" : inv.daysOverdue > 0 ? "medium" : "low",
-    title: inv.job,
-    description: inv.job,
-    customerName: inv.client,
-    amount: inv.amount,
-    daysElapsed: inv.daysOverdue,
-    targetType: "invoice" as const,
-    recommendedAction: "Chase payment",
-    suggestedChannel: "email",
-    dueDate: inv.dueDate,
-    sentDate: inv.sentDate,
-  }));
+  const links = [
+    { label: "Features", href: "#features" },
+    { label: "Industries", href: "#industries" },
+    { label: "Pricing", href: "#pricing" },
+  ];
 
   return (
-    <div className="p-4 lg:p-6 pb-24 lg:pb-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-6"
-      >
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-heading font-bold text-white">
-            Profit Dashboard
-          </h1>
-          <p className="text-sm text-gray-400 mt-1">
-            Welcome back, Joe. Here&apos;s your numbers.
-          </p>
-        </div>
-        <button
-          onClick={() => alert("No new notifications (placeholder)")}
-          className="relative p-2 text-gray-400 hover:text-white hover:bg-navy-elevated rounded-lg transition-colors"
-        >
-          <Bell className="w-5 h-5" />
-          {hasAlerts && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-profit-red rounded-full" />
-          )}
-        </button>
-      </motion.div>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-white/80 backdrop-blur-xl shadow-sm border-b border-slate-200/60"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 lg:h-18">
+          {/* Logo */}
+          <a href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center transition-transform group-hover:scale-105">
+              <BarChart3 className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-slate-900 tracking-tight">
+              Tradie<span className="text-indigo-600">Pilot</span>
+            </span>
+          </a>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 text-amber animate-spin" />
-          <span className="ml-3 text-gray-400 text-sm">Loading dashboard...</span>
-        </div>
-      ) : (
-        <>
-          {/* Stat Cards — from API data or fallback */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
-            {stats.map((stat, index) => (
-              <StatCard key={stat.label} {...stat} index={index} />
+          {/* Desktop links */}
+          <div className="hidden md:flex items-center gap-8">
+            {links.map((l) => (
+              <a
+                key={l.label}
+                href={l.href}
+                className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors"
+              >
+                {l.label}
+              </a>
             ))}
           </div>
 
-          {/* Main Content Grid — pass API data or let components use fallback */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6">
-            <ActiveJobs jobs={jobs ?? undefined} />
-            <QuoteFollowUp quotes={quotes ?? undefined} />
+          {/* Desktop CTAs */}
+          <div className="hidden md:flex items-center gap-3">
+            <a
+              href="/login"
+              className="text-sm font-semibold text-slate-700 hover:text-indigo-600 transition-colors px-4 py-2"
+            >
+              Log in
+            </a>
+            <a
+              href="/signup"
+              className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-lg transition-all shadow-sm hover:shadow-indigo-200/50"
+            >
+              Get Started
+            </a>
           </div>
 
-          {/* Profit Alerts — from dashboard API */}
-          {hasAlerts && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.15 }}
-              className="card mb-6"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-heading font-bold text-white flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-amber" /> Profit Alerts
-                </h2>
-                <Link href="/growth" className="text-xs text-amber hover:text-amber-400 font-medium transition-colors">
-                  View Intelligence
-                </Link>
-              </div>
-              <div className="space-y-3">
-                {profitAlerts.filter((a: any) => a.is_active !== false).map((alert: any, index: number) => {
-                  const alertStyles: Record<string, string> = {
-                    critical: "bg-profit-red/5 border-profit-red/20 text-profit-red",
-                    warning: "bg-profit-amber/5 border-profit-amber/20 text-profit-amber",
-                    info: "bg-blue-500/5 border-blue-500/20 text-blue-400",
-                    insight: "bg-profit-green/5 border-profit-green/20 text-profit-green",
-                  };
-                  const style = alertStyles[alert.type] || alertStyles.info;
-                  return (
-                    <motion.div
-                      key={alert.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.08 }}
-                      className={`rounded-lg p-3 border ${style}`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-sm font-semibold text-white">{alert.title}</h3>
-                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full capitalize ${style}`}>{alert.type}</span>
-                          </div>
-                          <p className="text-xs text-gray-400 mt-1">{alert.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs text-gray-500">Customer: {alert.customer}</span>
-                            <span className="text-[10px] text-gray-500">|</span>
-                            <span className="text-xs text-gray-500">{alert.job_title}</span>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1 italic">{alert.recommendation}</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Growth Quick Link */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="mb-6"
+          {/* Mobile toggle */}
+          <button
+            onClick={() => setOpen(!open)}
+            className="md:hidden p-2 text-slate-600 hover:text-indigo-600"
           >
-            <Link href="/growth" className="card-elevated block hover:border-amber/30 transition-all duration-200 group">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="w-6 h-6 text-amber" />
-                  <div>
-                    <h3 className="text-sm font-semibold text-white group-hover:text-amber transition-colors">Growth Intelligence</h3>
-                    <p className="text-xs text-gray-400">View customer LTV, suburb hotspots, and marketing tips</p>
-                  </div>
-                </div>
-                <Lightbulb className="w-5 h-5 text-gray-400 group-hover:text-amber transition-colors" />
-              </div>
-            </Link>
-          </motion.div>
+            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </div>
 
-          {/* Invoice Chase — from automation API or fallback */}
-          <InvoiceChaseSection items={invoiceDisplayItems} />
-        </>
-      )}
-    </div>
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-white border-t border-slate-200 overflow-hidden"
+          >
+            <div className="px-4 py-4 space-y-3">
+              {links.map((l) => (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="block text-sm font-medium text-slate-600 hover:text-indigo-600 py-2"
+                >
+                  {l.label}
+                </a>
+              ))}
+              <hr className="border-slate-200" />
+              <a
+                href="/login"
+                className="block text-sm font-semibold text-slate-700 py-2"
+              >
+                Log in
+              </a>
+              <a
+                href="/signup"
+                className="block text-center text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-lg transition-all"
+              >
+                Get Started
+              </a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
   );
 }
 
-function InvoiceChaseSection({ items }: { items: any[] }) {
-  const hasOverdue = items.some((i: any) => i.daysElapsed > 0);
-
-  if (items.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3 }}
-        className="card"
-      >
-        <h2 className="text-lg font-heading font-bold text-white mb-4">Invoice Chase — Overdue</h2>
-        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-          <Ban className="w-8 h-8 mb-2" />
-          <p className="text-sm">No overdue invoices</p>
-          <p className="text-xs mt-1">All caught up on payments!</p>
-        </div>
-      </motion.div>
-    );
-  }
-
+// ─── Hero ───
+function Hero() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: 0.3 }}
-      className="card"
-    >
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-heading font-bold text-white">
-          Invoice Chase — {hasOverdue ? "Overdue" : "Pending"}
-        </h2>
-        <Link
-          href="/invoices"
-          className="text-xs text-amber hover:text-amber-400 font-medium transition-colors"
+    <section className="relative pt-28 pb-20 lg:pt-36 lg:pb-28 overflow-hidden bg-gradient-to-b from-indigo-50/80 via-white to-white">
+      {/* Subtle grid overlay */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM0ZjQ2ZTUiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-40" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+          className="text-center max-w-4xl mx-auto"
         >
-          View All
-        </Link>
-      </div>
+          {/* Badge */}
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200/60 rounded-full px-4 py-1.5 mb-6">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="text-sm font-medium text-emerald-700">
+              Profit intelligence for Australian construction &amp; trades
+            </span>
+          </motion.div>
 
-      <div className="space-y-3">
-        {items.map((inv: any, index: number) => {
-          const isOverdue = inv.daysElapsed > 0;
-          const jobName = inv.title || inv.targetId;
-          const clientName = inv.customerName;
-          const amount = inv.amount || 0;
-          const dueDate = inv.dueDate || (inv as any).dueDate || "";
-          const sentDate = inv.sentDate || "";
-          const daysElapsed = inv.daysElapsed || 0;
+          {/* Heading */}
+          <motion.h1
+            variants={fadeUp}
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight tracking-tight"
+          >
+            Not Just a Dashboard.{" "}
+            <span className="text-indigo-600">Your Entire Profit Engine.</span>
+          </motion.h1>
 
-          return (
-            <motion.div
-              key={inv.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.08 }}
-              className={`rounded-lg p-3 border transition-all duration-200 ${
-                isOverdue
-                  ? "bg-profit-red/5 border-profit-red/20"
-                  : "bg-navy border-navy-border"
-              }`}
+          {/* Subtext */}
+          <motion.p
+            variants={fadeUp}
+            className="mt-6 text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed"
+          >
+            Stop guessing which jobs are leaking profit. TradiePilot connects your Xero,
+            tracks every dollar, and surfaces exactly where to follow up — so you keep
+            more of what you earn.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            variants={fadeUp}
+            className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <a
+              href="/signup"
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-7 py-3.5 rounded-lg shadow-lg shadow-indigo-200/50 transition-all text-base"
             >
-              <div className="flex items-start gap-3">
-                {isOverdue ? (
-                  <AlertTriangle className="w-5 h-5 text-profit-red mt-0.5 shrink-0" />
-                ) : (
-                  <Clock className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
-                )}
+              Start Free Trial <ArrowRight className="w-4 h-4" />
+            </a>
+            <a
+              href="#demo"
+              className="inline-flex items-center gap-2 bg-white border border-slate-300 hover:border-indigo-300 text-slate-700 font-semibold px-7 py-3.5 rounded-lg transition-all text-base shadow-sm"
+            >
+              <Play className="w-4 h-4 text-indigo-500" /> See How It Works
+            </a>
+          </motion.div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm font-semibold text-white">
-                      {jobName}
-                    </h3>
-                    <span
-                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
-                        isOverdue
-                          ? "bg-profit-red/10 text-profit-red"
-                          : "bg-profit-amber/10 text-profit-amber"
-                      }`}
-                    >
-                      {isOverdue ? `${daysElapsed} days overdue` : "Due soon"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 mt-1.5">
-                    <span className="flex items-center gap-1 text-xs text-gray-300">
-                      <DollarSign className="w-3 h-3 text-amber" />
-                      <span className="financial-figure">
-                        ${amount.toLocaleString()}
-                      </span>
-                    </span>
-                    {clientName && (
-                      <>
-                        <span className="text-[10px] text-gray-500">|</span>
-                        <span className="text-xs text-gray-400">{clientName}</span>
-                      </>
-                    )}
-                    {dueDate && (
-                      <>
-                        <span className="text-[10px] text-gray-500">|</span>
-                        <span className="text-xs text-gray-400">Due {dueDate}</span>
-                      </>
-                    )}
-                    {sentDate && (
-                      <>
-                        <span className="text-[10px] text-gray-500">|</span>
-                        <span className="text-xs text-gray-400">Sent {sentDate}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
+          {/* Trust line */}
+          <motion.p
+            variants={fadeUp}
+            className="mt-6 text-sm text-slate-400 flex items-center justify-center gap-1.5"
+          >
+            <Shield className="w-4 h-4 text-emerald-500" /> No credit card required
+            <span className="mx-2">·</span> Free for 14 days
+            <span className="mx-2">·</span> Cancel anytime
+          </motion.p>
+        </motion.div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Link
-                    href="/invoices"
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 active:scale-95 ${
-                      isOverdue
-                        ? "bg-amber text-navy hover:bg-amber-600"
-                        : "bg-navy-elevated text-gray-300 hover:text-white border border-navy-border"
-                    }`}
-                  >
-                    <Send className="w-3 h-3" />
-                    Chase now
-                  </Link>
-                  <button
-                    onClick={() =>
-                      alert(`Calling client about ${jobName} payment (placeholder)`)
-                    }
-                    className="p-1.5 text-gray-400 hover:text-white hover:bg-navy-elevated rounded-lg transition-colors"
-                    title="Call client"
-                  >
-                    <Phone className="w-3.5 h-3.5" />
-                  </button>
+        {/* Dashboard Mockup */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+          className="mt-14 lg:mt-18 max-w-5xl mx-auto"
+        >
+          <div className="bg-slate-800/90 rounded-xl shadow-2xl overflow-hidden border border-slate-700/50 backdrop-blur-sm">
+            {/* Browser bar */}
+            <div className="flex items-center gap-2 px-4 py-3 bg-slate-900 border-b border-slate-700/50">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-400" />
+                <div className="w-3 h-3 rounded-full bg-amber-400" />
+                <div className="w-3 h-3 rounded-full bg-emerald-400" />
+              </div>
+              <div className="flex-1 flex justify-center">
+                <div className="bg-slate-700/50 rounded-md px-3 py-1 text-xs text-slate-400 max-w-[200px] truncate">
+                  app.tradiepilot.com.au/dashboard
                 </div>
               </div>
-            </motion.div>
-          );
-        })}
+            </div>
+
+            {/* Mock dashboard UI */}
+            <div className="p-5 lg:p-6 space-y-4">
+              {/* Stat cards row */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  { label: "Avg Job Margin", value: "34.2%", change: "+2.1%", up: true },
+                  { label: "Quote Win Rate", value: "68.5%", change: "+5.3%", up: true },
+                  { label: "Days Outstanding", value: "24 days", change: "-3 days", up: true },
+                  { label: "Revenue (MTD)", value: "$84.2K", change: "+12.8%", up: true },
+                ].map((s, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-lg p-3 border border-slate-200"
+                  >
+                    <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+                      {s.label}
+                    </p>
+                    <p className="text-lg font-bold text-slate-900 mt-0.5">{s.value}</p>
+                    <p className={`text-[11px] font-medium mt-0.5 ${s.up ? "text-emerald-600" : "text-red-500"}`}>
+                      {s.change} vs last month
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Job rows */}
+              <div className="space-y-2">
+                {[
+                  { name: "CCTV Drain Inspection", client: "Strata Corp", profit: "$4,238", margin: 87, status: "on-track" },
+                  { name: "HWS Replacement — Torres", client: "Michael Torres", profit: "-$258", margin: -13, status: "critical" },
+                  { name: "Bathroom Renovation", client: "Patterson", profit: "$3,244", margin: 46, status: "on-track" },
+                ].map((job, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-lg p-3 border border-slate-100 flex items-center gap-3"
+                  >
+                    {/* Mini gauge */}
+                    <div className="w-9 h-9 rounded-full border-2 flex items-center justify-center text-[10px] font-bold shrink-0"
+                      style={{
+                        borderColor: job.margin >= 30 ? "#10B981" : job.margin >= 0 ? "#F59E0B" : "#EF4444",
+                        color: job.margin >= 30 ? "#10B981" : job.margin >= 0 ? "#F59E0B" : "#EF4444",
+                      }}
+                    >
+                      {Math.abs(job.margin)}%
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-800 truncate">{job.name}</p>
+                      <p className="text-xs text-slate-400">{job.client}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-slate-800">{job.profit}</p>
+                      <span className={`text-[10px] font-medium ${
+                        job.status === "on-track" ? "text-emerald-600" : "text-red-500"
+                      }`}>
+                        {job.status === "on-track" ? "On Track" : "Critical"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
-    </motion.div>
+    </section>
+  );
+}
+
+// ─── Stats Strip ───
+function StatsStrip() {
+  const stats = [
+    { value: "$12.4K", label: "Average recovered per month", icon: TrendingUp },
+    { value: "82%", label: "Improvement in cash flow visibility", icon: TrendingUp },
+    { value: "14:1", label: "Average ROI for Pro subscribers", icon: TrendingUp },
+  ];
+  return (
+    <section className="bg-white border-y border-slate-200 py-10 lg:py-14">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={stagger}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center"
+        >
+          {stats.map((s, i) => (
+            <motion.div key={i} variants={fadeUp} custom={i}>
+              <s.icon className="w-6 h-6 text-indigo-500 mx-auto mb-2" />
+              <p className="text-3xl lg:text-4xl font-bold text-slate-900">{s.value}</p>
+              <p className="text-sm text-slate-500 mt-1">{s.label}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Problem Section ───
+function ProblemSection() {
+  const problems = [
+    {
+      icon: DollarSign,
+      title: "Can't see which jobs are profitable",
+      desc: "You're working hard but don't know which jobs actually make money until it's too late.",
+    },
+    {
+      icon: Clock,
+      title: "Quotes go cold without follow-up",
+      desc: "You send a quote, get busy, and forget to follow up. Weeks later, the customer went elsewhere.",
+    },
+    {
+      icon: TrendingUp,
+      title: "Invoices pile up unpaid",
+      desc: "Chasing payment is awkward and time-consuming. Overdue invoices drain your cash flow silently.",
+    },
+  ];
+  return (
+    <section className="bg-slate-50 py-16 lg:py-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+          className="text-center mb-12"
+        >
+          <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-slate-900">
+            The Real Cost of Flying Blind
+          </motion.h2>
+          <motion.p variants={fadeUp} className="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">
+            Most tradies lose 10–20% of their profit to things they never see coming.
+          </motion.p>
+        </motion.div>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
+          {problems.map((p, i) => (
+            <motion.div
+              key={i}
+              variants={fadeUp}
+              custom={i}
+              className="bg-white rounded-xl border border-slate-200 p-6 hover:border-indigo-200 hover:shadow-md transition-all"
+            >
+              <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center mb-4">
+                <p.icon className="w-5 h-5 text-indigo-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">{p.title}</h3>
+              <p className="mt-2 text-sm text-slate-500 leading-relaxed">{p.desc}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Features (Tab Switcher) ───
+const featureTabs = [
+  {
+    id: "dashboard",
+    label: "Profit Dashboard",
+    icon: BarChart3,
+    title: "See your real-time profit snapshot",
+    desc: "Know exactly where every job stands. Active jobs, margins, alerts — all on one screen that updates in real time.",
+    items: ["Live job margin tracking", "Profit alerts when jobs go over budget", "One-click drill-down to job details"],
+  },
+  {
+    id: "quotes",
+    label: "Quote Follow-up",
+    icon: Send,
+    title: "Never lose a quote again",
+    desc: "TradiePilot automatically surfaces quotes that need attention and drafts personalised follow-up messages.",
+    items: ["Auto-detect stale quotes", "Smart follow-up scheduling", "Pre-written message templates"],
+  },
+  {
+    id: "invoices",
+    label: "Invoice Chaser",
+    icon: DollarSign,
+    title: "Get paid faster, automatically",
+    desc: "Prioritise overdue invoices by severity and send automated reminders — no more awkward phone calls.",
+    items: ["Severity-based invoice triage", "Automated SMS & email reminders", "Debt collection escalation triggers"],
+  },
+  {
+    id: "growth",
+    label: "Growth Intelligence",
+    icon: TrendingUp,
+    title: "Find your next best customer",
+    desc: "Surface your highest-value customers, hottest suburbs, and actionable marketing tips — powered by your own data.",
+    items: ["Customer lifetime value tiers", "Suburb hotspot mapping", "Personalised marketing recommendations"],
+  },
+];
+
+function FeaturesSection() {
+  const [active, setActive] = useState(featureTabs[0].id);
+  const current = featureTabs.find((f) => f.id === active)!;
+  const Icon = current.icon;
+
+  return (
+    <section id="features" className="bg-white py-16 lg:py-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+          className="text-center mb-10"
+        >
+          <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-slate-900">
+            Everything you need to run a profitable trade business
+          </motion.h2>
+          <motion.p variants={fadeUp} className="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">
+            Four tools that work together to protect your margin and grow your revenue.
+          </motion.p>
+        </motion.div>
+
+        {/* Tab buttons */}
+        <div className="flex flex-wrap justify-center gap-2 mb-10">
+          {featureTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActive(tab.id)}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                active === tab.id
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.35 }}
+            className="bg-slate-50 rounded-xl border border-slate-200 p-8 lg:p-10"
+          >
+            <div className="flex items-start gap-4 lg:gap-6">
+              <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0">
+                <Icon className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold text-slate-900">{current.title}</h3>
+                <p className="mt-2 text-slate-500 leading-relaxed">{current.desc}</p>
+                <ul className="mt-4 space-y-2">
+                  {current.items.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                      <CheckCircle className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </section>
+  );
+}
+
+// ─── Integrations ───
+function IntegrationsSection() {
+  const tools = ["Xero", "MYOB", "QuickBooks", "SimPRO", "JobAdder", "Google Calendar", "Stripe", "Bank Feeds"];
+  return (
+    <section className="bg-slate-50 border-y border-slate-200 py-12 lg:py-16">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-6"
+        >
+          Integrates with your existing tools
+        </motion.p>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+          className="flex flex-wrap justify-center gap-3"
+        >
+          {tools.map((t, i) => (
+            <motion.span
+              key={t}
+              variants={fadeUp}
+              custom={i}
+              className="inline-flex items-center px-4 py-2 bg-white rounded-full border border-slate-200 text-sm font-medium text-slate-600 shadow-sm"
+            >
+              {t}
+            </motion.span>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Industries ───
+function IndustriesSection() {
+  const industries = [
+    { name: "Builders", icon: Building2, desc: "Track project margins across multiple sites." },
+    { name: "Plumbers", icon: Wrench, desc: "Know which call-outs are actually profitable." },
+    { name: "Electricians", icon: ZapIcon, desc: "Stop losing money on fixed-price switchboard upgrades." },
+    { name: "HVAC", icon: Thermometer, desc: "Optimise maintenance contract profitability." },
+  ];
+  return (
+    <section id="industries" className="bg-white py-16 lg:py-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+          className="text-center mb-12"
+        >
+          <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-slate-900">
+            Built for Australian Trades
+          </motion.h2>
+          <motion.p variants={fadeUp} className="mt-4 text-lg text-slate-500 max-w-xl mx-auto">
+            Whether you&apos;re a sole trader or a crew of 20, TradiePilot adapts to how you work.
+          </motion.p>
+        </motion.div>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
+          {industries.map((ind, i) => (
+            <motion.div
+              key={i}
+              variants={fadeUp}
+              custom={i}
+              className="group bg-white rounded-xl border border-slate-200 p-6 hover:border-indigo-200 hover:shadow-md transition-all cursor-default"
+            >
+              <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center mb-4 group-hover:bg-indigo-100 transition-colors">
+                <ind.icon className="w-5 h-5 text-indigo-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">{ind.name}</h3>
+              <p className="mt-1.5 text-sm text-slate-500">{ind.desc}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Pricing ───
+const plans = [
+  {
+    name: "Starter",
+    price: 97,
+    desc: "For sole operators getting started with profit tracking.",
+    features: ["Up to 10 active jobs", "Profit dashboard", "Quote follow-up alerts", "Invoice chasing", "Email support"],
+    cta: "Start Free Trial",
+    popular: false,
+  },
+  {
+    name: "Pro",
+    price: 197,
+    desc: "For growing teams that need the full toolkit.",
+    features: ["Unlimited active jobs", "Everything in Starter", "Growth intelligence", "Xero & MYOB sync", "Priority support"],
+    cta: "Start Free Trial",
+    popular: true,
+  },
+  {
+    name: "Enterprise",
+    price: 497,
+    desc: "For larger operations with advanced needs.",
+    features: ["Everything in Pro", "Multi-crew management", "Custom integrations", "Dedicated account manager", "API access"],
+    cta: "Contact Sales",
+    popular: false,
+  },
+];
+
+function PricingSection() {
+  return (
+    <section id="pricing" className="bg-slate-50 py-16 lg:py-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+          className="text-center mb-12"
+        >
+          <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-slate-900">
+            Simple, Transparent Pricing
+          </motion.h2>
+          <motion.p variants={fadeUp} className="mt-4 text-lg text-slate-500 max-w-xl mx-auto">
+            No hidden fees. No surprise charges. Cancel anytime.
+          </motion.p>
+        </motion.div>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto"
+        >
+          {plans.map((plan, i) => (
+            <motion.div
+              key={i}
+              variants={fadeUp}
+              custom={i}
+              className={`relative rounded-xl border p-6 lg:p-8 bg-white transition-all hover:shadow-lg ${
+                plan.popular
+                  ? "border-indigo-300 ring-2 ring-indigo-500/20 shadow-indigo-100"
+                  : "border-slate-200"
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full">
+                  Most Popular
+                </div>
+              )}
+              <h3 className="text-lg font-semibold text-slate-900">{plan.name}</h3>
+              <div className="mt-3 flex items-baseline gap-1">
+                <span className="text-4xl font-bold text-slate-900">${plan.price}</span>
+                <span className="text-sm text-slate-400">/month</span>
+              </div>
+              <p className="mt-2 text-sm text-slate-500">{plan.desc}</p>
+              <ul className="mt-5 space-y-3">
+                {plan.features.map((f, j) => (
+                  <li key={j} className="flex items-start gap-2 text-sm text-slate-600">
+                    <CheckCircle className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="/signup"
+                className={`mt-6 block text-center font-semibold px-5 py-3 rounded-lg transition-all text-sm ${
+                  plan.popular
+                    ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                {plan.cta}
+              </a>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Testimonial / QS Section ───
+function TestimonialSection() {
+  return (
+    <section className="bg-slate-800 py-16 lg:py-24">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+        >
+          <motion.div variants={fadeUp} className="flex justify-center mb-6">
+            <Quote className="w-10 h-10 text-indigo-400" />
+          </motion.div>
+          <motion.blockquote variants={fadeUp} className="text-xl lg:text-2xl text-slate-200 leading-relaxed font-medium">
+            &ldquo;TradiePilot showed me I was losing money on every fixed-price
+            electrical upgrade. Within a month I changed my quoting and
+            recovered $4,200 in margin.&rdquo;
+          </motion.blockquote>
+          <motion.div variants={fadeUp} className="mt-6">
+            <div className="flex items-center justify-center gap-1 text-amber-400 mb-2">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-4 h-4 fill-current" />
+              ))}
+            </div>
+            <p className="text-sm font-semibold text-white">Chris M.</p>
+            <p className="text-xs text-slate-400 mt-0.5">Director, M&eacute;rida Electrical Solutions, Sydney</p>
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Final CTA ───
+function CTASection() {
+  return (
+    <section className="bg-gradient-to-r from-indigo-600 to-indigo-700 py-16 lg:py-24">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+        >
+          <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-white">
+            Ready to know your numbers?
+          </motion.h2>
+          <motion.p variants={fadeUp} className="mt-4 text-lg text-indigo-100 max-w-xl mx-auto">
+            Join hundreds of Australian tradies who already track their profit with TradiePilot.
+          </motion.p>
+          <motion.div variants={fadeUp} className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href="/signup"
+              className="inline-flex items-center gap-2 bg-white text-indigo-700 font-bold px-8 py-3.5 rounded-lg shadow-lg hover:bg-indigo-50 transition-all text-base"
+            >
+              Start Your Free Trial <ArrowRight className="w-4 h-4" />
+            </a>
+            <a
+              href="#demo"
+              className="inline-flex items-center gap-2 text-white/90 hover:text-white font-semibold px-5 py-3.5 transition-all text-base"
+            >
+              <Play className="w-4 h-4" /> Watch Demo
+            </a>
+          </motion.div>
+          <motion.p variants={fadeUp} className="mt-4 text-sm text-indigo-200">
+            No credit card required · Free for 14 days · Cancel anytime
+          </motion.p>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Footer ───
+function Footer() {
+  const sections = [
+    {
+      title: "Product",
+      links: ["Features", "Pricing", "Industries", "Integrations", "Changelog"],
+    },
+    {
+      title: "Company",
+      links: ["About", "Blog", "Careers", "Press", "Contact"],
+    },
+    {
+      title: "Support",
+      links: ["Help Center", "Documentation", "API Status", "Community"],
+    },
+    {
+      title: "Legal",
+      links: ["Privacy Policy", "Terms of Service", "Cookie Policy"],
+    },
+  ];
+  return (
+    <footer className="bg-slate-900 border-t border-slate-800 py-12 lg:py-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+          {/* Brand */}
+          <div className="col-span-2 md:col-span-1">
+            <a href="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-lg font-bold text-white">
+                Tradie<span className="text-indigo-400">Pilot</span>
+              </span>
+            </a>
+            <p className="mt-3 text-xs text-slate-400 leading-relaxed max-w-xs">
+              Profit intelligence for Australian trade businesses. Know your numbers. Keep your profit.
+            </p>
+          </div>
+
+          {/* Link columns */}
+          {sections.map((s) => (
+            <div key={s.title}>
+              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                {s.title}
+              </h4>
+              <ul className="space-y-2">
+                {s.links.map((l) => (
+                  <li key={l}>
+                    <a
+                      href="#"
+                      className="text-sm text-slate-300 hover:text-white transition-colors"
+                    >
+                      {l}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-500">
+            &copy; {new Date().getFullYear()} TradiePilot. All rights reserved. ABN 12 345 678 901.
+          </p>
+          <div className="flex items-center gap-4 text-slate-500 text-xs">
+            <span>Made on Gadigal land</span>
+            <span>·</span>
+            <span>悉尼 · Melbourne · Brisbane</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ─── Main Page ───
+export default function LandingPage() {
+  return (
+    <div className="bg-white font-sans text-slate-900">
+      <Navbar />
+      <Hero />
+      <StatsStrip />
+      <ProblemSection />
+      <FeaturesSection />
+      <IntegrationsSection />
+      <IndustriesSection />
+      <PricingSection />
+      <TestimonialSection />
+      <CTASection />
+      <Footer />
+    </div>
   );
 }
