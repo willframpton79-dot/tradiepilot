@@ -12,6 +12,7 @@ export interface IQuote extends Document {
   status: 'pending' | 'followed-up' | 'urgent' | 'won' | 'lost';
   followups: number;
   category: string;
+  lastReminderSent?: Date;
 }
 
 const QuoteSchema = new Schema({
@@ -31,6 +32,7 @@ const QuoteSchema = new Schema({
   },
   followups: { type: Number, default: 0 },
   category: { type: String, default: 'general' },
+  lastReminderSent: { type: Date },
 }, { timestamps: true });
 
 export const Quote = mongoose.models.Quote || mongoose.model<IQuote>('Quote', QuoteSchema);

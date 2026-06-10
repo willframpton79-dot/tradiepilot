@@ -10,6 +10,7 @@ export interface IInvoice extends Document {
   dueDate: string;
   daysOverdue: number;
   status: 'pending' | 'overdue' | 'paid';
+  lastReminderSent?: Date;
 }
 
 const InvoiceSchema = new Schema({
@@ -27,6 +28,7 @@ const InvoiceSchema = new Schema({
     enum: ['pending', 'overdue', 'paid'],
     default: 'pending',
   },
+  lastReminderSent: { type: Date },
 }, { timestamps: true });
 
 export const Invoice = mongoose.models.Invoice || mongoose.model<IInvoice>('Invoice', InvoiceSchema);
