@@ -256,8 +256,14 @@ export async function runAutomationEngine(userEmail?: string): Promise<Automatio
     try {
       await connectDB();
       const filter = userEmail ? { userEmail } : {};
-      quotes = await Quote.find(filter).lean();
-      invoices = await Invoice.find(filter).lean();
+      quotes = (await Quote.find(filter).lean()).map((q: any) => ({
+        ...q,
+        id: q.quoteId || q._id?.toString()
+      }));
+      invoices = (await Invoice.find(filter).lean()).map((inv: any) => ({
+        ...inv,
+        id: inv.invoiceId || inv._id?.toString()
+      }));
       jobs = await MongooseJob.find(filter).lean();
     } catch {
       quotes = sampleData.quotes;
