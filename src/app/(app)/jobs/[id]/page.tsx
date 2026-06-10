@@ -10,10 +10,12 @@ import {
   User,
   MapPin,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Download
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { printJobReport } from "@/lib/export";
 import ProfitGauge from "@/components/dashboard/ProfitGauge";
 
 const fadeUp = {
@@ -56,11 +58,11 @@ export default function JobDetailPage() {
           <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors mb-4">
             <ArrowLeft className="w-4 h-4" /> Back to Dashboard
           </Link>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{job.name}</h1>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2 text-slate-500 font-medium">
-                <div className="flex items-center gap-1.5 text-sm">
+              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{job.name}</h1>
+              <div className="flex items-center gap-4 mt-2 text-slate-500 font-medium">
+                <div className="flex items-center gap-1.5">
                   <User className="w-4 h-4" /> {job.client}
                 </div>
                 <div className="flex items-center gap-1.5 text-sm">
@@ -69,10 +71,32 @@ export default function JobDetailPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-green-50 text-green-700 border border-green-100 rounded-full text-[10px] font-bold uppercase tracking-wider">
+              <span className="px-3 py-1 bg-green-50 text-green-700 border border-green-100 rounded-full text-xs font-bold uppercase tracking-wider">
                 {job.status}
               </span>
-              <button className="flex-1 sm:flex-none bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all text-xs sm:text-sm">
+              <button
+                onClick={() => printJobReport({
+                title: job.name,
+                client: { name: job.client },
+                quotedTotal: job.contractValue,
+                actualTotal: job.costsToDate,
+                margin: job.contractValue - job.costsToDate,
+                marginPct: job.margin * 100,
+                quotedLabour: job.contractValue * 0.4,
+                actualLabour: job.costsToDate * 0.45,
+                quotedMaterials: job.contractValue * 0.5,
+                actualMaterials: job.costsToDate * 0.45,
+                quotedSubcontractors: job.contractValue * 0.1,
+                actualSubcontractors: job.costsToDate * 0.1,
+                startDate: job.startDate,
+                dueDate: job.estimatedEnd,
+                status: job.status,
+              })}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition-all"
+              >
+                <Download className="w-4 h-4" /> PDF Report
+              </button>
+              <button className="bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all text-sm">
                 Edit Job
               </button>
             </div>
@@ -121,28 +145,28 @@ export default function JobDetailPage() {
 
         {/* Task List */}
         <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-4 sm:p-6 border-b border-slate-100">
+          <div className="p-6 border-b border-slate-100">
             <h3 className="text-lg font-bold text-slate-900">Project Timeline</h3>
           </div>
           <div className="divide-y divide-slate-50">
             {job.tasks.map((task) => (
-              <div key={task.id} className="p-4 sm:p-6 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div key={task.id} className="p-6 flex items-center justify-between">
+                <div className="flex items-center gap-4">
                   {task.status === 'Completed' ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
                   ) : task.status === 'In Progress' ? (
-                    <Clock className="w-5 h-5 text-amber-500 shrink-0" />
+                    <Clock className="w-5 h-5 text-amber-500" />
                   ) : (
-                    <div className="w-5 h-5 border-2 border-slate-200 rounded-full shrink-0" />
+                    <div className="w-5 h-5 border-2 border-slate-200 rounded-full" />
                   )}
-                  <div className="min-w-0">
-                    <p className={`text-sm font-bold truncate ${task.status === 'Completed' ? 'text-slate-500 line-through' : 'text-slate-800'}`}>
+                  <div>
+                    <p className={`text-sm font-bold ${task.status === 'Completed' ? 'text-slate-500 line-through' : 'text-slate-800'}`}>
                       {task.name}
                     </p>
-                    <p className="text-[10px] sm:text-xs text-slate-400 font-medium">{task.date}</p>
+                    <p className="text-xs text-slate-400 font-medium">{task.date}</p>
                   </div>
                 </div>
-                <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                   task.status === 'Completed' ? 'bg-green-50 text-green-700' :
                   task.status === 'In Progress' ? 'bg-amber-50 text-amber-700' :
                   'bg-slate-50 text-slate-500'
@@ -157,3 +181,21 @@ export default function JobDetailPage() {
     </div>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
