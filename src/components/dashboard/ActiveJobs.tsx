@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
-import { type Job, fallbackJobs } from "@/lib/sampleData";
+import { type Job, activeJobs as fallbackJobs } from "@/lib/sampleData";
 
 export default function ActiveJobs({ jobs: propsJobs }: { jobs?: Job[] }) {
   const [jobs, setJobs] = useState<Job[]>(propsJobs || []);
