@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
@@ -17,7 +17,6 @@ import {
   TrendingUp as GrowthIcon,
   LogOut,
   BarChart3,
-  TrendingUp,
 } from "lucide-react";
 
 const navItems = [
@@ -34,8 +33,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  // Hide sidebar on landing page, login, and signup
-  const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/";
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
   if (isAuthPage) return null;
 
   const isActive = (href: string) => {
@@ -49,61 +47,71 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 lg:hidden bg-white p-2 rounded-lg border border-slate-200 shadow-sm"
-        aria-label="Open menu"
-      >
-        <Menu className="w-5 h-5 text-slate-700" />
-      </button>
-
-      {/* Mobile Overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Mobile Sidebar Drawer */}
-      <aside
-        className={`fixed top-0 left-0 z-50 h-full w-[260px] bg-white border-r border-slate-200 shadow-lg transform transition-transform duration-300 lg:hidden ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between px-4 h-16 border-b border-slate-200">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-lg font-bold text-slate-800">
-              Tradie<span className="text-indigo-600">Pilot</span>
-            </span>
+      {/* Mobile Top Nav Bar */}
+      <nav className="fixed top-0 left-0 right-0 z-30 lg:hidden bg-white border-b border-slate-200 flex items-center justify-between px-4 h-14 shadow-sm">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="p-2 -ml-2 rounded-lg hover:bg-slate-100"
+          aria-label="Open menu"
+        >
+          <Menu className="w-5 h-5 text-slate-700" />
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center">
+            <BarChart3 className="w-4 h-4 text-white" />
           </div>
-          <button 
-            type="button"
-            onClick={() => setMobileOpen(false)} 
-            className="p-1.5 text-slate-400 hover:text-slate-600"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <span className="text-base font-bold text-slate-800">
+            Tradie<span className="text-indigo-600">Pilot</span>
+          </span>
         </div>
+        <div className="w-9" /> {/* spacer */}
 
-        <nav className="py-3 px-3 space-y-1">
-          {navItems.map((item) => (
+        {/* Mobile Overlay */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 bg-black/40 z-40"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+
+        {/* Mobile Sidebar Drawer */}
+        <aside
+          className={`fixed top-0 left-0 z-50 h-full w-[260px] bg-white border-r border-slate-200 shadow-lg transform transition-transform duration-300 ${
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <div className="flex items-center justify-between px-4 h-14 border-b border-slate-200">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+                <BarChart3 className="w-4.5 h-4.5 text-white" />
+              </div>
+              <span className="text-lg font-bold text-slate-800">
+                Tradie<span className="text-indigo-600">Pilot</span>
+              </span>
+            </div>
+            <button 
+              type="button"
+              onClick={() => setMobileOpen(false)} 
+              className="p-1.5 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <nav className="py-3 px-3 space-y-1">
+            {navItems.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 isActive(item.href)
-                  ? "bg-indigo-50 text-indigo-700 border-l-2 border-indigo-600"
-                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                  ? "bg-indigo-50 text-indigo-700 border-l-2 border-indigo-600 ml-0"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50 ml-0"
               }`}
             >
-              <item.icon className="w-5 h-5 shrink-0" />
+              <item.icon className="w-4.5 h-4.5 shrink-0" />
               <span>{item.label}</span>
             </Link>
           ))}
@@ -118,13 +126,13 @@ export default function Sidebar() {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 h-16 border-b border-slate-200 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-indigo flex items-center justify-center shrink-0">
-            <TrendingUp className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
+            <BarChart3 className="w-5 h-5 text-white" />
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
-              <h1 className="font-heading font-bold text-lg leading-tight text-slate-800">
-                Tradie<span className="text-indigo">Pilot</span>
+              <h1 className="font-bold text-lg leading-tight text-slate-800">
+                Tradie<span className="text-indigo-600">Pilot</span>
               </h1>
               <p className="text-[10px] text-slate-400 font-medium tracking-wider uppercase">
                 Profit Intelligence
@@ -134,19 +142,19 @@ export default function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto scrollbar-thin">
+        <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto scrollbar-thin">
           {navItems.map((item) => (
             <Link
               key={item.label}
               href={item.href}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                 isActive(item.href)
-                  ? "bg-indigo-50 text-indigo font-semibold border-l-2 border-indigo rounded-l-none"
+                  ? "bg-indigo-50 text-indigo-700 font-semibold border-l-2 border-indigo-600 rounded-l-none"
                   : "text-slate-500 hover:text-slate-700 hover:bg-slate-50 border-l-2 border-transparent rounded-l-none"
               }`}
               title={collapsed ? item.label : undefined}
             >
-              <item.icon className={`w-5 h-5 shrink-0 ${isActive(item.href) ? 'text-indigo' : 'text-slate-500'}`} />
+              <item.icon className="w-5 h-5 shrink-0" />
               {!collapsed && (
                 <span className="text-sm font-medium truncate">{item.label}</span>
               )}
@@ -158,8 +166,8 @@ export default function Sidebar() {
         {session && (
           <div className="p-2 border-t border-slate-200">
             <div className="flex items-center gap-2 px-3 py-2 mb-1">
-              <div className="w-8 h-8 rounded-full bg-indigo/10 flex items-center justify-center shrink-0 border border-indigo/20">
-                <span className="text-xs font-bold text-indigo">
+              <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                <span className="text-xs font-bold text-indigo-600">
                   {session.user?.name?.charAt(0) || "U"}
                 </span>
               </div>
@@ -180,7 +188,7 @@ export default function Sidebar() {
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors text-sm"
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              {!collapsed && <span className="font-medium">Sign Out</span>}
+              {!collapsed && <span>Sign Out</span>}
             </button>
           </div>
         )}
@@ -192,10 +200,23 @@ export default function Sidebar() {
             onClick={() => setCollapsed(!collapsed)}
             className="w-full flex items-center justify-center gap-2 text-slate-400 hover:text-slate-600 px-3 py-2 rounded-lg transition-colors hover:bg-slate-50"
           >
-            {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            {collapsed ? (
+              <ChevronRight className="w-4 h-4" />
+            ) : (
+              <>
+                <ChevronLeft className="w-4 h-4" />
+                <span className="text-xs">Collapse</span>
+              </>
+            )}
           </button>
         </div>
       </aside>
     </>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

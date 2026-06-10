@@ -107,8 +107,8 @@ function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* Dashboard Mockup with Sidebar */}
-        <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="mt-14 lg:mt-18 max-w-6xl mx-auto">
+        {/* Dashboard Mockup with Sidebar - hidden on mobile */}
+        <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="mt-14 lg:mt-18 max-w-6xl mx-auto hidden sm:block">
           <div className="bg-[#1e293b] rounded-xl shadow-2xl overflow-hidden border border-slate-700/50">
             <div className="flex items-center gap-2 px-4 py-3 bg-slate-900 border-b border-slate-700/50">
               <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-400" /><div className="w-3 h-3 rounded-full bg-amber-400" /><div className="w-3 h-3 rounded-full bg-green-400" /></div>
@@ -565,3 +565,9 @@ export default function LandingPage() {
     </div>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
