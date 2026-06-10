@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { TrendingUp } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -60,63 +60,63 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-navy flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
         <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-amber flex items-center justify-center">
-            <TrendingUp className="w-6 h-6 text-navy" />
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
+            <BarChart3 className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="font-heading font-bold text-xl text-white">
-              Tradie<span className="text-amber">Pilot</span>
+            <h1 className="font-bold text-xl text-slate-900 tracking-tight">
+              Tradie<span className="text-indigo-600">Pilot</span>
             </h1>
-            <p className="text-[10px] text-gray-400 font-medium tracking-wider uppercase">
+            <p className="text-[10px] text-slate-400 font-medium tracking-wider uppercase">
               Profit Intelligence
             </p>
           </div>
         </div>
 
-        <div className="card-elevated">
-          <h2 className="text-lg font-heading font-bold text-white mb-1">Create account</h2>
-          <p className="text-sm text-gray-400 mb-6">Start tracking your profits</p>
+        <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
+          <h2 className="text-lg font-bold text-slate-900 mb-1">Create account</h2>
+          <p className="text-sm text-slate-500 mb-6">Start tracking your profits</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs text-gray-400 mb-1.5 font-medium">Name</label>
+              <label className="block text-xs text-slate-600 mb-1.5 font-medium">Name</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                className="w-full bg-navy-surface border border-navy-border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-amber/40 transition-colors"
+                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-colors"
                 placeholder="Joe Tradie" required />
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1.5 font-medium">Email</label>
+              <label className="block text-xs text-slate-600 mb-1.5 font-medium">Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-navy-surface border border-navy-border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-amber/40 transition-colors"
+                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-colors"
                 placeholder="joe@tradiepilot.com" required />
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1.5 font-medium">Password</label>
+              <label className="block text-xs text-slate-600 mb-1.5 font-medium">Password</label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-navy-surface border border-navy-border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-amber/40 transition-colors"
-                placeholder="Create a password" required />
+                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-colors"
+                placeholder="At least 6 characters" required />
             </div>
 
             {error && (
-              <p className="text-xs text-profit-red bg-profit-red/5 border border-profit-red/20 rounded-lg p-2">{error}</p>
+              <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">{error}</p>
             )}
 
             <button type="submit" disabled={loading}
-              className="w-full bg-amber text-navy font-semibold py-2.5 rounded-lg hover:bg-amber-600 transition-all duration-200 active:scale-[0.98] disabled:opacity-50">
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 active:scale-[0.98] disabled:opacity-50">
               {loading ? "Creating account..." : "Create Account"}
             </button>
           </form>
 
-          <p className="text-xs text-gray-500 text-center mt-4">
+          <p className="text-xs text-slate-500 text-center mt-4">
             Already have an account?{" "}
-            <a href="/login" className="text-amber hover:text-amber-400">Sign in</a>
+            <a href="/login" className="text-indigo-600 hover:text-indigo-700 font-medium">Sign in</a>
           </p>
         </div>
       </motion.div>
