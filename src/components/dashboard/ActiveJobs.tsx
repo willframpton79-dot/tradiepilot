@@ -6,8 +6,8 @@ import { ChevronRight } from "lucide-react";
 import { type Job, activeJobs as fallbackJobs } from "@/lib/sampleData";
 
 export default function ActiveJobs({ jobs: propsJobs }: { jobs?: Job[] }) {
-  const [jobs, setJobs] = useState<Job[]>(propsJobs || []);
-  const [isLoading, setIsLoading] = useState(!propsJobs);
+  const [jobs, setJobs] = useState<Job[]>(propsJobs || fallbackJobs.slice(0, 5));
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (propsJobs) return;
@@ -15,15 +15,11 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: Job[] }) {
       try {
         const res = await fetch("/api/data");
         const data = await res.json();
-        if (data.jobs && Array.isArray(data.jobs)) {
+        if (data.jobs && Array.isArray(data.jobs) && data.jobs.length > 0) {
           setJobs(data.jobs.slice(0, 5));
-        } else {
-          setJobs(fallbackJobs.slice(0, 5));
         }
       } catch (error) {
-        setJobs(fallbackJobs.slice(0, 5));
-      } finally {
-        setIsLoading(false);
+        // keep fallback already set in useState
       }
     }
     fetchJobs();
