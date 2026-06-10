@@ -1,10 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
-}
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/placeholder_build_db';
 
 interface MongooseCache {
   conn: typeof mongoose | null;
@@ -23,6 +19,10 @@ if (!global.mongooseCache) {
 }
 
 export async function connectDB(): Promise<typeof mongoose> {
+  if (!process.env.MONGODB_URI) {
+    console.warn('Warning: MONGODB_URI is not defined, using placeholder database');
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
