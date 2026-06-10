@@ -45,12 +45,12 @@ export default function EscalationPage() {
             <ArrowLeft className="w-4 h-4" /> Back to Invoices
           </Link>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
+            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600 shrink-0">
               <Gavel className="w-6 h-6" />
             </div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Legal Escalation</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Legal Escalation</h1>
           </div>
-          <p className="text-slate-500 max-w-2xl font-medium">
+          <p className="text-sm sm:text-base text-slate-500 max-w-2xl font-medium">
             Take formal action on severely overdue invoices. These tools are designed to help you recover large debts using Australian Security of Payment (SOPA) frameworks.
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function EscalationPage() {
               Your invoices are automatically tagged with Security of Payment Act (SOPA) notices. This gives you the legal right to suspend work and seek adjudication for unpaid work.
             </p>
           </div>
-          <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg text-xs font-bold border border-white/20">
+          <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg text-[10px] font-bold border border-white/20 whitespace-nowrap">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             ACTIVE PROTECTION
           </div>
@@ -75,8 +75,8 @@ export default function EscalationPage() {
         {/* Critical Invoices */}
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-500" /> 
-            Qualified for Escalation (30+ Days & $2,000+)
+            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" /> 
+            Qualified for Escalation
           </h2>
           
           <div className="grid grid-cols-1 gap-4">
@@ -84,14 +84,14 @@ export default function EscalationPage() {
               <motion.div 
                 key={inv.id}
                 variants={fadeUp}
-                className="bg-white border-2 border-red-100 rounded-2xl p-6 shadow-sm relative overflow-hidden"
+                className="bg-white border-2 border-red-100 rounded-2xl p-4 sm:p-6 shadow-sm relative overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-red-50/50 rounded-full -mr-16 -mt-16 -z-10" />
                 
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                   <div>
-                    <h3 className="text-xl font-bold text-slate-900">{inv.client}</h3>
-                    <p className="text-sm text-slate-500 font-medium mt-1">{inv.project}</p>
+                    <h3 className="text-lg sm:text-xl font-bold text-slate-900">{inv.client}</h3>
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">{inv.project}</p>
                     <div className="flex items-center gap-4 mt-4">
                       <div className="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Amount</p>
@@ -105,12 +105,12 @@ export default function EscalationPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
-                    <button className="flex items-center gap-2 bg-slate-900 text-white font-bold px-5 py-3 rounded-xl hover:bg-slate-800 transition-all text-sm">
+                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-900 text-white font-bold px-5 py-3 rounded-xl hover:bg-slate-800 transition-all text-sm">
                       <AlertCircle className="w-4 h-4" /> Final Notice
                     </button>
-                    <button className="flex items-center gap-2 bg-white border-2 border-slate-200 text-slate-700 font-bold px-5 py-3 rounded-xl hover:border-indigo-600 hover:text-indigo-600 transition-all text-sm group">
+                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-700 font-bold px-5 py-3 rounded-xl hover:border-indigo-600 hover:text-indigo-600 transition-all text-sm group">
                       <FileText className="w-4 h-4" /> 
-                      Statutory Demand 
+                      <span className="whitespace-nowrap">Stat Demand</span>
                       <Download className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
                     </button>
                   </div>
@@ -122,11 +122,11 @@ export default function EscalationPage() {
 
         {/* Secondary Options */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl p-8 hover:border-indigo-200 transition-colors">
+          <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 hover:border-indigo-200 transition-colors">
             <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 mb-6">
               <FileText className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900">Payment Schedule</h3>
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900">Payment Schedule</h3>
             <p className="text-slate-500 mt-2 text-sm leading-relaxed">
               Generate a formal response to a payment claim under the SOPA legislation. Essential for defending disputed amounts.
             </p>
@@ -135,11 +135,11 @@ export default function EscalationPage() {
             </button>
           </motion.div>
 
-          <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl p-8 hover:border-indigo-200 transition-colors">
+          <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 hover:border-indigo-200 transition-colors">
             <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 mb-6">
               <Phone className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900">Collection Agency</h3>
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900">Collection Agency</h3>
             <p className="text-slate-500 mt-2 text-sm leading-relaxed">
               Hand over this debt to our partner collection agency. No upfront fees, they only take a percentage of recovered funds.
             </p>
@@ -185,3 +185,45 @@ export default function EscalationPage() {
     </div>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

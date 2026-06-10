@@ -80,12 +80,12 @@ export default function SettingsPage() {
         {/* Header */}
         <motion.div variants={fadeUp}>
           <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
               <SettingsIcon className="w-6 h-6 text-indigo-600" />
             </div>
             Settings
           </h1>
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-sm sm:text-base text-slate-500">
             Manage your account settings and business preferences.
           </p>
         </motion.div>
@@ -96,19 +96,19 @@ export default function SettingsPage() {
             <motion.div
               key={section.title}
               variants={fadeUp}
-              className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow"
+              className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
                   <section.icon className="w-6 h-6 text-slate-600" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <h2 className="text-lg font-bold text-slate-900">{section.title}</h2>
-                  <p className="text-sm text-slate-500 mt-1">{section.description}</p>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1">{section.description}</p>
                   <ul className="mt-4 space-y-2">
                     {section.items.map((item) => (
                       <li key={item}>
-                        <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline transition-all">
+                        <button className="text-xs sm:text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline transition-all">
                           {item}
                         </button>
                       </li>
@@ -137,3 +137,9 @@ export default function SettingsPage() {
     </div>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

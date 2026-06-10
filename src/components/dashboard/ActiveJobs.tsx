@@ -47,11 +47,11 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: any[] }) {
               <Link
                 key={job.id || job._id}
                 href={`/jobs/${job.id || job._id}`}
-                className="group flex items-center py-4 hover:bg-slate-50 transition-all duration-200 -mx-6 px-6"
+                className="group flex items-center py-4 hover:bg-slate-50 transition-all duration-200 -mx-4 sm:-mx-6 px-4 sm:px-6"
               >
-                <div className="flex-1 min-w-0 mr-4">
+                <div className="flex-1 min-w-0 mr-3 sm:mr-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <h4 className="text-sm font-bold text-slate-800 truncate group-hover:text-indigo transition-colors">
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-800 truncate group-hover:text-indigo transition-colors">
                       {job.name || job.title}
                     </h4>
                     <span className={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${
@@ -72,15 +72,15 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: any[] }) {
                   </div>
                 </div>
 
-                <div className="text-right mr-4 shrink-0">
-                  <p className={`text-sm font-bold financial-figure ${
+                <div className="text-right mr-3 sm:mr-4 shrink-0">
+                  <p className={`text-xs sm:text-sm font-bold financial-figure ${
                     (job.margin || job.marginPct) < 20 ? 'text-red-600' :
                     (job.margin || job.marginPct) < 30 ? 'text-amber-600' :
                     'text-green-600'
                   }`}>
                     {(job.margin || job.marginPct).toFixed(1)}%
                   </p>
-                  <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Margin</p>
+                  <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium uppercase tracking-wider">Margin</p>
                 </div>
 
                 <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo transition-colors" />
@@ -97,3 +97,9 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: any[] }) {
     </div>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

@@ -38,18 +38,18 @@ export default function Dashboard() {
         className="space-y-10"
       >
         {/* Header */}
-        <motion.div variants={fadeUp} className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
               Good morning, {session?.user?.name?.split(' ')[0] || 'Partner'}
             </h1>
-            <p className="text-slate-500 mt-1 font-medium">Here's your profit intelligence for today.</p>
+            <p className="text-sm sm:text-base text-slate-500 mt-1 font-medium">Here&apos;s your profit intelligence for today.</p>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-lg hover:border-indigo-300 transition-all text-sm">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-lg hover:border-indigo-300 transition-all text-xs sm:text-sm">
               Export Report
             </button>
-            <button className="flex items-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-all shadow-sm text-sm">
+            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-all shadow-sm text-xs sm:text-sm">
               <Plus className="w-4 h-4" /> New Job
             </button>
           </div>
@@ -165,3 +165,9 @@ export default function Dashboard() {
     </div>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

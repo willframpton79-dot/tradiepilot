@@ -101,15 +101,15 @@ export default function QuoteFollowUp({ quotes: propsQuotes }: { quotes?: any[] 
                 </div>
 
                 <div className="min-w-0 mb-3">
-                  <h3 className="text-sm font-bold text-slate-800 truncate">{quote.client}</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">{quote.job}</p>
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-800 truncate">{quote.client}</h3>
+                  <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5">{quote.job}</p>
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t border-slate-50">
                   <div className="flex items-center gap-1 text-slate-900 font-bold">
-                    <span className="text-sm tracking-tight">${quote.amount?.toLocaleString()}</span>
+                    <span className="text-xs sm:text-sm tracking-tight">${quote.amount?.toLocaleString()}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-400 font-medium">
                     <Clock className="w-3 h-3" />
                     {quote.daysSince}d ago
                   </div>
@@ -135,3 +135,9 @@ export default function QuoteFollowUp({ quotes: propsQuotes }: { quotes?: any[] 
     </div>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

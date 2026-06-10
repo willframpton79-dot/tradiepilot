@@ -36,17 +36,17 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Navbar */}
-      <nav className="bg-white border-b border-slate-200 px-6 py-4">
+      <nav className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
               <BarChart3 className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-slate-900 tracking-tight">TradiePilot</span>
+            <span className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">TradiePilot</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-400 font-medium">Step {currentStep} of 3</span>
-            <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <span className="text-[10px] sm:text-sm text-slate-400 font-medium">Step {currentStep} of 3</span>
+            <div className="w-16 sm:w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
               <motion.div 
                 className="h-full bg-indigo-600"
                 initial={{ width: "33%" }}
@@ -69,7 +69,7 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -20 }}
                 className="bg-white rounded-3xl p-10 shadow-xl shadow-slate-200/60 border border-slate-100"
               >
-                <h2 className="text-3xl font-bold text-slate-900">Let&apos;s set up your business</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Let&apos;s set up your business</h2>
                 <p className="text-slate-500 mt-2 font-medium">This helps us tailor your profit engine.</p>
 
                 <div className="mt-8 space-y-6">
@@ -78,7 +78,7 @@ export default function OnboardingPage() {
                     <input 
                       type="text" 
                       placeholder="e.g. Apex Plumbing & Drainage"
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-sm sm:text-base"
                       value={formData.businessName}
                       onChange={(e) => setFormData({...formData, businessName: e.target.value})}
                     />
@@ -90,7 +90,7 @@ export default function OnboardingPage() {
                         <button
                           key={ind}
                           onClick={() => setFormData({...formData, industry: ind})}
-                          className={`px-4 py-3 rounded-xl text-sm font-bold border transition-all ${
+                          className={`px-3 sm:px-4 py-3 rounded-xl text-xs sm:text-sm font-bold border transition-all ${
                             formData.industry === ind 
                               ? "bg-indigo-50 border-indigo-600 text-indigo-700" 
                               : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
@@ -119,9 +119,9 @@ export default function OnboardingPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="bg-white rounded-3xl p-10 shadow-xl shadow-slate-200/60 border border-slate-100"
+                className="bg-white rounded-3xl p-6 sm:p-10 shadow-xl shadow-slate-200/60 border border-slate-100"
               >
-                <h2 className="text-3xl font-bold text-slate-900">Connect your tools</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Connect your tools</h2>
                 <p className="text-slate-500 mt-2 font-medium">TradiePilot works alongside your current software.</p>
 
                 <div className="mt-8 space-y-3">
@@ -129,13 +129,13 @@ export default function OnboardingPage() {
                     <button
                       key={tool}
                       onClick={() => setFormData({...formData, dataTool: tool})}
-                      className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl border transition-all ${
+                      className={`w-full flex items-center justify-between px-6 py-3 sm:py-4 rounded-2xl border transition-all ${
                         formData.dataTool === tool 
                           ? "bg-indigo-50 border-indigo-600 text-indigo-700 shadow-sm" 
                           : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
                       }`}
                     >
-                      <span className="font-bold">{tool}</span>
+                      <span className="font-bold text-sm sm:text-base">{tool}</span>
                       {formData.dataTool === tool && <CheckCircle2 className="w-5 h-5" />}
                     </button>
                   ))}
@@ -144,13 +144,13 @@ export default function OnboardingPage() {
                 <div className="mt-10 flex gap-3">
                   <button 
                     onClick={prevStep}
-                    className="flex-1 bg-slate-50 text-slate-600 font-bold py-4 rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 bg-slate-50 text-slate-600 font-bold py-3 sm:py-4 rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
                     <ChevronLeft className="w-5 h-5" /> Back
                   </button>
                   <button 
                     onClick={nextStep}
-                    className="flex-[2] bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                    className="flex-[2] bg-indigo-600 text-white font-bold py-3 sm:py-4 rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
                     Continue <ChevronRight className="w-5 h-5" />
                   </button>
@@ -164,13 +164,13 @@ export default function OnboardingPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="bg-white rounded-3xl p-10 shadow-xl shadow-slate-200/60 border border-slate-100"
+                className="bg-white rounded-3xl p-6 sm:p-10 shadow-xl shadow-slate-200/60 border border-slate-100"
               >
-                <h2 className="text-3xl font-bold text-slate-900">Set your target margin</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Set your target margin</h2>
                 <p className="text-slate-500 mt-2 font-medium">We&apos;ll alert you if a job falls below this threshold.</p>
 
                 <div className="mt-10 text-center">
-                  <div className="inline-flex items-center justify-center w-32 h-32 rounded-full border-8 border-indigo-50 bg-white text-4xl font-black text-indigo-600 mb-8">
+                  <div className="inline-flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-full border-8 border-indigo-50 bg-white text-3xl sm:text-4xl font-black text-indigo-600 mb-8">
                     {formData.targetMargin}%
                   </div>
                   
@@ -191,9 +191,9 @@ export default function OnboardingPage() {
                   </div>
                 </div>
 
-                <div className="mt-8 bg-indigo-50 rounded-2xl p-6 border border-indigo-100 flex items-start gap-4">
+                <div className="mt-8 bg-indigo-50 rounded-2xl p-4 sm:p-6 border border-indigo-100 flex items-start gap-4">
                   <ShieldCheck className="w-6 h-6 text-indigo-600 shrink-0" />
-                  <p className="text-sm text-indigo-900 font-medium leading-relaxed">
+                  <p className="text-xs sm:text-sm text-indigo-900 font-medium leading-relaxed">
                     A {formData.targetMargin}% target margin means for every $1,000 you bill, you aim for ${((formData.targetMargin/100)*1000).toLocaleString()} in profit after all costs.
                   </p>
                 </div>
@@ -201,13 +201,13 @@ export default function OnboardingPage() {
                 <div className="mt-10 flex gap-3">
                   <button 
                     onClick={prevStep}
-                    className="flex-1 bg-slate-50 text-slate-600 font-bold py-4 rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 bg-slate-50 text-slate-600 font-bold py-3 sm:py-4 rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
                     <ChevronLeft className="w-5 h-5" /> Back
                   </button>
                   <Link 
                     href="/dashboard"
-                    className="flex-[2] bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                    className="flex-[2] bg-indigo-600 text-white font-bold py-3 sm:py-4 rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
                     Complete Setup <CheckCircle2 className="w-5 h-5" />
                   </Link>
@@ -227,3 +227,21 @@ export default function OnboardingPage() {
     </div>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

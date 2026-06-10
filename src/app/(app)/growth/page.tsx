@@ -51,21 +51,21 @@ export default function GrowthPage() {
           <p className="text-slate-500 mt-1 font-medium">Data-driven insights to scale your construction business.</p>
         </motion.div>
 
-        {/* Forecast Grid */}
+        {/* Forecasting Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.div variants={fadeUp} className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 lg:p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-8">
+          <motion.div variants={fadeUp} className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Profit Forecast</h3>
                 <p className="text-sm text-slate-500">Projected vs Actual performance</p>
               </div>
-              <select className="bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold px-3 py-1.5 focus:outline-none">
+              <select className="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold px-3 py-1.5 focus:outline-none">
                 <option>Last 6 Months</option>
                 <option>Year to Date</option>
               </select>
             </div>
             
-            <div className="h-64 flex items-end gap-2 lg:gap-4">
+            <div className="h-64 flex items-end gap-2 sm:gap-4 overflow-hidden">
               {[45, 62, 58, 85, 74, 92].map((height, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-2">
                   <div className="w-full bg-slate-50 rounded-t-lg relative group h-full">
@@ -83,15 +83,15 @@ export default function GrowthPage() {
           </motion.div>
 
           <motion.div variants={fadeUp} className="bg-indigo-600 rounded-2xl p-6 lg:p-8 text-white shadow-lg shadow-indigo-200 relative overflow-hidden">
-            <Zap className="absolute -right-4 -top-4 w-32 h-32 text-white/10" />
+            <Zap className="absolute -right-4 -top-4 w-24 h-24 sm:w-32 sm:h-32 text-white/10" />
             <div className="relative z-10">
               <h3 className="text-lg font-bold mb-2">Growth Target</h3>
               <p className="text-indigo-100 text-sm mb-8">You are currently at 84% of your Q2 profit goal.</p>
               
               <div className="mb-8">
-                <div className="flex justify-between text-xs font-bold uppercase tracking-wider mb-2">
+                <div className="flex justify-between text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2">
                   <span>Progress</span>
-                  <span>$168,000 / $200,000</span>
+                  <span className="text-[10px] sm:text-xs">$168k / $200k</span>
                 </div>
                 <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
                   <div className="h-full bg-white rounded-full" style={{ width: '84%' }} />
@@ -142,3 +142,9 @@ export default function GrowthPage() {
     </div>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'

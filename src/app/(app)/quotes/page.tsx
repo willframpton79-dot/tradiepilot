@@ -42,9 +42,9 @@ export default function QuotesPage() {
 
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Quotes</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Quotes</h1>
           <p className="text-slate-500 mt-1 font-medium">Manage your project proposals and estimates.</p>
         </div>
         <button className="flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition-all shadow-sm text-sm">
@@ -56,7 +56,7 @@ export default function QuotesPage() {
         {/* Main Content */}
         <div className="lg:col-span-3 space-y-6">
           {/* Filters */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-center">
+          <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-center">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input 
@@ -67,8 +67,8 @@ export default function QuotesPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2 w-full md:w-auto">
-              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all">
                 <Filter className="w-4 h-4" /> Filter
               </button>
             </div>
@@ -76,8 +76,13 @@ export default function QuotesPage() {
 
           {/* Quotes Table */}
           <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+            <div className="sm:hidden px-6 py-2 border-b border-slate-50 bg-indigo-50/30">
+              <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-2">
+                <ArrowRight className="w-3 h-3 animate-pulse" /> Swipe to see more
+              </p>
+            </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[600px] sm:min-w-0">
                 <thead>
                   <tr className="bg-slate-50/50 border-b border-slate-100">
                     <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Client & Project</th>
@@ -203,3 +208,9 @@ export default function QuotesPage() {
     </div>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
