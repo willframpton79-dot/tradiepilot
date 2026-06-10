@@ -23,13 +23,13 @@ export default function UpgradeBanner() {
         <div className="absolute top-0 left-0 w-32 h-full bg-indigo-400/20 skew-x-12 -translate-x-10 z-0" />
         
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
+          <div className="flex flex-col sm:flex-row items-center gap-5">
             <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 shadow-inner">
               <Sparkles className="w-7 h-7 text-indigo-100 fill-indigo-100/50" />
             </div>
-            <div>
-              <h3 className="text-xl font-bold tracking-tight">Unlock Unlimited Profit Intelligence</h3>
-              <p className="text-indigo-100 text-sm mt-1 font-medium max-w-xl">
+            <div className="text-center sm:text-left">
+              <h3 className="text-lg sm:text-xl font-bold tracking-tight">Unlock Unlimited Profit Intelligence</h3>
+              <p className="text-indigo-100 text-xs sm:text-sm mt-1 font-medium max-w-xl">
                 You&apos;re currently on the free trial. Upgrade to Pro to unlock unlimited active jobs, Xero/MYOB sync, and Suburban Hotspot mapping.
               </p>
             </div>
@@ -54,3 +54,9 @@ export default function UpgradeBanner() {
     </AnimatePresence>
   );
 }
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
+/home/engine/.bashrc: line 1: syntax error near unexpected token `('
+/home/engine/.bashrc: line 1: `. /etc/profile.d/workload-containment.shn# ~/.bashrc: executed by bash(1) for non-login shells.'
