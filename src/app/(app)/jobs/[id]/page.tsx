@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import { 
   ArrowLeft, 
   TrendingUp, 
@@ -11,7 +12,13 @@ import {
   MapPin,
   CheckCircle2,
   AlertCircle,
-  Download
+  Download,
+  CreditCard,
+  X,
+  Copy,
+  Check,
+  Mail,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -46,6 +53,92 @@ export default function JobDetailPage() {
     ]
   };
 
+  // Payment Link States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [amount, setAmount] = useState(job.contractValue.toString());
+  const [clientEmail, setClientEmail] = useState("sarah.johnson@example.com");
+  const [clientName, setClientName] = useState(job.client);
+  const [description, setDescription] = useState(`Secure Payment Request for ${job.name}`);
+  const [loading, setLoading] = useState(false);
+  const [generatedUrl, setGeneratedUrl] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleGenerateLink = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/stripe/payment-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobId: job.id,
+          amount,
+          clientEmail,
+          clientName,
+          description,
+          jobName: job.name
+        }),
+      });
+      const data = await response.json();
+      if (response.ok && data.url) {
+        setGeneratedUrl(data.url);
+      } else {
+        alert(data.error || 'Failed to generate payment link');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while generating the payment link.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    setEmailLoading(true);
+    try {
+      const response = await fetch('/api/stripe/payment-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobId: job.id,
+          amount,
+          clientEmail,
+          clientName,
+          description,
+          jobName: job.name,
+          sendEmail: true,
+          paymentUrl: generatedUrl
+        }),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setEmailSent(true);
+        setTimeout(() => setEmailSent(false), 3000);
+      } else {
+        alert(data.error || 'Failed to send email');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while sending the email.');
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(generatedUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setGeneratedUrl("");
+    setEmailSent(false);
+    setCopied(false);
+  };
+
   return (
     <div className="p-6 lg:p-10 max-w-6xl mx-auto">
       <motion.div
@@ -76,26 +169,34 @@ export default function JobDetailPage() {
               </span>
               <button
                 onClick={() => printJobReport({
-                title: job.name,
-                client: { name: job.client },
-                quotedTotal: job.contractValue,
-                actualTotal: job.costsToDate,
-                margin: job.contractValue - job.costsToDate,
-                marginPct: job.margin * 100,
-                quotedLabour: job.contractValue * 0.4,
-                actualLabour: job.costsToDate * 0.45,
-                quotedMaterials: job.contractValue * 0.5,
-                actualMaterials: job.costsToDate * 0.45,
-                quotedSubcontractors: job.contractValue * 0.1,
-                actualSubcontractors: job.costsToDate * 0.1,
-                startDate: job.startDate,
-                dueDate: job.estimatedEnd,
-                status: job.status,
-              })}
+                  title: job.name,
+                  client: { name: job.client },
+                  quotedTotal: job.contractValue,
+                  actualTotal: job.costsToDate,
+                  margin: job.contractValue - job.costsToDate,
+                  marginPct: job.margin * 100,
+                  quotedLabour: job.contractValue * 0.4,
+                  actualLabour: job.costsToDate * 0.45,
+                  quotedMaterials: job.contractValue * 0.5,
+                  actualMaterials: job.costsToDate * 0.45,
+                  quotedSubcontractors: job.contractValue * 0.1,
+                  actualSubcontractors: job.costsToDate * 0.1,
+                  startDate: job.startDate,
+                  dueDate: job.estimatedEnd,
+                  status: job.status,
+                })}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition-all"
               >
                 <Download className="w-4 h-4" /> PDF Report
               </button>
+              
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition-all"
+              >
+                <CreditCard className="w-4 h-4 text-indigo-600" /> Send Payment Link
+              </button>
+
               <button className="bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all text-sm">
                 Edit Job
               </button>
@@ -178,6 +279,193 @@ export default function JobDetailPage() {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Collect On-Site Payment Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden"
+          >
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-indigo-600" /> Collect On-Site Payment
+              </h3>
+              <button 
+                onClick={closeModal}
+                className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {!generatedUrl ? (
+                <>
+                  <p className="text-xs text-slate-500">
+                    Generate a secure Stripe Payment Link to collect credit card payment on-site or send directly to the client.
+                  </p>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        Amount (AUD)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-2.5 text-slate-400 font-medium">$</span>
+                        <input
+                          type="number"
+                          value={amount}
+                          onChange={(e) => setAmount(e.target.value)}
+                          className="w-full pl-8 pr-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm font-medium"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        Client Name
+                      </label>
+                      <input
+                        type="text"
+                        value={clientName}
+                        onChange={(e) => setClientName(e.target.value)}
+                        className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm font-medium"
+                        placeholder="Client Name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        Client Email
+                      </label>
+                      <input
+                        type="email"
+                        value={clientEmail}
+                        onChange={(e) => setClientEmail(e.target.value)}
+                        className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm font-medium"
+                        placeholder="client@example.com"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        Payment Description
+                      </label>
+                      <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        rows={2}
+                        className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm font-medium resize-none"
+                        placeholder="e.g. Final payment for bathroom renovation"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 flex items-center justify-end gap-2">
+                    <button
+                      onClick={closeModal}
+                      className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleGenerateLink}
+                      disabled={loading || !amount || parseFloat(amount) <= 0}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" /> Generating...
+                        </>
+                      ) : (
+                        "Generate Payment Link"
+                      )}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-6">
+                  <div className="bg-green-50 border border-green-100 rounded-xl p-4 flex gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-bold text-green-800">Payment Link Ready</h4>
+                      <p className="text-xs text-green-700 mt-1">
+                        You can now copy this link to collect payment immediately, or send a branded reminder email to the client.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                      Generated Link
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={generatedUrl}
+                        className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 text-sm font-medium outline-none select-all"
+                      />
+                      <button
+                        onClick={handleCopyLink}
+                        className={`px-4 py-2 rounded-lg border text-sm font-bold transition-all flex items-center gap-1.5 ${
+                          copied 
+                            ? "bg-green-50 border-green-200 text-green-700" 
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-4 h-4" /> Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" /> Copy
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-4 flex flex-col sm:flex-row gap-2">
+                    <button
+                      onClick={handleSendEmail}
+                      disabled={emailLoading}
+                      className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                        emailSent
+                          ? "bg-green-600 text-white hover:bg-green-700"
+                          : "bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                      }`}
+                    >
+                      {emailLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" /> Sending...
+                        </>
+                      ) : emailSent ? (
+                        <>
+                          <Check className="w-4 h-4" /> Email Sent Successfully!
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="w-4 h-4" /> Send via Email
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={closeModal}
+                      className="px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

@@ -183,3 +183,59 @@ export async function sendInvoiceChaseReminder(email: string, name: string, invo
     return { success: false, error: err.message || err };
   }
 }
+
+export async function sendPaymentLink(clientName: string, clientEmail: string, jobName: string, amount: number, paymentUrl: string) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'TradiePilot Payments <billing@resend.dev>',
+      to: [clientEmail],
+      subject: `Secure Payment Request: ${jobName}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #4f46e5; margin-bottom: 20px;">Payment Request</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
+            Dear ${clientName},
+          </p>
+          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
+            A secure payment request of <strong>$${amount.toFixed(2)} AUD</strong> has been generated for the job <strong>${jobName}</strong>.
+          </p>
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin: 20px 0;">
+            <table style="width: 100%; font-size: 15px; color: #334155; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0;"><strong>Job / Project:</strong></td>
+                <td style="text-align: right; padding: 6px 0;">${jobName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0;"><strong>Amount Due:</strong></td>
+                <td style="text-align: right; padding: 6px 0; font-weight: bold; color: #4f46e5;">$${amount.toFixed(2)} AUD</td>
+              </tr>
+            </table>
+          </div>
+          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
+            To complete this payment securely on-site or online via Stripe, please click the link below:
+          </p>
+          <div style="margin-top: 30px; text-align: center;">
+            <a href="${paymentUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Pay Securely Now</a>
+          </div>
+          <p style="font-size: 14px; color: #64748b; text-align: center; margin-top: 20px;">
+            This is a secure on-site payment request powered by Stripe.
+          </p>
+          <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
+          <p style="font-size: 12px; color: #64748b; text-align: center;">
+            TradiePilot Pty Ltd, Australia. All rights reserved.
+          </p>
+        </div>
+      `,
+      text: `Dear ${clientName},\n\nA secure payment request of $${amount.toFixed(2)} AUD has been generated for the job ${jobName}.\n\nTo complete this payment securely, please visit: ${paymentUrl}\n\nThis is a secure on-site payment powered by Stripe.\n\nBest regards,\nThe TradiePilot Team`,
+    });
+
+    if (error) {
+      console.error('Error sending payment link email:', error);
+      return { success: false, error };
+    }
+    return { success: true, data };
+  } catch (err: any) {
+    console.error('Failed to send payment link email:', err);
+    return { success: false, error: err.message || err };
+  }
+}
