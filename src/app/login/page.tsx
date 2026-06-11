@@ -41,7 +41,6 @@ export default function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-8">
           <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
             <TrendingUp className="w-6 h-6 text-white" />
@@ -105,12 +104,6 @@ export default function LoginPage() {
               Sign up
             </a>
           </p>
-
-          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-              Use any email/password to sign in
-            </p>
-          </div>
         </div>
       </motion.div>
     </div>
