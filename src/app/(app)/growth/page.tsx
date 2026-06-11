@@ -2,7 +2,6 @@
 
 import { 
   TrendingUp, 
-  BarChart3, 
   Target, 
   Zap, 
   ArrowUpRight,
@@ -10,6 +9,7 @@ import {
   Lightbulb
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 15 },
@@ -37,7 +37,23 @@ const insights = [
   }
 ];
 
+const periodOptions = [
+  { label: 'Last 7 Days', data: [30, 45, 38, 52, 48, 61, 55] },
+  { label: 'Last 30 Days', data: [45, 52, 48, 65, 58, 72, 68] },
+  { label: 'Last 3 Months', data: [45, 62, 58, 85, 74, 92, 88] },
+  { label: 'Last 6 Months', data: [45, 62, 58, 85, 74, 92] },
+  { label: 'Year to Date', data: [30, 45, 62, 58, 85, 74, 92, 88, 95, 78, 82, 90] },
+];
+
+const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
 export default function GrowthPage() {
+  const [selectedPeriod, setSelectedPeriod] = useState('Last 6 Months');
+
+  const currentPeriod = periodOptions.find(p => p.label === selectedPeriod) || periodOptions[3];
+  const labels = selectedPeriod === 'Last 7 Days' ? dayLabels : monthLabels;
+
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto">
       <motion.div
@@ -59,14 +75,19 @@ export default function GrowthPage() {
                 <h3 className="text-lg font-bold text-slate-900">Profit Forecast</h3>
                 <p className="text-sm text-slate-500">Projected vs Actual performance</p>
               </div>
-              <select className="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold px-3 py-1.5 focus:outline-none">
-                <option>Last 6 Months</option>
-                <option>Year to Date</option>
+              <select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              >
+                {periodOptions.map(p => (
+                  <option key={p.label}>{p.label}</option>
+                ))}
               </select>
             </div>
             
             <div className="h-64 flex items-end gap-2 sm:gap-4 overflow-hidden">
-              {[45, 62, 58, 85, 74, 92].map((height, i) => (
+              {currentPeriod.data.map((height, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-2">
                   <div className="w-full bg-slate-50 rounded-t-lg relative group h-full">
                     <motion.div 
@@ -76,22 +97,24 @@ export default function GrowthPage() {
                       className="absolute bottom-0 left-0 right-0 bg-indigo-500 rounded-t-lg group-hover:bg-indigo-600 transition-colors"
                     />
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">{['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][i]}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">
+                    {selectedPeriod === 'Last 7 Days' ? dayLabels[i] : labels[i]}
+                  </span>
                 </div>
               ))}
             </div>
           </motion.div>
 
-          <motion.div variants={fadeUp} className="bg-indigo-600 rounded-2xl p-6 lg:p-8 text-white shadow-lg shadow-indigo-200 relative overflow-hidden">
+          <motion.div variants={fadeUp} className="bg-indigo-600 rounded-2xl p-6 lg:p-8 shadow-lg shadow-indigo-200 relative overflow-hidden">
             <Zap className="absolute -right-4 -top-4 w-24 h-24 sm:w-32 sm:h-32 text-white/10" />
             <div className="relative z-10">
-              <h3 className="text-lg font-bold mb-2">Growth Target</h3>
-              <p className="text-indigo-100 text-sm mb-8">You are currently at 84% of your Q2 profit goal.</p>
+              <h3 className="text-lg font-bold text-white mb-2">Growth Target</h3>
+              <p className="text-indigo-200 text-sm mb-8">You are currently at 84% of your Q2 profit goal.</p>
               
               <div className="mb-8">
-                <div className="flex justify-between text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2">
+                <div className="flex justify-between text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 text-indigo-200">
                   <span>Progress</span>
-                  <span className="text-[10px] sm:text-xs">$168k / $200k</span>
+                  <span>$168k / $200k</span>
                 </div>
                 <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
                   <div className="h-full bg-white rounded-full" style={{ width: '84%' }} />
