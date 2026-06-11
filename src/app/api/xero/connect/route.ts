@@ -18,12 +18,11 @@ export async function GET() {
       clientId,
       clientSecret,
       redirectUris: [redirectUri],
-      scopes: ['openid', 'profile', 'email', 'accounting.transactions.read', 'accounting.contacts.read', 'offline_access'],
+      scopes: ['openid', 'profile', 'email', 'accounting.invoices.read', 'accounting.contacts.read', 'accounting.banktransactions.read', 'offline_access'],
     });
 
     const consentUrl = await xero.buildConsentUrl();
     console.log('[Xero Connect] Redirecting to Xero consent');
-
     return NextResponse.redirect(consentUrl);
   } catch (error: any) {
     console.error('[Xero Connect] Error:', error);
