@@ -94,7 +94,7 @@ function Hero() {
             <a href="/signup" className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-7 py-3.5 rounded-lg shadow-lg shadow-indigo-200/50 transition-all text-base">
               Start Free Trial <ArrowRight className="w-4 h-4" />
             </a>
-            <a href="#demo" className="inline-flex items-center gap-2 bg-white border border-slate-300 hover:border-indigo-300 text-slate-700 font-semibold px-7 py-3.5 rounded-lg transition-all text-base shadow-sm">
+            <a href="#features" className="inline-flex items-center gap-2 bg-white border border-slate-300 hover:border-indigo-300 text-slate-700 font-semibold px-7 py-3.5 rounded-lg transition-all text-base shadow-sm">
               <Play className="w-4 h-4 text-indigo-500" /> See How It Works
             </a>
           </motion.div>
@@ -202,6 +202,7 @@ function StatsStrip() {
             </motion.div>
           ))}
         </motion.div>
+        <p className="text-center text-xs text-slate-400 mt-8">Based on modelled outcomes from TradiePilot&apos;s profit tracking methodology.</p>
       </div>
     </section>
   );
@@ -213,7 +214,7 @@ function ProblemSection() {
     <section className="bg-slate-50 py-16 lg:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
-          <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-slate-900">You&apos;re busy. But are you actually profitable?</motion.h2>
+          <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-slate-900">You&apos;re turning over good revenue. But which jobs are actually making you money?</motion.h2>
         </motion.div>
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
@@ -294,7 +295,7 @@ function FeaturesSection() {
   const current = tabContent[active];
 
   return (
-    <section id="features" className="bg-white py-16 lg:py-24">
+    <section id="features" className="bg-white py-16 lg:py-24" style={{ scrollBehavior: 'smooth' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-10">
           <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-slate-900">Everything you need to run a profitable construction business</motion.h2>
@@ -392,7 +393,7 @@ function IndustriesGrid() {
               <span className="text-3xl block mb-3">{item.emoji}</span>
               <h3 className="text-lg font-semibold text-slate-900">{item.title}</h3>
               <p className="mt-1.5 text-sm text-slate-500">{item.desc}</p>
-              <a href="#" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 group-hover:gap-1.5 transition-all">
+              <a href="/signup" className="mt-3 theme-smooth-scroll inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 group-hover:gap-1.5 transition-all">
                 Learn more <ChevronRight className="w-3.5 h-3.5" />
               </a>
             </motion.div>
@@ -405,13 +406,17 @@ function IndustriesGrid() {
 
 // ─── Pricing ───
 const plans = [
-  { id: "price_starter", name: "Starter", price: 97, desc: "For construction businesses getting started with profit tracking.", features: ["Up to 10 active jobs", "Profit dashboard", "Quote follow-up alerts", "Invoice chasing", "Email support"], popular: false },
+  { id: "price_starter", name: "Starter", price: 97, desc: "For construction businesses ready to take control of their job margins.", features: ["Up to 10 active jobs", "Profit dashboard", "Quote follow-up alerts", "Invoice chasing", "Email support"], popular: false },
   { id: "price_pro", name: "Pro", price: 197, desc: "For growing teams that need the full toolkit.", features: ["Unlimited active jobs", "Everything in Starter", "Growth intelligence", "Xero & MYOB sync", "Priority support"], popular: true },
   { id: "price_enterprise", name: "Enterprise", price: 497, desc: "For larger operations with advanced needs.", features: ["Everything in Pro", "Multi-crew management", "Custom integrations", "Dedicated account manager", "API access"], popular: false },
 ];
 
 function PricingSection() {
   const handleCheckout = async (priceId: string) => {
+    if (priceId === "price_enterprise") {
+      window.location.href = "/contact-sales";
+      return;
+    }
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -512,7 +517,7 @@ function CTASection() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
           <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-white">Ready to know your numbers?</motion.h2>
-          <motion.p variants={fadeUp} className="mt-4 text-lg text-indigo-100">Join hundreds of Australian construction business owners who already track their profit with TradiePilot.</motion.p>
+          <motion.p variants={fadeUp} className="mt-4 text-lg text-indigo-100">Built for Australian construction and trades businesses doing $500K&ndash;$3M in revenue.</motion.p>
           <motion.div variants={fadeUp} className="mt-8">
             <a href="/signup" className="inline-flex items-center gap-2 bg-white text-indigo-700 font-bold px-8 py-3.5 rounded-lg shadow-lg hover:bg-indigo-50 transition-all text-base">
               Start free trial today <ArrowRight className="w-4 h-4" />
@@ -550,7 +555,7 @@ function Footer() {
 // ─── Main Page ───
 export default function LandingPage() {
   return (
-    <div className="bg-white font-sans text-slate-900">
+    <div className="bg-white font-sans text-slate-900 scroll-smooth">
       <Navbar />
       <Hero />
       <StatsStrip />
