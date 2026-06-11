@@ -535,7 +535,7 @@ function Footer() {
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center"><BarChart3 className="w-4 h-4 text-white" /></div>
             <span className="text-lg font-bold text-white">Tradie<span className="text-indigo-400">Pilot</span></span>
           </a>
-          <p className="text-xs text-slate-500 order-3 md:order-2">&copy; {new Date().getFullYear()} © 2026 TradiePilot. A product of Automation Layer. ABN 55 388 054 921.</p>
+          <p className="text-xs text-slate-500 order-3 md:order-2">© {new Date().getFullYear()} TradiePilot. A product of Automation Layer. ABN 55 388 054 921.</p>
           <div className="flex items-center gap-4 text-xs text-slate-400 order-2 md:order-3">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
