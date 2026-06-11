@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Link2, Link2Off, RefreshCw, Loader2, CheckCircle, AlertCircle, XCircle, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function XeroSettingsPage() {
+function XeroSettingsContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -108,7 +108,6 @@ export default function XeroSettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-8"
       >
-        {/* Back + Header */}
         <div>
           <button
             onClick={() => router.push('/settings')}
@@ -117,7 +116,6 @@ export default function XeroSettingsPage() {
             <ArrowLeft className="w-4 h-4" />
             Back to Settings
           </button>
-
           <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
               <ExternalLink className="w-6 h-6 text-indigo-600" />
@@ -129,7 +127,6 @@ export default function XeroSettingsPage() {
           </p>
         </div>
 
-        {/* Status / Error messages */}
         {success && (
           <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
             <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
@@ -162,7 +159,6 @@ export default function XeroSettingsPage() {
           </div>
         )}
 
-        {/* Connection Card */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -172,20 +168,14 @@ export default function XeroSettingsPage() {
               </span>
             </div>
             {connected ? (
-              <button
-                onClick={handleDisconnect}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-              >
-                <Link2Off className="w-4 h-4" />
-                Disconnect
+              <button onClick={handleDisconnect}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                <Link2Off className="w-4 h-4" /> Disconnect
               </button>
             ) : (
-              <button
-                onClick={handleConnect}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
-              >
-                <Link2 className="w-4 h-4" />
-                Connect Xero
+              <button onClick={handleConnect}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                <Link2 className="w-4 h-4" /> Connect Xero
               </button>
             )}
           </div>
@@ -200,51 +190,32 @@ export default function XeroSettingsPage() {
                 <span className="text-slate-500">Last synced</span>
                 <span className="font-medium text-slate-900">{formatDate(lastSyncedAt)}</span>
               </div>
-
-              <button
-                onClick={handleSync}
-                disabled={syncing}
-                className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {syncing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Syncing...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-4 h-4" />
-                    Sync Now
-                  </>
-                )}
+              <button onClick={handleSync} disabled={syncing}
+                className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 disabled:opacity-50 transition-colors">
+                {syncing ? <><Loader2 className="w-4 h-4 animate-spin" />Syncing...</> : <><RefreshCw className="w-4 h-4" />Sync Now</>}
               </button>
             </div>
           )}
         </div>
 
-        {/* Info Card */}
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
           <h2 className="text-lg font-bold text-slate-900 mb-3">About Xero Integration</h2>
           <ul className="space-y-3 text-sm text-slate-600">
-            <li className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-              Syncs invoices from Xero into TradiePilot for unified reporting
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-              Imports your customer contacts
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-              Fetches bank transactions for cashflow analysis
-            </li>
-            <li className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-              Read-only access — TradiePilot never modifies your Xero data
-            </li>
+            <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />Syncs invoices from Xero into TradiePilot for unified reporting</li>
+            <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />Imports your customer contacts</li>
+            <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />Fetches bank transactions for cashflow analysis</li>
+            <li className="flex items-start gap-2"><AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />Read-only access — TradiePilot never modifies your Xero data</li>
           </ul>
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function XeroSettingsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-indigo-600" /></div>}>
+      <XeroSettingsContent />
+    </Suspense>
   );
 }
