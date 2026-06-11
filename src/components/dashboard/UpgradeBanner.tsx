@@ -1,5 +1,4 @@
 'use client';
-
 import { Sparkles, X, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
@@ -7,9 +6,7 @@ import Link from "next/link";
 
 export default function UpgradeBanner() {
   const [isVisible, setIsVisible] = useState(true);
-
   if (!isVisible) return null;
-
   return (
     <AnimatePresence>
       <motion.div 
@@ -18,7 +15,6 @@ export default function UpgradeBanner() {
         exit={{ opacity: 0, height: 0, marginBottom: 0 }}
         className="relative bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-600 rounded-2xl p-6 text-white shadow-xl shadow-indigo-200 overflow-hidden mb-10"
       >
-        {/* Background Decorative Elements */}
         <div className="absolute top-0 right-0 w-64 h-full bg-white/10 -skew-x-12 translate-x-20 z-0" />
         <div className="absolute top-0 left-0 w-32 h-full bg-indigo-400/20 skew-x-12 -translate-x-10 z-0" />
         
@@ -28,7 +24,7 @@ export default function UpgradeBanner() {
               <Sparkles className="w-7 h-7 text-indigo-100 fill-indigo-100/50" />
             </div>
             <div className="text-center sm:text-left">
-              <h3 className="text-lg sm:text-xl font-bold tracking-tight">Unlock Unlimited Profit Intelligence</h3>
+              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white">Unlock Unlimited Profit Intelligence</h3>
               <p className="text-indigo-100 text-xs sm:text-sm mt-1 font-medium max-w-xl">
                 You&apos;re currently on the free trial. Upgrade to Pro to unlock unlimited active jobs, Xero/MYOB sync, and Suburban Hotspot mapping.
               </p>
