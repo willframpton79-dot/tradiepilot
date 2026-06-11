@@ -17,6 +17,18 @@ export interface IUser extends Document {
   xeroTokenExpiresAt?: number;
   xeroConnectedAt?: string;
   xeroLastSyncedAt?: string;
+  gstRegistered: boolean;
+  basPeriod: 'monthly' | 'quarterly';
+  taxRate: number;
+  notifications: {
+    quoteReminders: boolean;
+    invoiceChasers: boolean;
+    marginAlerts: boolean;
+  };
+  emailPreferences: {
+    marketing: boolean;
+    productUpdates: boolean;
+  };
 }
 
 const UserSchema = new Schema({
@@ -36,6 +48,18 @@ const UserSchema = new Schema({
   xeroTokenExpiresAt: { type: Number, default: 0 },
   xeroConnectedAt: { type: String, default: '' },
   xeroLastSyncedAt: { type: String, default: '' },
+  gstRegistered: { type: Boolean, default: false },
+  basPeriod: { type: String, enum: ['monthly', 'quarterly'], default: 'quarterly' },
+  taxRate: { type: Number, default: 10 },
+  notifications: {
+    quoteReminders: { type: Boolean, default: true },
+    invoiceChasers: { type: Boolean, default: true },
+    marginAlerts: { type: Boolean, default: true },
+  },
+  emailPreferences: {
+    marketing: { type: Boolean, default: false },
+    productUpdates: { type: Boolean, default: true },
+  },
 }, { timestamps: true });
 
 export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
