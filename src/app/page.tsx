@@ -452,7 +452,7 @@ function PricingSection() {
                 ))}
               </ul>
               <button 
-                onClick={() => handleCheckout(plan.id)}
+                onClick={() => plan.name === "Enterprise" ? window.location.href = 'mailto:willframpton79@gmail.com' : handleCheckout(plan.id)}
                 className={`w-full mt-6 block text-center font-semibold px-5 py-3 rounded-lg transition-all text-sm ${plan.popular ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
               >
                 {plan.name === "Enterprise" ? "Contact Sales" : "Start Free Trial"}
