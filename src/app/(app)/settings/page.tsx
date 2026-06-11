@@ -19,35 +19,55 @@ const settingsSections = [
     title: 'Account',
     description: 'Manage your personal profile and security.',
     icon: User,
-    items: ['Profile Information', 'Password & Security', 'Email Preferences'],
-    link: null,
+    items: [
+      { label: 'Profile Information', href: '/settings/account' },
+      { label: 'Password & Security', href: '/settings/security' },
+      { label: 'Email Preferences', href: '/settings/email-preferences' },
+    ],
+    link: '/settings/account',
   },
   {
     title: 'Business',
     description: 'Update your construction business details.',
     icon: Building2,
-    items: ['Business Profile', 'Team Management', 'Tax Information'],
-    link: null,
+    items: [
+      { label: 'Business Profile', href: '/settings/business' },
+      { label: 'Team Management', href: '/settings/team' },
+      { label: 'Tax Information', href: '/settings/tax' },
+    ],
+    link: '/settings/business',
   },
   {
     title: 'Billing',
     description: 'Manage your subscription and invoices.',
     icon: CreditCard,
-    items: ['Current Plan', 'Payment Methods', 'Billing History'],
-    link: null,
+    items: [
+      { label: 'Current Plan', href: '/settings/billing' },
+      { label: 'Payment Methods', href: '/settings/billing' },
+      { label: 'Billing History', href: '/settings/billing' },
+    ],
+    link: '/settings/billing',
   },
   {
     title: 'Notifications',
     description: 'Configure how you receive alerts.',
     icon: Bell,
-    items: ['Email Notifications', 'Push Notifications', 'Alert Thresholds'],
-    link: null,
+    items: [
+      { label: 'Email Notifications', href: '/settings/notifications' },
+      { label: 'Push Notifications', href: '/settings/notifications' },
+      { label: 'Alert Thresholds', href: '/settings/notifications' },
+    ],
+    link: '/settings/notifications',
   },
   {
     title: 'Xero Integration',
     description: 'Connect your Xero account to sync invoices and data.',
     icon: ExternalLink,
-    items: ['Connect Xero', 'Sync Invoices', 'Manage Connection'],
+    items: [
+      { label: 'Connect Xero', href: '/settings/xero' },
+      { label: 'Sync Invoices', href: '/settings/xero' },
+      { label: 'Manage Connection', href: '/settings/xero' },
+    ],
     link: '/settings/xero',
   },
 ];
@@ -121,10 +141,18 @@ export default function SettingsPage() {
                   <h2 className="text-lg font-bold text-slate-900">{section.title}</h2>
                   <p className="text-xs sm:text-sm text-slate-500 mt-1">{section.description}</p>
                   <ul className="mt-4 space-y-2">
-                    {section.items.map((item) => (
-                      <li key={item}>
-                        <button className="text-xs sm:text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline transition-all">
-                          {item}
+                    {section.items.map((item: any) => (
+                      <li key={typeof item === 'string' ? item : item.label}>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (typeof item !== 'string' && item.href) {
+                              router.push(item.href);
+                            }
+                          }}
+                          className="text-xs sm:text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline transition-all text-left"
+                        >
+                          {typeof item === 'string' ? item : item.label}
                         </button>
                       </li>
                     ))}
