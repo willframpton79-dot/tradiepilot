@@ -6,7 +6,8 @@ import {
   Shield, 
   CreditCard, 
   User, 
-  Building2 
+  Building2,
+  ExternalLink
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
@@ -19,24 +20,35 @@ const settingsSections = [
     description: 'Manage your personal profile and security.',
     icon: User,
     items: ['Profile Information', 'Password & Security', 'Email Preferences'],
+    link: null,
   },
   {
     title: 'Business',
     description: 'Update your construction business details.',
     icon: Building2,
     items: ['Business Profile', 'Team Management', 'Tax Information'],
+    link: null,
   },
   {
     title: 'Billing',
     description: 'Manage your subscription and invoices.',
     icon: CreditCard,
     items: ['Current Plan', 'Payment Methods', 'Billing History'],
+    link: null,
   },
   {
     title: 'Notifications',
     description: 'Configure how you receive alerts.',
     icon: Bell,
     items: ['Email Notifications', 'Push Notifications', 'Alert Thresholds'],
+    link: null,
+  },
+  {
+    title: 'Xero Integration',
+    description: 'Connect your Xero account to sync invoices and data.',
+    icon: ExternalLink,
+    items: ['Connect Xero', 'Sync Invoices', 'Manage Connection'],
+    link: '/settings/xero',
   },
 ];
 
@@ -96,7 +108,10 @@ export default function SettingsPage() {
             <motion.div
               key={section.title}
               variants={fadeUp}
-              className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 hover:shadow-md transition-shadow"
+              onClick={() => section.link && router.push(section.link)}
+              className={`bg-white border border-slate-200 rounded-xl p-4 sm:p-6 hover:shadow-md transition-shadow ${
+                section.link ? 'cursor-pointer hover:border-indigo-200' : ''
+              }`}
             >
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
