@@ -7,9 +7,6 @@ import {
   Plus, 
   MoreHorizontal, 
   FileText,
-  CheckCircle2,
-  Clock,
-  XCircle,
   TrendingUp,
   Target,
   Zap,
@@ -41,6 +38,11 @@ const fadeUp = {
 
 export default function QuotesPage() {
   const [searchTerm, setSearchTerm] = useState('');
+
+  const filtered = quotes.filter(q =>
+    q.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    q.project.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto">
@@ -102,13 +104,12 @@ export default function QuotesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {quotes.map((quote, idx) => (
+                  {filtered.map((quote, idx) => (
                     <motion.tr 
                       key={quote.id}
                       initial="hidden"
                       animate="visible"
                       variants={fadeUp}
-                      custom={idx}
                       className="hover:bg-slate-50/50 transition-colors group"
                     >
                       <td className="px-6 py-4">
@@ -149,18 +150,18 @@ export default function QuotesPage() {
             initial="hidden" 
             animate="visible" 
             variants={fadeUp}
-            className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-100"
+            className="bg-indigo-600 rounded-2xl p-6 shadow-lg shadow-indigo-100"
           >
             <div className="flex items-center gap-2 mb-4">
               <Zap className="w-5 h-5 text-indigo-200 fill-indigo-200" />
-              <h3 className="font-bold tracking-tight text-sm">Quote Intelligence</h3>
+              <h3 className="font-bold tracking-tight text-sm text-white">Quote Intelligence</h3>
             </div>
             
             <div className="space-y-6">
               <div>
-                <p className="text-indigo-100 text-[10px] font-bold uppercase tracking-wider mb-1">Monthly Win Rate</p>
+                <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-wider mb-1">Monthly Win Rate</p>
                 <div className="flex items-end gap-2">
-                  <p className="text-3xl font-bold">64%</p>
+                  <p className="text-3xl font-bold text-white">64%</p>
                   <div className="flex items-center text-green-300 text-xs font-bold mb-1">
                     <TrendingUp className="w-3 h-3 mr-1" /> +12%
                   </div>
@@ -170,10 +171,10 @@ export default function QuotesPage() {
               <div className="h-px bg-white/10" />
 
               <div>
-                <p className="text-indigo-100 text-[10px] font-bold uppercase tracking-wider mb-3">Priority Follow-up</p>
+                <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-wider mb-3">Priority Follow-up</p>
                 <div className="bg-white/10 rounded-xl p-3 border border-white/10">
-                  <p className="text-sm font-bold">Sarah Johnson</p>
-                  <p className="text-xs text-indigo-100 mt-1">High-value lead for Kitchen Electrical</p>
+                  <p className="text-sm font-bold text-white">Sarah Johnson</p>
+                  <p className="text-xs text-indigo-200 mt-1">High-value lead for Kitchen Electrical</p>
                   <button className="mt-3 w-full bg-white text-indigo-600 text-xs font-bold py-2 rounded-lg hover:bg-indigo-50 transition-colors flex items-center justify-center gap-1">
                     Send Reminder <ArrowRight className="w-3 h-3" />
                   </button>
@@ -183,9 +184,9 @@ export default function QuotesPage() {
               <div className="bg-indigo-700/50 rounded-xl p-4 border border-indigo-500/30">
                 <div className="flex items-center gap-2 mb-2">
                   <Target className="w-4 h-4 text-indigo-200" />
-                  <p className="text-xs font-bold">Smart Insight</p>
+                  <p className="text-xs font-bold text-white">Smart Insight</p>
                 </div>
-                <p className="text-xs text-indigo-100 leading-relaxed">
+                <p className="text-xs text-indigo-200 leading-relaxed">
                   Quotes sent on Tuesdays have a 15% higher acceptance rate for your business.
                 </p>
               </div>
