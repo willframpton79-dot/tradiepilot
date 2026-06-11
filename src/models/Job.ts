@@ -14,6 +14,7 @@ export interface IJob extends Document {
   suburb: string;
   postcode?: string;
   quotedTotal: number;
+  quotedTotalExGst: number;
   actualTotal: number;
   margin: number;
   marginPct: number;
@@ -23,6 +24,8 @@ export interface IJob extends Document {
   actualMaterials: number;
   quotedSubcontractors: number;
   actualSubcontractors: number;
+  gstCollected: number;
+  gstPaid: number;
   startDate: string;
   dueDate: string;
   overrunNotes?: string;
@@ -79,6 +82,7 @@ const JobSchema = new Schema({
   suburb: { type: String, default: '' },
   postcode: { type: String, default: '' },
   quotedTotal: { type: Number, default: 0 },
+  quotedTotalExGst: { type: Number, default: 0 },
   actualTotal: { type: Number, default: 0 },
   margin: { type: Number, default: 0 },
   marginPct: { type: Number, default: 0 },
@@ -88,6 +92,8 @@ const JobSchema = new Schema({
   actualMaterials: { type: Number, default: 0 },
   quotedSubcontractors: { type: Number, default: 0 },
   actualSubcontractors: { type: Number, default: 0 },
+  gstCollected: { type: Number, default: 0 },
+  gstPaid: { type: Number, default: 0 },
   startDate: { type: String, default: '' },
   dueDate: { type: String, default: '' },
   overrunNotes: { type: String, default: '' },

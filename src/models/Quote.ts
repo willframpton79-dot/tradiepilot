@@ -7,6 +7,9 @@ export interface IQuote extends Document {
   job: string;
   jobId?: string;
   amount: number;
+  amountExGst: number;
+  amountIncGst: number;
+  gstAmount: number;
   sentDate: string;
   daysSince: number;
   status: 'pending' | 'followed-up' | 'urgent' | 'won' | 'lost';
@@ -23,6 +26,9 @@ const QuoteSchema = new Schema({
   job: { type: String, required: true },
   jobId: { type: String, default: '' },
   amount: { type: Number, default: 0 },
+  amountExGst: { type: Number, default: 0 },
+  amountIncGst: { type: Number, default: 0 },
+  gstAmount: { type: Number, default: 0 },
   sentDate: { type: String, default: '' },
   daysSince: { type: Number, default: 0 },
   status: {
