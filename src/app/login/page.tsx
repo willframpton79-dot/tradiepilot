@@ -108,7 +108,7 @@ export default function LoginPage() {
 
           <div className="mt-8 pt-6 border-t border-slate-100 text-center">
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-              Demo: use any email/password to sign in
+              Use any email/password to sign in
             </p>
           </div>
         </div>
