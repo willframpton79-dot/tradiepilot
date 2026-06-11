@@ -1,12 +1,7 @@
 'use client';
 
 import { 
-  DollarSign, 
-  Clock, 
-  AlertCircle, 
-  CheckCircle2, 
   ArrowLeft, 
-  MoreHorizontal,
   Mail,
   Phone,
   Eye,
@@ -68,14 +63,15 @@ export default function InvoicesPage() {
               <Download className="w-4 h-4" /> Export CSV
             </button>
             <div className="bg-indigo-50 px-6 py-4 rounded-2xl border border-indigo-100 flex items-center gap-6">
-            <div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Outstanding</p>
-              <p className="text-2xl font-bold text-indigo-700 financial-figure">$80,957</p>
-            </div>
-            <div className="w-px h-10 bg-indigo-200" />
-            <div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Overdue</p>
-              <p className="text-2xl font-bold text-red-600 financial-figure">$28,157</p>
+              <div>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Outstanding</p>
+                <p className="text-2xl font-bold text-indigo-700 financial-figure">$80,957</p>
+              </div>
+              <div className="w-px h-10 bg-indigo-200" />
+              <div>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Overdue</p>
+                <p className="text-2xl font-bold text-red-600 financial-figure">$28,157</p>
+              </div>
             </div>
           </div>
         </div>
@@ -89,7 +85,6 @@ export default function InvoicesPage() {
               className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow group"
             >
               <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                {/* Client Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-1">
                     <h3 className="text-lg font-bold text-slate-900 truncate">{inv.client}</h3>
@@ -104,7 +99,6 @@ export default function InvoicesPage() {
                   <p className="text-sm text-slate-500 font-medium">{inv.project}</p>
                 </div>
 
-                {/* Amount & Dates */}
                 <div className="flex flex-wrap items-center gap-8">
                   <div className="min-w-[120px]">
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Amount</p>
@@ -125,7 +119,6 @@ export default function InvoicesPage() {
                   )}
                 </div>
 
-                {/* Actions */}
                 <div className="flex items-center gap-2 pt-4 lg:pt-0 lg:border-l lg:border-slate-100 lg:pl-6">
                   <button className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all text-xs">
                     <Mail className="w-3.5 h-3.5" /> Remind
