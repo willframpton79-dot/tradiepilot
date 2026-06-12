@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_for_dev_mode');
 
 export async function sendWelcomeEmail(email: string, name: string) {
+  const formattedName = name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
   try {
     const { data, error } = await resend.emails.send({
       from: 'TradiePilot <notifications@tradiepilot.app>',
@@ -10,7 +11,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
       subject: 'Welcome to TradiePilot — Let\'s Maximize Your Profit!',
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h2 style="color: #4f46e5; margin-bottom: 20px;">Welcome to TradiePilot, ${name}!</h2>
+          <h2 style="color: #4f46e5; margin-bottom: 20px;">Welcome to TradiePilot, ${formattedName}!</h2>
           <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
             We are absolutely thrilled to have you on board. TradiePilot is built specifically for trade businesses like yours to gain real-time visibility into your active job margins, automate quote follow-ups, and proactively chase invoices.
           </p>
@@ -31,7 +32,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
           </p>
         </div>
       `,
-      text: `Hello ${name},\n\nWelcome to TradiePilot! We're thrilled to help you keep your profit and understand your numbers.\n\nNext steps to get started:\n1. Complete your business onboarding profile at /onboarding\n2. Connect your Xero/MYOB data\n3. Set your target margin\n\nGo to onboarding: https://tradiepilot.app/onboarding\n\nBest,\nThe TradiePilot Team`,
+      text: `Hello ${formattedName},\n\nWelcome to TradiePilot! We're thrilled to help you keep your profit and understand your numbers.\n\nNext steps to get started:\n1. Complete your business onboarding profile at /onboarding\n2. Connect your Xero/MYOB data\n3. Set your target margin\n\nGo to onboarding: https://tradiepilot.app/onboarding\n\nBest,\nThe TradiePilot Team`,
     });
 
     if (error) {
