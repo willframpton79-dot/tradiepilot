@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { BarChart3, CheckCircle, ArrowRight, Loader2 } from "lucide-react";
 import { toast, Toaster } from "react-hot-toast";
 
+import Navbar from "@/components/Navbar";
+
 export default function ContactSalesPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -74,27 +76,15 @@ export default function ContactSalesPage() {
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       <Toaster position="top-center" />
       
-      {/* Simple Header */}
-      <nav className="bg-white border-b border-slate-200 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <a href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-slate-900 tracking-tight">
-              Tradie<span className="text-indigo-600">Pilot</span>
-            </span>
-          </a>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+      <Navbar />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           
           {/* Left Column: Copy */}
           <div>
             <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-6">
-              Scale Your Trade Business with Confidence
+              Scale Your Construction Business with Confidence
             </h1>
             <p className="text-lg text-slate-600 mb-8 leading-relaxed">
               Our Enterprise plan is designed for construction and trade businesses managing multiple crews and complex projects. Get a custom solution tailored to your specific workflow.

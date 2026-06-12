@@ -3,72 +3,13 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Menu, X, BarChart3, TrendingUp, DollarSign, Clock,
-  ArrowRight, Star, CheckCircle, ChevronRight, Play,
-  Shield, Users, Target, Zap, Wrench, Building2,
-  Thermometer, HardDrive, Quote, Layers
+  BarChart3, TrendingUp, DollarSign, Clock,
+  ArrowRight, CheckCircle, Play, ChevronRight,
+  Quote
 } from "lucide-react";
-
-// ─── Reusable ───
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.6, delay: i * 0.1 } }),
-};
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.12 } } };
-
-// ─── Navbar ───
-function Navbar() {
-  const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? "bg-white/80 backdrop-blur-xl shadow-sm border-b border-slate-200/60" : "bg-transparent"
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-18">
-          <a href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center transition-transform group-hover:scale-105">
-              <BarChart3 className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-slate-900 tracking-tight">
-              Tradie<span className="text-indigo-600">Pilot</span>
-            </span>
-          </a>
-          <div className="hidden md:flex items-center gap-8">
-            {["Features", "Industries", "Pricing"].map(l => (
-              <a key={l} href={`#${l.toLowerCase()}`} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">{l}</a>
-            ))}
-          </div>
-          <div className="hidden md:flex items-center gap-3">
-            <a href="/login" className="text-sm font-semibold text-slate-700 hover:text-indigo-600 transition-colors px-4 py-2">Log in</a>
-            <a href="/signup" className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-lg transition-all shadow-sm">Get Started</a>
-          </div>
-          <button onClick={() => setOpen(!open)} className="md:hidden p-2 text-slate-600">
-            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-      </div>
-      {open && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="md:hidden bg-white border-t border-slate-200 overflow-hidden">
-          <div className="px-4 py-4 space-y-3">
-            {["Features","Industries","Pricing"].map(l => (
-              <a key={l} href={`#${l.toLowerCase()}`} onClick={() => setOpen(false)} className="block text-sm font-medium text-slate-600 py-2">{l}</a>
-            ))}
-            <hr className="border-slate-200" />
-            <a href="/login" className="block text-sm font-semibold text-slate-700 py-2">Log in</a>
-            <a href="/signup" className="block text-center text-sm font-semibold text-white bg-indigo-600 px-5 py-2.5 rounded-lg">Get Started</a>
-          </div>
-        </motion.div>
-      )}
-    </nav>
-  );
-}
+import Link from "next/link";
+import Navbar from "@/components/Navbar";
+import { fadeUp, stagger } from "@/lib/animations";
 
 // ─── Hero ───
 function Hero() {
@@ -397,12 +338,21 @@ function PricingSection() {
                   </li>
                 ))}
               </ul>
-              <button 
-                onClick={() => plan.name === "Enterprise" ? window.location.href = 'mailto:willframpton79@gmail.com' : handleCheckout(plan.id)}
-                className={`w-full mt-6 block text-center font-semibold px-5 py-3 rounded-lg transition-all text-sm ${plan.popular ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
-              >
-                {plan.name === "Enterprise" ? "Contact Sales" : "Start Free Trial"}
-              </button>
+              {plan.name === "Enterprise" ? (
+                <Link 
+                  href="/contact-sales"
+                  className="w-full mt-6 block text-center font-semibold px-5 py-3 rounded-lg transition-all text-sm bg-slate-100 text-slate-700 hover:bg-slate-200"
+                >
+                  Contact Sales
+                </Link>
+              ) : (
+                <button 
+                  onClick={() => handleCheckout(plan.id)}
+                  className={`w-full mt-6 block text-center font-semibold px-5 py-3 rounded-lg transition-all text-sm ${plan.popular ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
+                >
+                  Start Free Trial
+                </button>
+              )}
             </motion.div>
           ))}
         </motion.div>

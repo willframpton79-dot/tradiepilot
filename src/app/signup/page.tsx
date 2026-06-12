@@ -89,13 +89,13 @@ export default function SignUpPage() {
               <label className="block text-xs text-slate-600 mb-1.5 font-medium">Name</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-colors"
-                placeholder="Joe Tradie" required />
+                placeholder="Your full name" required />
             </div>
             <div>
               <label className="block text-xs text-slate-600 mb-1.5 font-medium">Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-colors"
-                placeholder="joe@tradiepilot.com" required />
+                placeholder="you@yourbusiness.com.au" required />
             </div>
             <div>
               <label className="block text-xs text-slate-600 mb-1.5 font-medium">Password</label>
