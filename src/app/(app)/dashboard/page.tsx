@@ -66,8 +66,8 @@ export default function Dashboard() {
           <motion.div variants={fadeUp}>
             <StatCard 
               label="Active Jobs" 
-              value="14" 
-              trend="+2 this month" 
+              value="5" 
+              trend="+1 this month" 
               trendType="positive"
               icon={ClipboardList}
             />
@@ -75,8 +75,8 @@ export default function Dashboard() {
           <motion.div variants={fadeUp}>
             <StatCard 
               label="Avg. Margin" 
-              value="34.2%" 
-              trend="+4.1%" 
+              value="31.4%" 
+              trend="+1.2%" 
               trendType="positive"
               icon={TrendingUp}
             />
@@ -84,15 +84,15 @@ export default function Dashboard() {
           <motion.div variants={fadeUp}>
             <StatCard 
               label="Pending Quotes" 
-              value="$84,200" 
-              trend="5 quotes" 
+              value="$325,000" 
+              trend="3 quotes" 
               icon={Clock}
             />
           </motion.div>
           <motion.div variants={fadeUp}>
             <StatCard 
               label="Overdue Invoices" 
-              value="$12,450" 
+              value="$57,500" 
               trend="Action required" 
               trendType="negative"
               icon={AlertCircle}
@@ -111,7 +111,7 @@ export default function Dashboard() {
           <div className="space-y-8">
             <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
               <h3 className="text-lg font-bold text-slate-900 mb-6">Profit Gauge</h3>
-              <ProfitGauge margin={0.342} />
+              <ProfitGauge margin={0.314} />
               <div className="mt-6 pt-6 border-t border-slate-100 flex items-center justify-between">
                 <span className="text-sm font-bold text-slate-700">Target Margin</span>
                 <span className="text-sm font-bold text-slate-400">30.0%</span>
@@ -143,7 +143,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <h4 className="text-sm font-bold text-slate-800">Margin Warning</h4>
-                <p className="text-xs text-slate-500 mt-1">Bondi Electrical job has dropped below 20% margin due to higher material costs.</p>
+                <p className="text-xs text-slate-500 mt-1">North Sydney Retail job has dropped below 0% margin due to structural variations.</p>
                 <button className="mt-3 text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
                   Investigate <ArrowRight className="w-3 h-3" />
                 </button>
@@ -156,7 +156,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <h4 className="text-sm font-bold text-slate-800">Growth Opportunity</h4>
-                <p className="text-xs text-slate-500 mt-1">Bathroom renovations show a 12% higher margin than other services this quarter.</p>
+                <p className="text-xs text-slate-500 mt-1">Commercial office fit-outs show a 12% higher margin than other services this quarter.</p>
                 <button className="mt-3 text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
                   View Analysis <ArrowRight className="w-3 h-3" />
                 </button>

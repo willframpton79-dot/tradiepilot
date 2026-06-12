@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   ArrowLeft, 
   TrendingUp, 
@@ -32,52 +32,62 @@ const fadeUp = {
 
 export default function JobDetailPage() {
   const params = useParams();
+  const id = params.id as string;
   
-  // Mock data for the specific job
-  const job = {
-    id: params.id,
-    name: "Woollahra Bathroom Renovation",
-    client: "Sarah Johnson",
-    address: "123 Ocean St, Woollahra NSW",
-    status: "In Progress",
-    startDate: "2026-05-10",
-    estimatedEnd: "2026-06-25",
-    contractValue: 24500,
-    costsToDate: 14200,
-    margin: 0.42,
-    tasks: [
-      { id: 1, name: "Demolition", status: "Completed", date: "2026-05-12" },
-      { id: 2, name: "Plumbing Rough-in", status: "Completed", date: "2026-05-18" },
-      { id: 3, name: "Waterproofing", status: "In Progress", date: "2026-06-05" },
-      { id: 4, name: "Tiling", status: "Scheduled", date: "2026-06-12" },
-    ]
-  };
+  const [job, setJob] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Payment Link States
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [amount, setAmount] = useState(job.contractValue.toString());
-  const [clientEmail, setClientEmail] = useState("sarah.johnson@example.com");
-  const [clientName, setClientName] = useState(job.client);
-  const [description, setDescription] = useState(`Secure Payment Request for ${job.name}`);
-  const [loading, setLoading] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [description, setDescription] = useState("");
+  const [linkLoading, setLinkLoading] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    async function fetchJob() {
+      try {
+        const response = await fetch(`/api/jobs/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch job');
+        }
+        const data = await response.json();
+        setJob(data);
+        setAmount(data.quotedTotal.toString());
+        setClientEmail(data.client?.email || "");
+        setClientName(data.client?.name || "");
+        setDescription(`Secure Payment Request for ${data.title}`);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (id) {
+      fetchJob();
+    }
+  }, [id]);
+
   const handleGenerateLink = async () => {
-    setLoading(true);
+    setLinkLoading(true);
     try {
       const response = await fetch('/api/stripe/payment-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          jobId: job.id,
+          jobId: job.jobId || job._id,
           amount,
           clientEmail,
           clientName,
           description,
-          jobName: job.name
+          jobName: job.title
         }),
       });
       const data = await response.json();
@@ -90,7 +100,7 @@ export default function JobDetailPage() {
       console.error(err);
       alert('An error occurred while generating the payment link.');
     } finally {
-      setLoading(false);
+      setLinkLoading(false);
     }
   };
 
@@ -101,12 +111,12 @@ export default function JobDetailPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          jobId: job.id,
+          jobId: job.jobId || job._id,
           amount,
           clientEmail,
           clientName,
           description,
-          jobName: job.name,
+          jobName: job.title,
           sendEmail: true,
           paymentUrl: generatedUrl
         }),
@@ -139,6 +149,28 @@ export default function JobDetailPage() {
     setCopied(false);
   };
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+        <p className="text-slate-500 font-medium">Loading job details...</p>
+      </div>
+    );
+  }
+
+  if (error || !job) {
+    return (
+      <div className="p-10 text-center">
+        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-slate-900 mb-2">Job Not Found</h1>
+        <p className="text-slate-500 mb-6">{error || "The job you are looking for does not exist."}</p>
+        <Link href="/dashboard" className="bg-indigo-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-indigo-700 transition-all">
+          Return to Dashboard
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 lg:p-10 max-w-6xl mx-auto">
       <motion.div
@@ -153,36 +185,38 @@ export default function JobDetailPage() {
           </Link>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{job.name}</h1>
+              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{job.title}</h1>
               <div className="flex items-center gap-4 mt-2 text-slate-500 font-medium">
                 <div className="flex items-center gap-1.5">
-                  <User className="w-4 h-4" /> {job.client}
+                  <User className="w-4 h-4" /> {job.client?.name}
                 </div>
                 <div className="flex items-center gap-1.5 text-sm">
-                  <MapPin className="w-4 h-4" /> {job.address}
+                  <MapPin className="w-4 h-4" /> {job.suburb}
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-green-50 text-green-700 border border-green-100 rounded-full text-xs font-bold uppercase tracking-wider">
-                {job.status}
+              <span className={`px-3 py-1 border rounded-full text-xs font-bold uppercase tracking-wider ${
+                job.status === 'active' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-slate-50 text-slate-700 border-slate-100'
+              }`}>
+                {job.status === 'active' ? 'In Progress' : job.status}
               </span>
               <button
                 onClick={() => printJobReport({
-                  title: job.name,
-                  client: { name: job.client },
-                  quotedTotal: job.contractValue,
-                  actualTotal: job.costsToDate,
-                  margin: job.contractValue - job.costsToDate,
-                  marginPct: job.margin * 100,
-                  quotedLabour: job.contractValue * 0.4,
-                  actualLabour: job.costsToDate * 0.45,
-                  quotedMaterials: job.contractValue * 0.5,
-                  actualMaterials: job.costsToDate * 0.45,
-                  quotedSubcontractors: job.contractValue * 0.1,
-                  actualSubcontractors: job.costsToDate * 0.1,
+                  title: job.title,
+                  client: { name: job.client?.name },
+                  quotedTotal: job.quotedTotal,
+                  actualTotal: job.actualTotal,
+                  margin: job.quotedTotal - job.actualTotal,
+                  marginPct: job.marginPct,
+                  quotedLabour: job.quotedLabour,
+                  actualLabour: job.actualLabour,
+                  quotedMaterials: job.quotedMaterials,
+                  actualMaterials: job.actualMaterials,
+                  quotedSubcontractors: job.quotedSubcontractors,
+                  actualSubcontractors: job.actualSubcontractors,
                   startDate: job.startDate,
-                  dueDate: job.estimatedEnd,
+                  dueDate: job.dueDate,
                   status: job.status,
                 })}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition-all"
@@ -208,16 +242,16 @@ export default function JobDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">Current Margin</h3>
-            <ProfitGauge margin={job.margin} />
+            <ProfitGauge margin={job.marginPct / 100} />
           </motion.div>
 
           <motion.div variants={fadeUp} className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Contract Value</p>
-              <p className="text-2xl font-bold text-slate-900 financial-figure">${job.contractValue.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-slate-900 financial-figure">${job.quotedTotal?.toLocaleString()}</p>
               <div className="mt-4 pt-4 border-t border-slate-50">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Costs to Date</p>
-                <p className="text-xl font-bold text-slate-700 financial-figure">${job.costsToDate.toLocaleString()}</p>
+                <p className="text-xl font-bold text-slate-700 financial-figure">${job.actualTotal?.toLocaleString()}</p>
               </div>
             </div>
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -227,57 +261,84 @@ export default function JobDetailPage() {
                   <Calendar className="w-5 h-5 text-indigo-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-800">Started May 10</p>
-                  <p className="text-xs text-slate-500 font-medium">Est. finish Jun 25</p>
+                  <p className="text-sm font-bold text-slate-800">Started {job.startDate}</p>
+                  <p className="text-xs text-slate-500 font-medium">Due {job.dueDate}</p>
                 </div>
               </div>
               <div className="mt-6">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-2 text-slate-400">
-                  <span>Progress</span>
-                  <span>65%</span>
+                  <span>Completion Estimate</span>
+                  <span>{Math.round((job.actualTotal / job.quotedTotal) * 100) || 0}%</span>
                 </div>
                 <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-500 rounded-full" style={{ width: '65%' }} />
+                  <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(100, (job.actualTotal / job.quotedTotal) * 100)}%` }} />
                 </div>
               </div>
             </div>
           </motion.div>
         </div>
 
-        {/* Task List */}
-        <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-100">
-            <h3 className="text-lg font-bold text-slate-900">Project Timeline</h3>
-          </div>
-          <div className="divide-y divide-slate-50">
-            {job.tasks.map((task) => (
-              <div key={task.id} className="p-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  {task.status === 'Completed' ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  ) : task.status === 'In Progress' ? (
-                    <Clock className="w-5 h-5 text-amber-500" />
-                  ) : (
-                    <div className="w-5 h-5 border-2 border-slate-200 rounded-full" />
-                  )}
+        {/* Overrun Notes if any */}
+        {job.overrunNotes && (
+          <motion.div variants={fadeUp} className="bg-red-50 border border-red-100 rounded-2xl p-6 flex items-start gap-4">
+            <AlertCircle className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-bold text-red-800">Cost Overrun Insight</h3>
+              <p className="text-sm text-red-700 mt-1 leading-relaxed">{job.overrunNotes}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Logs Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Time Log */}
+          <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-indigo-600" /> Labour Log
+              </h3>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total: ${job.actualLabour?.toLocaleString()}</span>
+            </div>
+            <div className="divide-y divide-slate-50 max-h-[400px] overflow-y-auto">
+              {job.timeLog?.length > 0 ? job.timeLog.map((log: any) => (
+                <div key={log.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                   <div>
-                    <p className={`text-sm font-bold ${task.status === 'Completed' ? 'text-slate-500 line-through' : 'text-slate-800'}`}>
-                      {task.name}
-                    </p>
-                    <p className="text-xs text-slate-400 font-medium">{task.date}</p>
+                    <p className="text-sm font-bold text-slate-800">{log.staff}</p>
+                    <p className="text-xs text-slate-500">{log.description}</p>
+                    <p className="text-[10px] text-slate-400 mt-1">{log.date} • {log.hours}hrs @ ${log.rate}/hr</p>
                   </div>
+                  <p className="text-sm font-bold text-slate-700">${log.cost?.toLocaleString()}</p>
                 </div>
-                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                  task.status === 'Completed' ? 'bg-green-50 text-green-700' :
-                  task.status === 'In Progress' ? 'bg-amber-50 text-amber-700' :
-                  'bg-slate-50 text-slate-500'
-                }`}>
-                  {task.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+              )) : (
+                <div className="p-10 text-center text-slate-400 text-sm">No labour entries recorded yet.</div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Receipt Log */}
+          <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-indigo-600" /> Materials & Expenses
+              </h3>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total: ${job.actualMaterials?.toLocaleString()}</span>
+            </div>
+            <div className="divide-y divide-slate-50 max-h-[400px] overflow-y-auto">
+              {job.receiptLog?.length > 0 ? job.receiptLog.map((log: any) => (
+                <div key={log.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">{log.item}</p>
+                    <p className="text-xs text-slate-500">{log.supplier} • <span className="capitalize">{log.category}</span></p>
+                    <p className="text-[10px] text-slate-400 mt-1">{log.date}</p>
+                  </div>
+                  <p className="text-sm font-bold text-slate-700">${log.cost?.toLocaleString()}</p>
+                </div>
+              )) : (
+                <div className="p-10 text-center text-slate-400 text-sm">No receipts recorded yet.</div>
+              )}
+            </div>
+          </motion.div>
+        </div>
       </motion.div>
 
       {/* Collect On-Site Payment Modal */}
@@ -372,10 +433,10 @@ export default function JobDetailPage() {
                     </button>
                     <button
                       onClick={handleGenerateLink}
-                      disabled={loading || !amount || parseFloat(amount) <= 0}
+                      disabled={linkLoading || !amount || parseFloat(amount) <= 0}
                       className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold disabled:opacity-50 transition-colors flex items-center gap-1.5"
                     >
-                      {loading ? (
+                      {linkLoading ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" /> Generating...
                         </>
