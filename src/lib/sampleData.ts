@@ -227,7 +227,7 @@ export const quotes: Quote[] = [
 export const invoices: Invoice[] = [
   {
     id: 'INV-201',
-    job: 'Commercial Bathroom Fitout',
+    job: 'Commercial Kitchen Fitout',
     client: 'Meridian Property Group',
     amount: 45000,
     sentDate: '10 May 2026',
@@ -237,23 +237,33 @@ export const invoices: Invoice[] = [
   },
   {
     id: 'INV-202',
-    job: 'Industrial Roof Restoration',
-    client: 'HealthCare Realty Trust',
+    job: 'Level 3 Bathroom Amenities',
+    client: 'Apex Commercial Developments',
     amount: 32000,
     sentDate: '25 May 2026',
-    dueDate: '8 Jun 2026',
+    dueDate: '08 Jun 2026',
     daysOverdue: 0,
     status: 'pending',
   },
   {
     id: 'INV-203',
-    job: 'Rooftop Terrace Construction',
-    client: 'Pacific Retail Partners',
+    job: 'Landscaping & External Works',
+    client: 'NorthWest Build Co',
     amount: 12500,
     sentDate: '15 Apr 2026',
     dueDate: '29 Apr 2026',
     daysOverdue: 33,
     status: 'overdue',
+  },
+  {
+    id: 'INV-204',
+    job: 'Rooftop Deck Construction',
+    client: 'Pacific Retail Partners',
+    amount: 18450,
+    sentDate: '20 May 2026',
+    dueDate: '03 Jun 2026',
+    daysOverdue: 0,
+    status: 'pending',
   },
 ];
 

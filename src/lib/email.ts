@@ -278,3 +278,35 @@ export async function sendCustomQuoteReminder(toEmail: string, clientName: strin
     return { success: false, error: err.message || err };
   }
 }
+
+export async function sendInvoiceChaserNotification(toEmail: string, clientName: string, projectName: string, amount: number, dueDate: string) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'TradiePilot <notifications@tradiepilot.app>',
+      to: [toEmail],
+      subject: `Payment reminder sent — ${clientName}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #4f46e5; margin-bottom: 20px;">Payment Reminder Sent</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
+            A payment reminder has been sent for <strong>${projectName}</strong>, <strong>${amount.toLocaleString()}</strong>, due <strong>${dueDate}</strong>.
+          </p>
+          <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
+          <p style="font-size: 12px; color: #64748b; text-align: center;">
+            TradiePilot Pty Ltd, Australia. All rights reserved.
+          </p>
+        </div>
+      `,
+      text: `A payment reminder has been sent for ${projectName}, ${amount.toLocaleString()}, due ${dueDate}.`,
+    });
+
+    if (error) {
+      console.error('Error sending invoice chaser notification:', error);
+      return { success: false, error };
+    }
+    return { success: true, data };
+  } catch (err: any) {
+    console.error('Failed to send invoice chaser notification:', err);
+    return { success: false, error: err.message || err };
+  }
+}

@@ -6,18 +6,22 @@ import {
   Phone,
   Eye,
   Calendar,
-  Download
+  Download,
+  X as CloseIcon,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { exportCSV } from "@/lib/export";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
 
-const invoices = [
-  { id: '1', client: 'Sarah Johnson', project: 'Kitchen Electrical', amount: 8400, status: 'Overdue', daysOverdue: 14, dueDate: '2026-05-27', sentDate: '2026-05-13' },
-  { id: '2', client: 'John Smith', project: 'Bathroom Reno', amount: 12500, status: 'Pending', daysOverdue: 0, dueDate: '2026-06-15', sentDate: '2026-06-01' },
-  { id: '3', client: 'CBD Office Ltd', project: 'Office Fit-out', amount: 42000, status: 'Overdue', daysOverdue: 32, dueDate: '2026-05-09', sentDate: '2026-04-25' },
-  { id: '4', client: 'Emma Brown', project: 'Garden Design', amount: 5600, status: 'Overdue', daysOverdue: 5, dueDate: '2026-06-05', sentDate: '2026-05-22' },
-  { id: '5', client: 'Mike Wilson', project: 'Deck Build', amount: 12457, status: 'Pending', daysOverdue: 0, dueDate: '2026-06-20', sentDate: '2026-06-06' },
+const initialInvoices = [
+  { id: '1', client: 'Meridian Property Group', project: 'Commercial Kitchen Fitout', amount: 8400, status: 'Overdue', daysOverdue: 14, dueDate: '2026-05-27', sentDate: '2026-05-13' },
+  { id: '2', client: 'Apex Commercial Developments', project: 'Level 3 Bathroom Amenities', amount: 12500, status: 'Pending', daysOverdue: 0, dueDate: '2026-06-15', sentDate: '2026-06-01' },
+  { id: '3', client: 'NorthWest Build Co', project: 'Landscaping & External Works', amount: 5600, status: 'Overdue', daysOverdue: 5, dueDate: '2026-06-05', sentDate: '2026-05-22' },
+  { id: '4', client: 'Pacific Retail Partners', project: 'Rooftop Deck Construction', amount: 12457, status: 'Pending', daysOverdue: 0, dueDate: '2026-06-20', sentDate: '2026-06-06' },
+  { id: '5', client: 'CBD Office Ltd', project: 'Office Fit-out', amount: 42000, status: 'Overdue', daysOverdue: 32, dueDate: '2026-05-09', sentDate: '2026-04-25' },
 ];
 
 const fadeUp = {
@@ -30,6 +34,37 @@ const stagger = {
 };
 
 export default function InvoicesPage() {
+  const [invoices] = useState(initialInvoices);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+
+  const handleRemind = async (inv: any) => {
+    setLoadingId(inv.id);
+    try {
+      const res = await fetch('/api/invoices/remind', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientName: inv.client,
+          projectName: inv.project,
+          amount: inv.amount,
+          dueDate: inv.dueDate
+        }),
+      });
+      
+      if (res.ok) {
+        toast.success(`Payment reminder sent for ${inv.project}`);
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Failed to send reminder');
+      }
+    } catch (err) {
+      toast.error('An error occurred');
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
   return (
     <div className="p-6 lg:p-10 max-w-6xl mx-auto">
       <motion.div
@@ -120,13 +155,23 @@ export default function InvoicesPage() {
                 </div>
 
                 <div className="flex items-center gap-2 pt-4 lg:pt-0 lg:border-l lg:border-slate-100 lg:pl-6">
-                  <button className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all text-xs">
-                    <Mail className="w-3.5 h-3.5" /> Remind
+                  <button 
+                    onClick={() => handleRemind(inv)}
+                    disabled={loadingId === inv.id}
+                    className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all text-xs disabled:opacity-50"
+                  >
+                    {loadingId === inv.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />} Remind
                   </button>
-                  <button className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
+                  <button 
+                    onClick={() => toast(`Calling ${inv.client}...`)}
+                    className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+                  >
                     <Phone className="w-4 h-4" />
                   </button>
-                  <button className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
+                  <button 
+                    onClick={() => setSelectedInvoice(inv)}
+                    className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+                  >
                     <Eye className="w-4 h-4" />
                   </button>
                 </div>
@@ -135,6 +180,82 @@ export default function InvoicesPage() {
           ))}
         </div>
       </motion.div>
+
+      {/* Modal */}
+      <AnimatePresence>
+        {selectedInvoice && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden"
+            >
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-slate-900">Invoice Details</h2>
+                <button onClick={() => setSelectedInvoice(null)} className="text-slate-400 hover:text-slate-600">
+                  <CloseIcon className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Client</p>
+                    <p className="text-sm font-bold text-slate-900">{selectedInvoice.client}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Project</p>
+                    <p className="text-sm font-bold text-slate-900">{selectedInvoice.project}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Amount</p>
+                    <p className="text-sm font-bold text-slate-900">${selectedInvoice.amount.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Due Date</p>
+                    <p className="text-sm font-bold text-slate-900">{selectedInvoice.dueDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Status</p>
+                    <p className="text-sm font-bold text-slate-900">{selectedInvoice.status}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Days Overdue</p>
+                    <p className={`text-sm font-bold ${selectedInvoice.daysOverdue > 0 ? 'text-red-600' : 'text-slate-900'}`}>
+                      {selectedInvoice.daysOverdue} days
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">Internal Note</p>
+                  <textarea 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    placeholder="Add a note about this invoice..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <div className="p-6 bg-slate-50 flex justify-end gap-3">
+                <button 
+                  onClick={() => setSelectedInvoice(null)}
+                  className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900"
+                >
+                  Close
+                </button>
+                <button 
+                  onClick={() => {
+                    toast.success('Note saved locally');
+                    setSelectedInvoice(null);
+                  }}
+                  className="px-6 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

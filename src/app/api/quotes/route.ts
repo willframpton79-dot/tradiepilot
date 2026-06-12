@@ -6,7 +6,10 @@ import { requireAuth } from '@/lib/session';
 // GET /api/quotes — list all quotes for current user
 export async function GET() {
   try {
-    const userEmail = await requireAuth();
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const userEmail = auth.email;
+
     await connectDB();
     const quotes = await Quote.find({ userEmail }).sort({ daysSince: -1 }).lean();
     return NextResponse.json(quotes);
