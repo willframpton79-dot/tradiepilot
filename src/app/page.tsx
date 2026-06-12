@@ -106,18 +106,47 @@ function StatsStrip() {
 
 // ─── Problem Section ───
 function ProblemSection() {
+  const problems = [
+    { 
+      icon: BarChart3, 
+      title: "Five jobs on. No idea which three are making money.", 
+      desc: "You're turning over $1M+ but your margin visibility ends at the quote stage. By the time costs land in Xero, the job's already finished." 
+    },
+    { 
+      icon: Clock, 
+      title: "Your estimator quoted it tight. Your crew ran over. You found out at the end.", 
+      desc: "Labour variance and scope creep kill margins silently. You need alerts when a job is going wrong — not a post-mortem." 
+    },
+    { 
+      icon: Quote, 
+      title: "Three quotes went out last month. You haven't followed up any of them.", 
+      desc: "You're on site. Your phone's full. $180K in pending quotes is sitting there going cold while your competitor calls them back." 
+    },
+    { 
+      icon: DollarSign, 
+      title: "$57K in overdue invoices. Chasing feels awkward. So you don't.", 
+      desc: "You've done the work. Written the invoice. But following up a client you want to keep feels like a risk. So it sits." 
+    },
+    { 
+      icon: Target, 
+      title: "Newtown jobs make 42%. Parramatta jobs make 11%. You're still pricing them the same.", 
+      desc: "Without suburb and job-type profitability data, you're quoting on gut feel and winning the wrong work." 
+    },
+    { 
+      icon: Zap, 
+      title: "Your accountant sees last quarter. You need to see right now.", 
+      desc: "Xero tells you what happened. TradiePilot tells you what's happening on every active job — before it costs you." 
+    },
+  ];
+
   return (
     <section className="bg-slate-50 py-16 lg:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
           <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-slate-900">You&apos;re turning over good revenue. But which jobs are actually making you money?</motion.h2>
         </motion.div>
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { icon: BarChart3, title: "You're busy but flying blind", desc: "Long hours, lots of jobs, but no clear picture of which ones are actually making you money." },
-            { icon: Clock, title: "Quotes go cold while you're on site", desc: "You send a quote, get pulled onto the next job, and by the time you follow up they've gone elsewhere." },
-            { icon: DollarSign, title: "You finish a job and still don't know", desc: "Materials, labour, subcontractors — by the time you tally it up, the margin has already slipped." },
-          ].map((p, i) => (
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {problems.map((p, i) => (
             <motion.div key={i} variants={fadeUp} custom={i}
               className="bg-white rounded-xl border border-slate-200 p-6 hover:border-indigo-200 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
               <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center mb-4">
