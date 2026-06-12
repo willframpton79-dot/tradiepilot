@@ -42,3 +42,46 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to fetch job' }, { status: 500 });
   }
 }
+
+// PUT /api/jobs/[id] — update job
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const userEmail = auth.email;
+
+    const { id } = await params;
+    const body = await req.json();
+    await connectDB();
+
+    let query: any = { userEmail };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query = { ...query, _id: id };
+    } else {
+      query = { ...query, jobId: id };
+    }
+
+    // Recalculate quotedTotalExGst if quotedTotal changed
+    if (body.quotedTotal !== undefined) {
+      body.quotedTotalExGst = body.quotedTotal / 1.1;
+    }
+
+    const updatedJob = await Job.findOneAndUpdate(
+      query,
+      { $set: body },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedJob) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedJob);
+  } catch (error: any) {
+    console.error('PUT /api/jobs/[id] error:', error);
+    return NextResponse.json({ error: 'Failed to update job' }, { status: 500 });
+  }
+}

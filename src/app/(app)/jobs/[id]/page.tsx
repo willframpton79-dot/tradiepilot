@@ -51,6 +51,33 @@ export default function JobDetailPage() {
   const [emailSent, setEmailSent] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Time Log States
+  const [isTimeModalOpen, setIsTimeModalOpen] = useState(false);
+  const [team, setTeam] = useState<any[]>([]);
+  const [timeFormData, setTimeFormData] = useState({
+    staff: "",
+    date: new Date().toISOString().split('T')[0],
+    hours: "",
+    rate: "",
+    description: ""
+  });
+  const [timeLoading, setTimeLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchTeam() {
+      try {
+        const res = await fetch('/api/settings/team');
+        if (res.ok) {
+          const data = await res.json();
+          setTeam(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch team:', err);
+      }
+    }
+    fetchTeam();
+  }, []);
+
   useEffect(() => {
     async function fetchJob() {
       try {
@@ -184,6 +211,49 @@ export default function JobDetailPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleLogTime = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTimeLoading(true);
+    try {
+      const response = await fetch(`/api/jobs/${id}/time-logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(timeFormData),
+      });
+      
+      if (response.ok) {
+        const updatedJob = await response.json();
+        setJob(updatedJob);
+        setIsTimeModalOpen(false);
+        setTimeFormData({
+          staff: "",
+          date: new Date().toISOString().split('T')[0],
+          hours: "",
+          rate: "",
+          description: ""
+        });
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to log time');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while logging time.');
+    } finally {
+      setTimeLoading(false);
+    }
+  };
+
+  const handleStaffChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const staffName = e.target.value;
+    const staffMember = team.find(m => m.name === staffName);
+    setTimeFormData(prev => ({
+      ...prev,
+      staff: staffName,
+      rate: staffMember?.hourlyRate?.toString() || prev.rate
+    }));
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setGeneratedUrl("");
@@ -275,9 +345,12 @@ export default function JobDetailPage() {
                 <CreditCard className="w-4 h-4 text-indigo-600" /> Send Payment Link
               </button>
 
-              <button className="bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all text-sm">
+              <Link 
+                href={`/jobs/${id}/edit`}
+                className="bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all text-sm"
+              >
                 Edit Job
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -341,7 +414,12 @@ export default function JobDetailPage() {
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-indigo-600" /> Labour Log
               </h3>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total: ${job.actualLabour?.toLocaleString() || '0'}</span>
+              <button
+                onClick={() => setIsTimeModalOpen(true)}
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full transition-all"
+              >
+                + Log Time
+              </button>
             </div>
             <div className="divide-y divide-slate-50 max-h-[400px] overflow-y-auto">
               {job.timeLog?.length > 0 ? job.timeLog.map((log: any) => (
@@ -568,6 +646,127 @@ export default function JobDetailPage() {
                 </div>
               )}
             </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Log Time Modal */}
+      {isTimeModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden"
+          >
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-indigo-600" /> Log Time
+              </h3>
+              <button 
+                onClick={() => setIsTimeModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleLogTime} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Staff Member
+                </label>
+                <select
+                  required
+                  value={timeFormData.staff}
+                  onChange={handleStaffChange}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium bg-white"
+                >
+                  <option value="">Select Staff...</option>
+                  {team.map(member => (
+                    <option key={member._id} value={member.name}>{member.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Date
+                </label>
+                <input
+                  required
+                  type="date"
+                  value={timeFormData.date}
+                  onChange={(e) => setTimeFormData(prev => ({ ...prev, date: e.target.value }))}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Hours Worked
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    step="0.5"
+                    value={timeFormData.hours}
+                    onChange={(e) => setTimeFormData(prev => ({ ...prev, hours: e.target.value }))}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium"
+                    placeholder="0.0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Hourly Rate ($)
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    value={timeFormData.rate}
+                    onChange={(e) => setTimeFormData(prev => ({ ...prev, rate: e.target.value }))}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Description (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={timeFormData.description}
+                  onChange={(e) => setTimeFormData(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium"
+                  placeholder="e.g. Site preparation"
+                />
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsTimeModalOpen(false)}
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={timeLoading}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                >
+                  {timeLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                    </>
+                  ) : (
+                    "Save Entry"
+                  )}
+                </button>
+              </div>
+            </form>
           </motion.div>
         </div>
       )}
