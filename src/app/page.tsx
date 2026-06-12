@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   BarChart3, TrendingUp, DollarSign, Clock,
   ArrowRight, CheckCircle, Play, ChevronRight,
-  Quote
+  Quote, Target, Zap
 } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
