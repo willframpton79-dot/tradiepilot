@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import {
   LayoutDashboard,
+  ClipboardList,
   FileText,
   Settings,
   ChevronLeft,
@@ -20,6 +21,7 @@ import {
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { label: "Jobs", icon: ClipboardList, href: "/jobs" },
   { label: "Quotes", icon: FileText, href: "/quotes" },
   { label: "Growth", icon: GrowthIcon, href: "/growth" },
   { label: "Pipeline", icon: BarChart3, href: "/pipeline" },
