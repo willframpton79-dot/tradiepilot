@@ -136,6 +136,14 @@ export default function PipelinePage() {
 
   const maxRow = Math.max(...positionedJobs.map(j => j.row), 0);
 
+  const dynamicInsight = useMemo(() => {
+    const criticalJob = jobs.find(j => j.status === 'critical' || j.margin < 15);
+    if (criticalJob) {
+      return `${criticalJob.name} is over budget and due ${formatDate(criticalJob.end)}. Consider raising a variation or flagging with the client this week.`;
+    }
+    return "Your 12-week outlook shows heavy concentration in mid-July. Consider bringing forward material orders to secure trades early.";
+  }, [jobs]);
+
   return (
     <div className="p-4 lg:p-8 max-w-[1600px] mx-auto">
       <header className="mb-8">
@@ -192,7 +200,7 @@ export default function PipelinePage() {
               </div>
 
               {/* Job Bars Container */}
-              <div className="relative p-6" style={{ height: `${(maxRow + 1) * 80 + 40}px`, minHeight: '300px' }}>
+              <div className="relative p-6" style={{ height: `${(maxRow + 1) * 80 + 40}px`, minHeight: '200px' }}>
                 {positionedJobs.map((job) => (
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -229,9 +237,6 @@ export default function PipelinePage() {
                     </div>
                   </motion.div>
                 ))}
-                
-                {/* Empty state padding if few jobs */}
-                <div style={{ height: `${(maxRow + 1) * 80 + 40}px` }} />
               </div>
             </div>
           </div>
@@ -282,7 +287,7 @@ export default function PipelinePage() {
               <Clock className="w-4 h-4" /> Pipeline Insight
             </h3>
             <p className="text-xs text-indigo-100 leading-relaxed">
-              Your 12-week outlook shows heavy concentration in mid-July. Consider bringing forward material orders for the Pyrmont fit-out to secure trades early.
+              {dynamicInsight}
             </p>
           </div>
         </div>

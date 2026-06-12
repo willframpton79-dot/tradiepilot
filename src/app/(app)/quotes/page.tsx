@@ -42,6 +42,8 @@ const fadeUp = {
 
 export default function QuotesPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAssistExpanded, setIsAssistExpanded] = useState(true);
+  const [showNewQuoteForm, setShowNewQuoteForm] = useState(false);
 
   const filtered = quotes.filter(q =>
     q.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -55,10 +57,132 @@ export default function QuotesPage() {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Quotes</h1>
           <p className="text-slate-500 mt-1 font-medium">Manage your project proposals and estimates.</p>
         </div>
-        <button className="flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition-all shadow-sm text-sm">
-          <Plus className="w-4 h-4" /> Create Quote
+        <button 
+          onClick={() => setShowNewQuoteForm(!showNewQuoteForm)}
+          className="flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition-all shadow-sm text-sm"
+        >
+          {showNewQuoteForm ? <CloseIcon className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          {showNewQuoteForm ? "Cancel" : "Create Quote"}
         </button>
       </div>
+
+      <div className="space-y-6 mb-8">
+        <AnimatePresence>
+          {isAssistExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-indigo-600 rounded-2xl overflow-hidden shadow-lg shadow-indigo-100"
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-indigo-200 fill-indigo-200" />
+                    <h3 className="font-bold tracking-tight text-white">Smart Quote Assist</h3>
+                  </div>
+                  <button 
+                    onClick={() => setIsAssistExpanded(false)}
+                    className="text-indigo-200 hover:text-white transition-colors"
+                  >
+                    <CloseIcon className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-wider mb-1">Historical Performance</p>
+                      <p className="text-xl font-bold text-white">38.5% Avg Margin</p>
+                      <p className="text-xs text-indigo-200 mt-1">Across last 5 completed jobs</p>
+                    </div>
+                    <div className="bg-white/10 rounded-xl p-3 border border-white/10">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Target className="w-3 h-3 text-indigo-200" />
+                        <p className="text-[10px] font-bold text-white uppercase">Best Suburb</p>
+                      </div>
+                      <p className="text-sm font-bold text-white">Pyrmont (42% avg)</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-wider mb-1">Best Performing Type</p>
+                      <p className="text-xl font-bold text-white">Commercial Fit-Outs</p>
+                      <p className="text-xs text-indigo-200 mt-1">42% average margin</p>
+                    </div>
+                    <div className="bg-white/10 rounded-xl p-3 border border-white/10">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Lightbulb className="w-3 h-3 text-indigo-200" />
+                        <p className="text-[10px] font-bold text-white uppercase">Recommended Min</p>
+                      </div>
+                      <p className="text-sm font-bold text-white">Quote at minimum $14,200</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col justify-center">
+                    <div className="bg-amber-400/20 rounded-xl p-4 border border-amber-400/30">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-300" />
+                        <p className="text-xs font-bold text-white">Benchmark Warning</p>
+                      </div>
+                      <p className="text-xs text-indigo-100 leading-relaxed">
+                        Quoting below 25% margin puts you in the bottom 30% of your history. Consider revising your labour ratios.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {!isAssistExpanded && (
+          <button 
+            onClick={() => setIsAssistExpanded(true)}
+            className="flex items-center gap-2 text-indigo-600 font-bold text-sm hover:text-indigo-700 transition-colors"
+          >
+            <Zap className="w-4 h-4" /> Show Smart Quote Assist
+          </button>
+        )}
+      </div>
+
+      {showNewQuoteForm && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white border border-slate-200 rounded-2xl p-8 mb-8 shadow-sm"
+        >
+          <h2 className="text-xl font-bold text-slate-900 mb-6">New Quote Estimate</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Project Name</label>
+                <input type="text" placeholder="e.g. Balmain Extension" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Job Type</label>
+                <select className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                  <option>Commercial Fit-Out</option>
+                  <option>Residential Reno</option>
+                  <option>Maintenance</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Estimated Value ($)</label>
+                <input type="number" placeholder="15000" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" />
+              </div>
+              <div className="pt-6">
+                <button className="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg hover:bg-indigo-700 transition-all shadow-sm text-sm">
+                  Generate Quote PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Main Content */}
