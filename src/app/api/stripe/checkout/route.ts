@@ -50,8 +50,8 @@ export async function POST(req: Request) {
         userEmail: session.user.email,
         priceId: resolvedPriceId,
       },
-      success_url: successUrl || `${origin}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancelUrl || `${origin}/pricing?checkout=cancelled`,
+      success_url: successUrl || `${origin}/settings/billing?checkout=success`,
+      cancel_url: cancelUrl || `${origin}/settings/billing?checkout=cancelled`,
     });
 
     return NextResponse.json({ url: checkoutSession.url, sessionId: checkoutSession.id });
