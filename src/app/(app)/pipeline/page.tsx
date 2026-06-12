@@ -52,13 +52,18 @@ export default function PipelinePage() {
       if (job.margin < 15 || job.status === 'critical') {
         color = "bg-red-500";
         border = "border-red-600";
-        text = "text-red-700";
-        bgLight = "bg-red-50";
+        text = "text-white";
+        bgLight = "bg-red-500"; // Changed to solid for better white text contrast
       } else if (job.margin <= 30 || job.status === 'at-risk') {
         color = "bg-amber-500";
         border = "border-amber-600";
-        text = "text-amber-700";
-        bgLight = "bg-amber-50";
+        text = "text-white";
+        bgLight = "bg-amber-500"; // Changed to solid
+      } else {
+        color = "bg-green-500";
+        border = "border-green-600";
+        text = "text-white";
+        bgLight = "bg-green-500"; // Changed to solid
       }
 
       // Parse dates (in a real app, these would be valid Date objects or ISO strings)
@@ -187,7 +192,7 @@ export default function PipelinePage() {
               </div>
 
               {/* Job Bars Container */}
-              <div className="relative p-6 min-h-[400px]">
+              <div className="relative p-6" style={{ height: `${(maxRow + 1) * 80 + 40}px`, minHeight: '300px' }}>
                 {positionedJobs.map((job) => (
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -203,14 +208,14 @@ export default function PipelinePage() {
                   >
                     <div className="flex flex-col h-full justify-between">
                       <div>
-                        <p className={`text-xs font-bold truncate ${job.text}`}>{job.name}</p>
-                        <p className="text-[10px] text-slate-500 font-medium truncate">{job.client}</p>
+                        <p className="text-xs font-bold truncate text-white">{job.name}</p>
+                        <p className="text-[10px] text-white/80 font-medium truncate">{job.client}</p>
                       </div>
                       <div className="flex items-center justify-between mt-1">
-                        <span className="text-[10px] font-bold text-slate-600">${job.budget.toLocaleString()}</span>
+                        <span className="text-[10px] font-bold text-white/90">${job.budget.toLocaleString()}</span>
                         <div className="flex items-center gap-1">
-                          <TrendingUp className={`w-3 h-3 ${job.text}`} />
-                          <span className={`text-[10px] font-bold ${job.text}`}>{job.margin}%</span>
+                          <TrendingUp className="w-3 h-3 text-white/90" />
+                          <span className="text-[10px] font-bold text-white">{job.margin}%</span>
                         </div>
                       </div>
                     </div>

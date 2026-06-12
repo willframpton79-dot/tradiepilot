@@ -11,10 +11,14 @@ import {
   Target,
   Zap,
   ArrowRight,
-  Download
+  Download,
+  AlertTriangle,
+  Lightbulb,
+  X as CloseIcon
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { exportCSV } from '@/lib/export';
+import { sampleData } from '@/lib/sampleData';
 
 const quotes = [
   { id: '1', client: 'John Smith', project: 'Bathroom Renovation', value: 12500, status: 'Accepted', date: '2026-06-01' },

@@ -7,11 +7,24 @@ import {
   ArrowUpRight,
   ChevronRight,
   Lightbulb,
-  Loader2
+  Loader2,
+  BarChart3,
+  CheckCircle2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import dynamic from 'next/dynamic';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  Cell,
+  Legend
+} from 'recharts';
 
 // Dynamic import for the chart component to avoid SSR issues
 const ForecastChart = dynamic(() => import('@/components/growth/ForecastChart'), { 
@@ -47,6 +60,13 @@ const insights = [
     impact: 'Efficiency up',
     type: 'success'
   }
+];
+
+const benchmarkData = [
+  { trade: 'Builders', user: 31, industry: 28 },
+  { trade: 'Plumbers', user: 34, industry: 29 },
+  { trade: 'Electrical', user: 38, industry: 32 },
+  { trade: 'HVAC', user: 29, industry: 27 },
 ];
 
 export default function GrowthPage() {
@@ -132,6 +152,126 @@ export default function GrowthPage() {
                 </button>
               </motion.div>
             ))}
+          </div>
+        </div>
+
+        {/* Industry Benchmark Section */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">Industry Benchmark</h3>
+                <p className="text-sm text-slate-500">TradiePilot Profit Index</p>
+              </div>
+            </div>
+            <div className="hidden sm:block">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                Based on anonymised TradiePilot network data
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl p-6 lg:p-8 shadow-sm">
+              <div className="mb-8">
+                <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">The Headline</h4>
+                <p className="text-2xl font-bold text-slate-900">
+                  Your margins are <span className="text-indigo-600">2.4% above</span> the industry average for your trade.
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Job Type</th>
+                      <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Your Avg</th>
+                      <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Industry</th>
+                      <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {benchmarkData.map((item) => (
+                      <tr key={item.trade} className="group">
+                        <td className="py-4 text-sm font-bold text-slate-900">{item.trade}</td>
+                        <td className="py-4 text-sm font-bold text-indigo-600">{item.user}%</td>
+                        <td className="py-4 text-sm font-medium text-slate-500">{item.industry}%</td>
+                        <td className="py-4">
+                          <div className="flex items-center gap-1 text-green-600 text-xs font-bold">
+                            <TrendingUp className="w-3 h-3" />
+                            +{item.user - item.industry}%
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl p-6 lg:p-8 shadow-sm h-full">
+              <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-8">Visual Comparison</h4>
+              
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={benchmarkData}
+                    layout="vertical"
+                    margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                    <XAxis type="number" hide />
+                    <YAxis 
+                      dataKey="trade" 
+                      type="category" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 12, fontWeight: 600, fill: '#64748b' }}
+                    />
+                    <Tooltip 
+                      cursor={{ fill: '#f8fafc' }}
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                    />
+                    <Legend 
+                      verticalAlign="top" 
+                      align="right" 
+                      iconType="circle"
+                      wrapperStyle={{ paddingBottom: '20px', fontSize: '12px', fontWeight: 600 }}
+                    />
+                    <Bar 
+                      name="Your Margin" 
+                      dataKey="user" 
+                      fill="#4f46e5" 
+                      radius={[0, 4, 4, 0]} 
+                      barSize={20}
+                    />
+                    <Bar 
+                      name="Industry Avg" 
+                      dataKey="industry" 
+                      fill="#e2e8f0" 
+                      radius={[0, 4, 4, 0]} 
+                      barSize={20}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="mt-6 flex items-start gap-3 bg-slate-50 p-4 rounded-xl">
+                <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Your efficiency in <strong>Plumbing</strong> and <strong>Electrical</strong> is significantly higher than the network average. This suggests strong crew management or superior quoting accuracy in these categories.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+          
+          <div className="sm:hidden text-center">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+              Based on anonymised TradiePilot network data
+            </span>
           </div>
         </div>
       </motion.div>
