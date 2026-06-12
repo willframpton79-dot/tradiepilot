@@ -114,68 +114,8 @@ function Hero() {
               <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-400" /><div className="w-3 h-3 rounded-full bg-amber-400" /><div className="w-3 h-3 rounded-full bg-green-400" /></div>
               <div className="flex-1 flex justify-center"><div className="bg-slate-700/50 rounded-md px-3 py-1 text-xs text-slate-400">app.tradiepilot.com.au/dashboard</div></div>
             </div>
-            <div className="flex">
-              {/* Left Sidebar */}
-              <div className="w-[200px] bg-white border-r border-slate-200 shrink-0 hidden sm:block">
-                <div className="p-4 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center"><BarChart3 className="w-4 h-4 text-white" /></div>
-                    <span className="text-sm font-bold text-slate-800">TradiePilot</span>
-                  </div>
-                </div>
-                <nav className="p-3 space-y-1">
-                  {[
-                    { label: "Dashboard", active: true },
-                    { label: "Quotes" },
-                    { label: "Growth" },
-                    { label: "Invoice Chaser" },
-                    { label: "Active Jobs" },
-                  ].map(n => (
-                    <div key={n.label} className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm ${n.active ? 'bg-indigo-50 text-indigo-700 font-semibold border-l-2 border-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>
-                      {n.label}
-                    </div>
-                  ))}
-                </nav>
-              </div>
-              {/* Right Content */}
-              <div className="flex-1 bg-slate-50 p-4 lg:p-5 space-y-4 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-800">Profit Dashboard &mdash; June 2026</h3>
-                  <span className="flex items-center gap-1 text-[10px] font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full"><span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Live</span>
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  {[
-                    { label: "Active Jobs", value: "14", color: "text-indigo-600" },
-                    { label: "Avg Margin", value: "34%", color: "text-green-600" },
-                    { label: "Quotes Pending", value: "$84K", color: "text-indigo-600" },
-                    { label: "Overdue Invoices", value: "$12K", color: "text-red-500" },
-                  ].map(s => (
-                    <div key={s.label} className="bg-white rounded-lg p-3 border border-slate-200">
-                      <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{s.label}</p>
-                      <p className={`text-xl font-bold ${s.color} mt-0.5`}>{s.value}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  {[
-                    { name: "Woollahra Bathroom Reno", margin: 42, status: "Healthy", color: "text-green-600", border: "border-green-500" },
-                    { name: "Bondi Electrical Upgrade", margin: 18, status: "Warning", color: "text-amber-600", border: "border-amber-500" },
-                    { name: "CBD Office Fit-Out", margin: 38, status: "Healthy", color: "text-green-600", border: "border-green-500" },
-                  ].map((job, i) => (
-                    <div key={i} className="bg-white rounded-lg p-3 border border-slate-100 flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold shrink-0 ${job.border}`}
-                        style={{ color: job.margin >= 30 ? "#16a34a" : job.margin >= 15 ? "#d97706" : "#dc2626" }}>
-                        {job.margin}%
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-800 truncate">{job.name}</p>
-                        <p className="text-xs text-slate-400">Profit margin tracking</p>
-                      </div>
-                      <span className={`text-xs font-medium ${job.color}`}>{job.status}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="bg-slate-100">
+              <img src="/images/dashboard.png" alt="TradiePilot Profit Dashboard" className="w-full rounded-b-lg" />
             </div>
           </div>
         </motion.div>
@@ -322,27 +262,13 @@ function FeaturesSection() {
               </div>
             ))}
           </div>
-          {/* Mock screen */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
-              <div className="flex gap-1"><div className="w-2.5 h-2.5 rounded-full bg-red-400" /><div className="w-2.5 h-2.5 rounded-full bg-amber-400" /><div className="w-2.5 h-2.5 rounded-full bg-green-400" /></div>
-              <span className="text-[10px] text-slate-400 font-mono">{tabs[active]}</span>
-            </div>
-            <div className="space-y-2">
-              {current.mockRows.map((row, i) => (
-                <div key={i} className="flex items-center gap-2 p-2.5 rounded-lg bg-slate-50">
-                  {row.pct !== null && (
-                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-[10px] font-bold shrink-0 ${row.pct >= 30 ? 'border-green-500 text-green-600' : row.pct >= 0 ? 'border-amber-500 text-amber-600' : 'border-red-500 text-red-600'}`}>
-                      {Math.abs(row.pct)}%
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-slate-800 truncate">{row.name}</p>
-                  </div>
-                  <span className="text-xs font-bold text-slate-700">{row.margin}</span>
-                </div>
-              ))}
-            </div>
+          {/* Product Screenshot */}
+          <div className="bg-slate-100 rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <img 
+              src={active === 0 ? "/images/feature-dashboard.png" : active === 1 ? "/images/feature-quotes.png" : active === 2 ? "/images/feature-invoices.png" : "/images/feature-growth.png"}
+              alt={tabs[active]}
+              className="w-full h-auto"
+            />
           </div>
         </motion.div>
       </div>
