@@ -54,3 +54,43 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to update quote' }, { status: 500 });
   }
 }
+
+// POST /api/quotes — create new quote
+export async function POST(request: NextRequest) {
+  try {
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const userEmail = auth.email;
+
+    await connectDB();
+    const body = await request.json();
+    
+    // Generate a simple quote ID if not provided
+    const quoteId = body.quoteId || `Q-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+    const quoteNumber = body.quoteNumber || quoteId;
+
+    const amount = parseFloat(body.amount) || 0;
+    const amountIncGst = body.includeGst ? amount * 1.1 : amount;
+    const amountExGst = body.includeGst ? amount : amount / 1.1;
+    const gstAmount = amountIncGst - amountExGst;
+
+    const newQuote = await Quote.create({
+      ...body,
+      userEmail,
+      quoteId,
+      quoteNumber,
+      amount,
+      amountExGst,
+      amountIncGst,
+      gstAmount,
+      sentDate: new Date().toISOString().split('T')[0],
+      daysSince: 0,
+      status: 'pending',
+    });
+
+    return NextResponse.json(newQuote);
+  } catch (error: any) {
+    console.error('POST /api/quotes error:', error);
+    return NextResponse.json({ error: 'Failed to create quote' }, { status: 500 });
+  }
+}

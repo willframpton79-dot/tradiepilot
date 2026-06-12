@@ -57,13 +57,12 @@ export default function QuotesPage() {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Quotes</h1>
           <p className="text-slate-500 mt-1 font-medium">Manage your project proposals and estimates.</p>
         </div>
-        <button 
-          onClick={() => setShowNewQuoteForm(!showNewQuoteForm)}
+        <Link 
+          href="/quotes/new"
           className="flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition-all shadow-sm text-sm"
         >
-          {showNewQuoteForm ? <CloseIcon className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-          {showNewQuoteForm ? "Cancel" : "Create Quote"}
-        </button>
+          <Plus className="w-4 h-4" /> Create Quote
+        </Link>
       </div>
 
       <div className="space-y-6 mb-8">
@@ -147,42 +146,8 @@ export default function QuotesPage() {
         )}
       </div>
 
-      {showNewQuoteForm && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white border border-slate-200 rounded-2xl p-8 mb-8 shadow-sm"
-        >
-          <h2 className="text-xl font-bold text-slate-900 mb-6">New Quote Estimate</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Project Name</label>
-                <input type="text" placeholder="e.g. Balmain Extension" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Job Type</label>
-                <select className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
-                  <option>Commercial Fit-Out</option>
-                  <option>Residential Reno</option>
-                  <option>Maintenance</option>
-                </select>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Estimated Value ($)</label>
-                <input type="number" placeholder="15000" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" />
-              </div>
-              <div className="pt-6">
-                <button className="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg hover:bg-indigo-700 transition-all shadow-sm text-sm">
-                  Generate Quote PDF
-                </button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
+
+
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Main Content */}

@@ -63,6 +63,18 @@ export default function JobDetailPage() {
   });
   const [timeLoading, setTimeLoading] = useState(false);
 
+  // Expense Log States
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [expenseFormData, setExpenseFormData] = useState({
+    description: "",
+    category: "Materials",
+    amount: "",
+    date: new Date().toISOString().split('T')[0],
+    supplier: "",
+    note: ""
+  });
+  const [expenseLoading, setExpenseLoading] = useState(false);
+
   useEffect(() => {
     async function fetchTeam() {
       try {
@@ -241,6 +253,40 @@ export default function JobDetailPage() {
       alert('An error occurred while logging time.');
     } finally {
       setTimeLoading(false);
+    }
+  };
+
+  const handleLogExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setExpenseLoading(true);
+    try {
+      const response = await fetch(`/api/jobs/${id}/expenses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(expenseFormData),
+      });
+      
+      if (response.ok) {
+        const updatedJob = await response.json();
+        setJob(updatedJob);
+        setIsExpenseModalOpen(false);
+        setExpenseFormData({
+          description: "",
+          category: "Materials",
+          amount: "",
+          date: new Date().toISOString().split('T')[0],
+          supplier: "",
+          note: ""
+        });
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to log expense');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while logging expense.');
+    } finally {
+      setExpenseLoading(false);
     }
   };
 
@@ -443,7 +489,12 @@ export default function JobDetailPage() {
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-indigo-600" /> Materials & Expenses
               </h3>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total: ${job.actualMaterials?.toLocaleString() || '0'}</span>
+              <button
+                onClick={() => setIsExpenseModalOpen(true)}
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full transition-all"
+              >
+                + Add Expense
+              </button>
             </div>
             <div className="divide-y divide-slate-50 max-h-[400px] overflow-y-auto">
               {job.receiptLog?.length > 0 ? job.receiptLog.map((log: any) => (
@@ -763,6 +814,140 @@ export default function JobDetailPage() {
                     </>
                   ) : (
                     "Save Entry"
+                  )}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Add Expense Modal */}
+      {isExpenseModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden"
+          >
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-indigo-600" /> Log Expense
+              </h3>
+              <button 
+                onClick={() => setIsExpenseModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleLogExpense} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Description / Item
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={expenseFormData.description}
+                    onChange={(e) => setExpenseFormData(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium"
+                    placeholder="e.g. Copper Piping"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Category
+                  </label>
+                  <select
+                    required
+                    value={expenseFormData.category}
+                    onChange={(e) => setExpenseFormData(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium bg-white"
+                  >
+                    <option value="Materials">Materials</option>
+                    <option value="Subcontractor">Subcontractor</option>
+                    <option value="Equipment">Equipment</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Date
+                  </label>
+                  <input
+                    required
+                    type="date"
+                    value={expenseFormData.date}
+                    onChange={(e) => setExpenseFormData(prev => ({ ...prev, date: e.target.value }))}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Amount ($)
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    step="0.01"
+                    value={expenseFormData.amount}
+                    onChange={(e) => setExpenseFormData(prev => ({ ...prev, amount: e.target.value }))}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Supplier (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={expenseFormData.supplier}
+                    onChange={(e) => setExpenseFormData(prev => ({ ...prev, supplier: e.target.value }))}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium"
+                    placeholder="e.g. Bunnings"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Receipt / Note (Optional)
+                </label>
+                <textarea
+                  value={expenseFormData.note}
+                  onChange={(e) => setExpenseFormData(prev => ({ ...prev, note: e.target.value }))}
+                  rows={2}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium resize-none"
+                  placeholder="Additional details..."
+                />
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsExpenseModalOpen(false)}
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={expenseLoading}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                >
+                  {expenseLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                    </>
+                  ) : (
+                    "Save Expense"
                   )}
                 </button>
               </div>
