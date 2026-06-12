@@ -24,6 +24,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { printJobReport } from "@/lib/export";
 import ProfitGauge from "@/components/dashboard/ProfitGauge";
+import { jobDetails as fallbackJobData } from "@/lib/sampleData";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 15 },
@@ -53,21 +54,62 @@ export default function JobDetailPage() {
   useEffect(() => {
     async function fetchJob() {
       try {
+        setLoading(true);
+        setError(null);
+        
+        // 1. Try to fetch from MongoDB API
         const response = await fetch(`/api/jobs/${id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch job');
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data && !data.error) {
+            setJobData(data);
+            return;
+          }
         }
-        const data = await response.json();
-        setJob(data);
-        setAmount(data.quotedTotal.toString());
-        setClientEmail(data.client?.email || "");
-        setClientName(data.client?.name || "");
-        setDescription(`Secure Payment Request for ${data.title}`);
+        
+        // 2. Fallback to sampleData.ts if API fails or returns error
+        console.log(`Job ${id} not found in MongoDB, falling back to sample data`);
+        const fallbackJob = fallbackJobData[id];
+        
+        if (fallbackJob) {
+          // Map sample data to the shape expected by the UI if needed
+          // The sample data in src/lib/sampleData.ts already matches the JobDetail interface
+          setJobData(transformFallbackData(fallbackJob));
+        } else {
+          throw new Error('Job not found');
+        }
       } catch (err: any) {
+        console.error('Error fetching job:', err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
+    }
+
+    function setJobData(data: any) {
+      setJob(data);
+      setAmount((data.quotedTotal || data.contractValue || 0).toString());
+      setClientEmail(data.client?.email || "");
+      setClientName(data.client?.name || "");
+      setDescription(`Secure Payment Request for ${data.title || data.name}`);
+    }
+
+    function transformFallbackData(data: any) {
+      // Ensure all fields expected by the UI exist
+      return {
+        ...data,
+        title: data.title || data.name,
+        quotedTotal: data.quotedTotal || data.budget || 0,
+        actualTotal: data.actualTotal || data.cost || 0,
+        marginPct: data.marginPct !== undefined ? data.marginPct : (data.margin || 0),
+        status: data.status || 'active',
+        suburb: data.suburb || '',
+        startDate: data.startDate || '',
+        dueDate: data.dueDate || '',
+        timeLog: data.timeLog || [],
+        receiptLog: data.receiptLog || [],
+      };
     }
 
     if (id) {
@@ -82,12 +124,12 @@ export default function JobDetailPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          jobId: job.jobId || job._id,
+          jobId: job.jobId || job._id || job.id,
           amount,
           clientEmail,
           clientName,
           description,
-          jobName: job.title
+          jobName: job.title || job.name
         }),
       });
       const data = await response.json();
@@ -111,12 +153,12 @@ export default function JobDetailPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          jobId: job.jobId || job._id,
+          jobId: job.jobId || job._id || job.id,
           amount,
           clientEmail,
           clientName,
           description,
-          jobName: job.title,
+          jobName: job.title || job.name,
           sendEmail: true,
           paymentUrl: generatedUrl
         }),
@@ -185,7 +227,7 @@ export default function JobDetailPage() {
           </Link>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{job.title}</h1>
+              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{job.title || job.name}</h1>
               <div className="flex items-center gap-4 mt-2 text-slate-500 font-medium">
                 <div className="flex items-center gap-1.5">
                   <User className="w-4 h-4" /> {job.client?.name}
@@ -197,24 +239,26 @@ export default function JobDetailPage() {
             </div>
             <div className="flex items-center gap-2">
               <span className={`px-3 py-1 border rounded-full text-xs font-bold uppercase tracking-wider ${
-                job.status === 'active' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-slate-50 text-slate-700 border-slate-100'
+                job.status === 'active' || job.status === 'on-track' ? 'bg-green-50 text-green-700 border-green-100' : 
+                job.status === 'critical' ? 'bg-red-50 text-red-700 border-red-100' :
+                'bg-slate-50 text-slate-700 border-slate-100'
               }`}>
-                {job.status === 'active' ? 'In Progress' : job.status}
+                {job.status === 'active' || job.status === 'on-track' ? 'In Progress' : job.status}
               </span>
               <button
                 onClick={() => printJobReport({
-                  title: job.title,
+                  title: job.title || job.name,
                   client: { name: job.client?.name },
-                  quotedTotal: job.quotedTotal,
-                  actualTotal: job.actualTotal,
-                  margin: job.quotedTotal - job.actualTotal,
-                  marginPct: job.marginPct,
-                  quotedLabour: job.quotedLabour,
-                  actualLabour: job.actualLabour,
-                  quotedMaterials: job.quotedMaterials,
-                  actualMaterials: job.actualMaterials,
-                  quotedSubcontractors: job.quotedSubcontractors,
-                  actualSubcontractors: job.actualSubcontractors,
+                  quotedTotal: job.quotedTotal || job.budget || 0,
+                  actualTotal: job.actualTotal || job.cost || 0,
+                  margin: (job.quotedTotal || job.budget || 0) - (job.actualTotal || job.cost || 0),
+                  marginPct: job.marginPct !== undefined ? job.marginPct : (job.margin || 0),
+                  quotedLabour: job.quotedLabour || 0,
+                  actualLabour: job.actualLabour || 0,
+                  quotedMaterials: job.quotedMaterials || 0,
+                  actualMaterials: job.actualMaterials || 0,
+                  quotedSubcontractors: job.quotedSubcontractors || 0,
+                  actualSubcontractors: job.actualSubcontractors || 0,
                   startDate: job.startDate,
                   dueDate: job.dueDate,
                   status: job.status,
@@ -242,16 +286,16 @@ export default function JobDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">Current Margin</h3>
-            <ProfitGauge margin={job.marginPct / 100} />
+            <ProfitGauge margin={(job.marginPct !== undefined ? job.marginPct : (job.margin || 0)) / 100} />
           </motion.div>
 
           <motion.div variants={fadeUp} className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Contract Value</p>
-              <p className="text-2xl font-bold text-slate-900 financial-figure">${job.quotedTotal?.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-slate-900 financial-figure">${(job.quotedTotal || job.budget || 0).toLocaleString()}</p>
               <div className="mt-4 pt-4 border-t border-slate-50">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Costs to Date</p>
-                <p className="text-xl font-bold text-slate-700 financial-figure">${job.actualTotal?.toLocaleString()}</p>
+                <p className="text-xl font-bold text-slate-700 financial-figure">${(job.actualTotal || job.cost || 0).toLocaleString()}</p>
               </div>
             </div>
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -268,10 +312,10 @@ export default function JobDetailPage() {
               <div className="mt-6">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-2 text-slate-400">
                   <span>Completion Estimate</span>
-                  <span>{Math.round((job.actualTotal / job.quotedTotal) * 100) || 0}%</span>
+                  <span>{job.progress || Math.round(((job.actualTotal || job.cost || 0) / (job.quotedTotal || job.budget || 1)) * 100) || 0}%</span>
                 </div>
                 <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(100, (job.actualTotal / job.quotedTotal) * 100)}%` }} />
+                  <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(100, job.progress || ((job.actualTotal || job.cost || 0) / (job.quotedTotal || job.budget || 1)) * 100)}%` }} />
                 </div>
               </div>
             </div>
@@ -297,7 +341,7 @@ export default function JobDetailPage() {
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-indigo-600" /> Labour Log
               </h3>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total: ${job.actualLabour?.toLocaleString()}</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total: ${job.actualLabour?.toLocaleString() || '0'}</span>
             </div>
             <div className="divide-y divide-slate-50 max-h-[400px] overflow-y-auto">
               {job.timeLog?.length > 0 ? job.timeLog.map((log: any) => (
@@ -321,7 +365,7 @@ export default function JobDetailPage() {
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-indigo-600" /> Materials & Expenses
               </h3>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total: ${job.actualMaterials?.toLocaleString()}</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total: ${job.actualMaterials?.toLocaleString() || '0'}</span>
             </div>
             <div className="divide-y divide-slate-50 max-h-[400px] overflow-y-auto">
               {job.receiptLog?.length > 0 ? job.receiptLog.map((log: any) => (
@@ -419,7 +463,7 @@ export default function JobDetailPage() {
                         onChange={(e) => setDescription(e.target.value)}
                         rows={2}
                         className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm font-medium resize-none"
-                        placeholder="e.g. Final payment for bathroom renovation"
+                        placeholder="e.g. Final payment for renovation"
                       />
                     </div>
                   </div>
