@@ -45,8 +45,8 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: any[] }) {
           <div className="divide-y divide-slate-100">
             {jobs.map((job) => (
               <Link
-                key={job.id || job._id}
-                href={`/jobs/${job.id || job._id}`}
+                key={job._id || job.id}
+                href={`/jobs/${job._id || job.id}`}
                 className="group flex items-center py-4 hover:bg-slate-50 transition-all duration-200 -mx-4 sm:-mx-6 px-4 sm:px-6"
               >
                 <div className="flex-1 min-w-0 mr-3 sm:mr-4">
