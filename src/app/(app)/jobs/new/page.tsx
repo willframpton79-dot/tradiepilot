@@ -130,7 +130,7 @@ export default function NewJobPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Trade Type</label>
+                <label className="text-sm font-bold text-slate-700">Business Type</label>
                 <div className="relative">
                   <Hammer className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <select
@@ -140,14 +140,15 @@ export default function NewJobPage() {
                     onChange={handleChange}
                     className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-900 font-medium appearance-none"
                   >
-                    <option value="">Select trade...</option>
-                    <option value="Electrical">Electrical</option>
+                    <option value="">Select type...</option>
+                    <option value="Builder / General Contractor">Builder / General Contractor</option>
+                    <option value="Commercial Fit-Out">Commercial Fit-Out</option>
+                    <option value="Civil & Infrastructure">Civil & Infrastructure</option>
                     <option value="Plumbing">Plumbing</option>
-                    <option value="Carpentry">Carpentry</option>
-                    <option value="Building">Building</option>
-                    <option value="Landscaping">Landscaping</option>
-                    <option value="Painting">Painting</option>
+                    <option value="Electrical">Electrical</option>
                     <option value="HVAC">HVAC</option>
+                    <option value="Landscaping">Landscaping</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
               </div>

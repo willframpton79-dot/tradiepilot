@@ -82,7 +82,7 @@ export default function InvoicesPage() {
             <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Invoice Chaser</h1>
             <p className="text-slate-500 mt-1 font-medium">Auto-follow up on outstanding payments.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
             <button
               onClick={() => exportCSV(invoices, 'invoices-export.csv', [
                 { key: 'id', label: 'ID' },
@@ -93,19 +93,19 @@ export default function InvoicesPage() {
                 { key: 'daysOverdue', label: 'Days Overdue' },
                 { key: 'dueDate', label: 'Due Date' },
               ])}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition-all"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition-all"
             >
               <Download className="w-4 h-4" /> Export CSV
             </button>
-            <div className="bg-indigo-50 px-6 py-4 rounded-2xl border border-indigo-100 flex items-center gap-6">
+            <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-4 sm:gap-6 bg-indigo-50 px-4 sm:px-6 py-4 rounded-2xl border border-indigo-100">
               <div>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Outstanding</p>
-                <p className="text-2xl font-bold text-indigo-700 financial-figure">$80,957</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total</p>
+                <p className="text-xl sm:text-2xl font-bold text-indigo-700 financial-figure">$81k</p>
               </div>
-              <div className="w-px h-10 bg-indigo-200" />
+              <div className="hidden sm:block w-px h-10 bg-indigo-200" />
               <div>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Overdue</p>
-                <p className="text-2xl font-bold text-red-600 financial-figure">$28,157</p>
+                <p className="text-xl sm:text-2xl font-bold text-red-600 financial-figure">$28k</p>
               </div>
             </div>
           </div>

@@ -129,7 +129,7 @@ export default function SettingsPage() {
               key={section.title}
               variants={fadeUp}
               onClick={() => section.link && router.push(section.link)}
-              className={`bg-white border border-slate-200 rounded-xl p-4 sm:p-6 hover:shadow-md transition-shadow ${
+              className={`bg-white border border-slate-200 rounded-xl p-4 sm:p-6 hover:shadow-md transition-shadow overflow-hidden ${
                 section.link ? 'cursor-pointer hover:border-indigo-200' : ''
               }`}
             >
@@ -138,8 +138,8 @@ export default function SettingsPage() {
                   <section.icon className="w-6 h-6 text-slate-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-slate-900">{section.title}</h2>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1">{section.description}</p>
+                  <h2 className="text-lg font-bold text-slate-900 truncate">{section.title}</h2>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 break-words">{section.description}</p>
                   <ul className="mt-4 space-y-2">
                     {section.items.map((item: any) => (
                       <li key={typeof item === 'string' ? item : item.label}>
