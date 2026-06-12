@@ -24,6 +24,8 @@ export interface IJob extends Document {
   actualMaterials: number;
   quotedSubcontractors: number;
   actualSubcontractors: number;
+  tradeType: string;
+  targetMarginPct: number;
   gstCollected: number;
   gstPaid: number;
   startDate: string;
@@ -92,6 +94,8 @@ const JobSchema = new Schema({
   actualMaterials: { type: Number, default: 0 },
   quotedSubcontractors: { type: Number, default: 0 },
   actualSubcontractors: { type: Number, default: 0 },
+  tradeType: { type: String, default: '' },
+  targetMarginPct: { type: Number, default: 30 },
   gstCollected: { type: Number, default: 0 },
   gstPaid: { type: Number, default: 0 },
   startDate: { type: String, default: '' },
