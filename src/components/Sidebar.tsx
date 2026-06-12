@@ -22,6 +22,7 @@ const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Quotes", icon: FileText, href: "/quotes" },
   { label: "Growth", icon: GrowthIcon, href: "/growth" },
+  { label: "Pipeline", icon: BarChart3, href: "/pipeline" },
   { label: "Invoice Chaser", icon: DollarSign, href: "/invoices" },
   { label: "Settings", icon: Settings, href: "/settings" },
 ];
