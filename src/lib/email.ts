@@ -240,3 +240,41 @@ export async function sendPaymentLink(clientName: string, clientEmail: string, j
     return { success: false, error: err.message || err };
   }
 }
+
+export async function sendCustomQuoteReminder(toEmail: string, clientName: string, projectName: string, amount: number) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'TradiePilot <notifications@tradiepilot.app>',
+      to: [toEmail],
+      subject: `Following up: Quote for ${projectName}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #4f46e5; margin-bottom: 20px;">Quote Follow-up</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
+            Hi ${clientName},
+          </p>
+          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
+            Following up on your quote for <strong>${projectName}</strong> — valued at <strong>${amount.toLocaleString()}</strong>.
+          </p>
+          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
+            Please let us know if you'd like to proceed or have any questions.
+          </p>
+          <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
+          <p style="font-size: 12px; color: #64748b; text-align: center;">
+            TradiePilot Pty Ltd, Australia. All rights reserved.
+          </p>
+        </div>
+      `,
+      text: `Hi ${clientName},\n\nFollowing up on your quote for ${projectName} — valued at ${amount.toLocaleString()}. Please let us know if you'd like to proceed or have any questions.\n\nBest,\nThe TradiePilot Team`,
+    });
+
+    if (error) {
+      console.error('Error sending custom quote reminder:', error);
+      return { success: false, error };
+    }
+    return { success: true, data };
+  } catch (err: any) {
+    console.error('Failed to send custom quote reminder:', err);
+    return { success: false, error: err.message || err };
+  }
+}

@@ -14,25 +14,22 @@ import {
   Download,
   AlertTriangle,
   Lightbulb,
+  Loader2,
   X as CloseIcon
 } from 'lucide-react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportCSV } from '@/lib/export';
 import { sampleData } from '@/lib/sampleData';
-
-const quotes = [
-  { id: '1', client: 'Meridian Property Group', project: 'Commercial Bathroom Fitout', value: 12500, status: 'Accepted', date: '2026-06-01' },
-  { id: '2', client: 'Apex Commercial Developments', project: 'Office Electrical Upgrade', value: 8400, status: 'Pending', date: '2026-06-03' },
-  { id: '3', client: 'NorthWest Build Co', project: 'Rooftop Terrace Construction', value: 24000, status: 'Pending', date: '2026-06-05' },
-  { id: '4', client: 'HealthCare Realty Trust', project: 'Commercial Landscaping', value: 15700, status: 'Draft', date: '2026-06-07' },
-  { id: '5', client: 'Pacific Retail Partners', project: 'Industrial Roof Restoration', value: 3200, status: 'Rejected', date: '2026-06-08' },
-];
+import { useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 
 const statusStyles: Record<string, string> = {
-  'Accepted': 'bg-green-50 text-green-700 border-green-100',
-  'Pending': 'bg-amber-50 text-amber-700 border-amber-100',
-  'Draft': 'bg-slate-50 text-slate-700 border-slate-100',
-  'Rejected': 'bg-red-50 text-red-700 border-red-100',
+  'won': 'bg-green-50 text-green-700 border-green-100',
+  'pending': 'bg-amber-50 text-amber-700 border-amber-100',
+  'followed-up': 'bg-indigo-50 text-indigo-700 border-indigo-100',
+  'urgent': 'bg-red-50 text-red-700 border-red-100',
+  'lost': 'bg-slate-50 text-slate-700 border-slate-100',
 };
 
 const fadeUp = {
@@ -43,12 +40,56 @@ const fadeUp = {
 export default function QuotesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAssistExpanded, setIsAssistExpanded] = useState(true);
-  const [showNewQuoteForm, setShowNewQuoteForm] = useState(false);
+  const [quotes, setQuotes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reminderLoading, setReminderLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchQuotes() {
+      try {
+        const res = await fetch('/api/quotes');
+        if (res.ok) {
+          const data = await res.json();
+          setQuotes(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch quotes:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchQuotes();
+  }, []);
+
+  const handleSendReminder = async (quoteId: string) => {
+    setReminderLoading(true);
+    try {
+      const res = await fetch(`/api/quotes/${quoteId}/reminder`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        toast.success('Reminder email sent successfully');
+        // Refresh quotes to show updated followup count
+        const updatedRes = await fetch('/api/quotes');
+        if (updatedRes.ok) setQuotes(await updatedRes.json());
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Failed to send reminder');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('An error occurred while sending the reminder.');
+    } finally {
+      setReminderLoading(false);
+    }
+  };
 
   const filtered = quotes.filter(q =>
-    q.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    q.project.toLowerCase().includes(searchTerm.toLowerCase())
+    (q.client?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (q.project?.toLowerCase() || q.job?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
+
+  const priorityQuote = quotes.find(q => q.status === 'urgent' || q.status === 'pending');
 
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto">
@@ -197,40 +238,55 @@ export default function QuotesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {filtered.map((quote, idx) => (
-                    <motion.tr 
-                      key={quote.id}
-                      initial="hidden"
-                      animate="visible"
-                      variants={fadeUp}
-                      className="hover:bg-slate-50/50 transition-colors group"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-                            <FileText className="w-5 h-5 text-indigo-600" />
+                  {loading ? (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-10 text-center">
+                        <Loader2 className="w-6 h-6 animate-spin text-indigo-600 mx-auto mb-2" />
+                        <p className="text-sm text-slate-500">Loading quotes...</p>
+                      </td>
+                    </tr>
+                  ) : filtered.length > 0 ? (
+                    filtered.map((quote, idx) => (
+                      <motion.tr 
+                        key={quote._id || quote.id}
+                        initial="hidden"
+                        animate="visible"
+                        variants={fadeUp}
+                        className="hover:bg-slate-50/50 transition-colors group"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+                              <FileText className="w-5 h-5 text-indigo-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{quote.client}</p>
+                              <p className="text-xs text-slate-500 font-medium">{quote.job || quote.project}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{quote.client}</p>
-                            <p className="text-xs text-slate-500 font-medium">{quote.project}</p>
-                          </div>
-                        </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-bold text-slate-900 financial-figure">${(quote.amountIncGst || quote.amount || quote.value || 0).toLocaleString()}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border capitalize ${statusStyles[quote.status.toLowerCase()] || statusStyles['pending']}`}>
+                            {quote.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right text-slate-400">
+                          <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                            <MoreHorizontal className="w-5 h-5" />
+                          </button>
+                        </td>
+                      </motion.tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-10 text-center text-slate-500">
+                        No quotes found matching your search.
                       </td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm font-bold text-slate-900 financial-figure">${quote.value.toLocaleString()}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusStyles[quote.status]}`}>
-                          {quote.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right text-slate-400">
-                        <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-                          <MoreHorizontal className="w-5 h-5" />
-                        </button>
-                      </td>
-                    </motion.tr>
-                  ))}
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -265,13 +321,23 @@ export default function QuotesPage() {
 
               <div>
                 <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-wider mb-3">Priority Follow-up</p>
-                <div className="bg-white/10 rounded-xl p-3 border border-white/10">
-                  <p className="text-sm font-bold text-white">Apex Commercial Developments</p>
-                  <p className="text-xs text-indigo-200 mt-1">High-value lead for Office Electrical Upgrade</p>
-                  <button className="mt-3 w-full bg-white text-indigo-600 text-xs font-bold py-2 rounded-lg hover:bg-indigo-50 transition-colors flex items-center justify-center gap-1">
-                    Send Reminder <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
+                {priorityQuote ? (
+                  <div className="bg-white/10 rounded-xl p-3 border border-white/10">
+                    <p className="text-sm font-bold text-white">{priorityQuote.client}</p>
+                    <p className="text-xs text-indigo-200 mt-1">High-value lead for {priorityQuote.job || priorityQuote.project}</p>
+                    <button 
+                      onClick={() => handleSendReminder(priorityQuote.quoteId || priorityQuote._id)}
+                      disabled={reminderLoading}
+                      className="mt-3 w-full bg-white text-indigo-600 text-xs font-bold py-2 rounded-lg hover:bg-indigo-50 transition-colors flex items-center justify-center gap-1 disabled:opacity-50"
+                    >
+                      {reminderLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Send Reminder"} <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-white/10 rounded-xl p-3 border border-white/10 text-center">
+                    <p className="text-xs text-indigo-200">No pending quotes to follow up.</p>
+                  </div>
+                )}
               </div>
 
               <div className="bg-indigo-700/50 rounded-xl p-4 border border-indigo-500/30">
