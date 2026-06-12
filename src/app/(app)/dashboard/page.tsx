@@ -41,7 +41,10 @@ export default function Dashboard() {
         <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              Good morning, {session?.user?.name?.split(' ')[0] || 'Partner'}
+              Good morning, {(() => {
+                const name = session?.user?.name?.split(' ')[0] || 'Partner';
+                return name.charAt(0).toUpperCase() + name.slice(1);
+              })()}
             </h1>
             <p className="text-sm sm:text-base text-slate-500 mt-1 font-medium">Here&apos;s your profit intelligence for today.</p>
           </div>

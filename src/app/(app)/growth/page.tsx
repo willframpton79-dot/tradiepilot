@@ -6,10 +6,22 @@ import {
   Zap, 
   ArrowUpRight,
   ChevronRight,
-  Lightbulb
+  Lightbulb,
+  Loader2
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import dynamic from 'next/dynamic';
+
+// Dynamic import for the chart component to avoid SSR issues
+const ForecastChart = dynamic(() => import('@/components/growth/ForecastChart'), { 
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-slate-200" />
+    </div>
+  )
+});
 
 const fadeUp = {
   hidden: { opacity: 0, y: 15 },
@@ -37,23 +49,7 @@ const insights = [
   }
 ];
 
-const periodOptions = [
-  { label: 'Last 7 Days', data: [30, 45, 38, 52, 48, 61, 55] },
-  { label: 'Last 30 Days', data: [45, 52, 48, 65, 58, 72, 68] },
-  { label: 'Last 3 Months', data: [45, 62, 58, 85, 74, 92, 88] },
-  { label: 'Last 6 Months', data: [45, 62, 58, 85, 74, 92] },
-  { label: 'Year to Date', data: [30, 45, 62, 58, 85, 74, 92, 88, 95, 78, 82, 90] },
-];
-
-const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
 export default function GrowthPage() {
-  const [selectedPeriod, setSelectedPeriod] = useState('Last 6 Months');
-
-  const currentPeriod = periodOptions.find(p => p.label === selectedPeriod) || periodOptions[3];
-  const labels = selectedPeriod === 'Last 7 Days' ? dayLabels : monthLabels;
-
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto">
       <motion.div
@@ -73,35 +69,12 @@ export default function GrowthPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Profit Forecast</h3>
-                <p className="text-sm text-slate-500">Projected vs Actual performance</p>
+                <p className="text-sm text-slate-500">Projected vs Actual performance (2026)</p>
               </div>
-              <select
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-              >
-                {periodOptions.map(p => (
-                  <option key={p.label}>{p.label}</option>
-                ))}
-              </select>
             </div>
             
-            <div className="h-64 flex items-end gap-2 sm:gap-4 overflow-hidden">
-              {currentPeriod.data.map((height, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                  <div className="w-full bg-slate-50 rounded-t-lg relative group h-full">
-                    <motion.div 
-                      initial={{ height: 0 }}
-                      animate={{ height: `${height}%` }}
-                      transition={{ delay: i * 0.1, duration: 0.8 }}
-                      className="absolute bottom-0 left-0 right-0 bg-indigo-500 rounded-t-lg group-hover:bg-indigo-600 transition-colors"
-                    />
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">
-                    {selectedPeriod === 'Last 7 Days' ? dayLabels[i] : labels[i]}
-                  </span>
-                </div>
-              ))}
+            <div className="h-72 w-full">
+              <ForecastChart />
             </div>
           </motion.div>
 
