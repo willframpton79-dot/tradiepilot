@@ -1,9 +1,15 @@
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_for_dev_mode');
+const getResend = async () => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey && process.env.NODE_ENV === 'production') {
+    console.warn('RESEND_API_KEY is missing in production');
+  }
+  const { Resend } = await import('resend');
+  return new Resend(apiKey || 're_dummy');
+};
 
 export async function sendWelcomeEmail(email: string, name: string) {
   const formattedName = name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+  const resend = await getResend();
   try {
     const { data, error } = await resend.emails.send({
       from: 'TradiePilot <notifications@tradiepilot.app>',
@@ -28,7 +34,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
           </div>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
-            TradiePilot Pty Ltd, Australia. All rights reserved.
+            Automation Layer ABN 55 388 054 921, Australia. All rights reserved.
           </p>
         </div>
       `,
@@ -47,6 +53,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
 }
 
 export async function sendPaymentConfirmation(email: string, name: string, tierName: string, amount: number) {
+  const resend = await getResend();
   try {
     const { data, error } = await resend.emails.send({
       from: 'TradiePilot <notifications@tradiepilot.app>',
@@ -85,7 +92,7 @@ export async function sendPaymentConfirmation(email: string, name: string, tierN
           </div>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
-            TradiePilot Pty Ltd, Australia. All rights reserved.
+            Automation Layer ABN 55 388 054 921, Australia. All rights reserved.
           </p>
         </div>
       `,
@@ -104,6 +111,7 @@ export async function sendPaymentConfirmation(email: string, name: string, tierN
 }
 
 export async function sendQuoteFollowUpReminder(email: string, name: string, quoteNumber: string, amount: number) {
+  const resend = await getResend();
   try {
     const { data, error } = await resend.emails.send({
       from: 'TradiePilot <notifications@tradiepilot.app>',
@@ -126,7 +134,7 @@ export async function sendQuoteFollowUpReminder(email: string, name: string, quo
           </div>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
-            TradiePilot Pty Ltd, Australia. All rights reserved.
+            Automation Layer ABN 55 388 054 921, Australia. All rights reserved.
           </p>
         </div>
       `,
@@ -145,6 +153,7 @@ export async function sendQuoteFollowUpReminder(email: string, name: string, quo
 }
 
 export async function sendInvoiceChaseReminder(email: string, name: string, invoiceNumber: string, amount: number, daysOverdue: number) {
+  const resend = await getResend();
   try {
     const { data, error } = await resend.emails.send({
       from: 'TradiePilot <notifications@tradiepilot.app>',
@@ -167,7 +176,7 @@ export async function sendInvoiceChaseReminder(email: string, name: string, invo
           </div>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
-            TradiePilot Pty Ltd, Australia. All rights reserved.
+            Automation Layer ABN 55 388 054 921, Australia. All rights reserved.
           </p>
         </div>
       `,
@@ -186,6 +195,7 @@ export async function sendInvoiceChaseReminder(email: string, name: string, invo
 }
 
 export async function sendPaymentLink(clientName: string, clientEmail: string, jobName: string, amount: number, paymentUrl: string) {
+  const resend = await getResend();
   try {
     const { data, error } = await resend.emails.send({
       from: 'TradiePilot Payments <billing@tradiepilot.app>',
@@ -223,7 +233,7 @@ export async function sendPaymentLink(clientName: string, clientEmail: string, j
           </p>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
-            TradiePilot Pty Ltd, Australia. All rights reserved.
+            Automation Layer ABN 55 388 054 921, Australia. All rights reserved.
           </p>
         </div>
       `,
@@ -242,6 +252,7 @@ export async function sendPaymentLink(clientName: string, clientEmail: string, j
 }
 
 export async function sendCustomQuoteReminder(toEmail: string, clientName: string, projectName: string, amount: number) {
+  const resend = await getResend();
   try {
     const { data, error } = await resend.emails.send({
       from: 'TradiePilot <notifications@tradiepilot.app>',
@@ -254,18 +265,18 @@ export async function sendCustomQuoteReminder(toEmail: string, clientName: strin
             Hi ${clientName},
           </p>
           <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
-            Following up on your quote for <strong>${projectName}</strong> — valued at <strong>${amount.toLocaleString()}</strong>.
+            Following up on your quote for <strong>${projectName}</strong> — valued at <strong>$${amount.toLocaleString()}</strong>.
           </p>
           <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
             Please let us know if you'd like to proceed or have any questions.
           </p>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
-            TradiePilot Pty Ltd, Australia. All rights reserved.
+            Automation Layer ABN 55 388 054 921, Australia. All rights reserved.
           </p>
         </div>
       `,
-      text: `Hi ${clientName},\n\nFollowing up on your quote for ${projectName} — valued at ${amount.toLocaleString()}. Please let us know if you'd like to proceed or have any questions.\n\nBest,\nThe TradiePilot Team`,
+      text: `Hi ${clientName},\n\nFollowing up on your quote for ${projectName} — valued at $${amount.toLocaleString()}. Please let us know if you'd like to proceed or have any questions.\n\nBest,\nThe TradiePilot Team`,
     });
 
     if (error) {
@@ -280,6 +291,8 @@ export async function sendCustomQuoteReminder(toEmail: string, clientName: strin
 }
 
 export async function sendInvoiceChaserNotification(toEmail: string, clientName: string, projectName: string, amount: number, dueDate: string) {
+  const resend = await getResend();
+  const formattedDate = new Date(dueDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
   try {
     const { data, error } = await resend.emails.send({
       from: 'TradiePilot <notifications@tradiepilot.app>',
@@ -289,15 +302,15 @@ export async function sendInvoiceChaserNotification(toEmail: string, clientName:
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
           <h2 style="color: #4f46e5; margin-bottom: 20px;">Payment Reminder Sent</h2>
           <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
-            A payment reminder has been sent for <strong>${projectName}</strong>, <strong>${amount.toLocaleString()}</strong>, due <strong>${dueDate}</strong>.
+            A payment reminder has been sent for <strong>${projectName}</strong>, <strong>$${amount.toLocaleString()}</strong>, due <strong>${formattedDate}</strong>.
           </p>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
-            TradiePilot Pty Ltd, Australia. All rights reserved.
+            Automation Layer ABN 55 388 054 921, Australia. All rights reserved.
           </p>
         </div>
       `,
-      text: `A payment reminder has been sent for ${projectName}, ${amount.toLocaleString()}, due ${dueDate}.`,
+      text: `A payment reminder has been sent for ${projectName}, $${amount.toLocaleString()}, due ${formattedDate}.`,
     });
 
     if (error) {

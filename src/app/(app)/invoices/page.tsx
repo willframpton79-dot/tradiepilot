@@ -17,12 +17,40 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 
 const initialInvoices = [
-  { id: '1', client: 'Meridian Property Group', project: 'Commercial Kitchen Fitout', amount: 8400, status: 'Overdue', daysOverdue: 14, dueDate: '2026-05-27', sentDate: '2026-05-13' },
-  { id: '2', client: 'Apex Commercial Developments', project: 'Level 3 Bathroom Amenities', amount: 12500, status: 'Pending', daysOverdue: 0, dueDate: '2026-06-15', sentDate: '2026-06-01' },
-  { id: '3', client: 'NorthWest Build Co', project: 'Landscaping & External Works', amount: 5600, status: 'Overdue', daysOverdue: 5, dueDate: '2026-06-05', sentDate: '2026-05-22' },
-  { id: '4', client: 'Pacific Retail Partners', project: 'Rooftop Deck Construction', amount: 12457, status: 'Pending', daysOverdue: 0, dueDate: '2026-06-20', sentDate: '2026-06-06' },
-  { id: '5', client: 'CBD Office Ltd', project: 'Office Fit-out', amount: 42000, status: 'Overdue', daysOverdue: 32, dueDate: '2026-05-09', sentDate: '2026-04-25' },
+  { id: '1', client: 'Meridian Property Group', project: 'Commercial Kitchen Fitout', amount: 8400, dueDate: '2026-05-27', sentDate: '2026-05-13' },
+  { id: '2', client: 'Apex Commercial Developments', project: 'Level 3 Bathroom Amenities', amount: 12500, dueDate: '2026-06-15', sentDate: '2026-06-01' },
+  { id: '3', client: 'NorthWest Build Co', project: 'Landscaping & External Works', amount: 5600, dueDate: '2026-06-05', sentDate: '2026-05-22' },
+  { id: '4', client: 'Pacific Retail Partners', project: 'Rooftop Deck Construction', amount: 12457, dueDate: '2026-06-20', sentDate: '2026-06-06' },
+  { id: '5', client: 'CBD Office Ltd', project: 'Office Fit-out', amount: 42000, dueDate: '2026-05-09', sentDate: '2026-04-25' },
 ];
+
+const getDaysInfo = (dueDate: string) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+  
+  const diffTime = due.getTime() - today.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) {
+    return {
+      text: `${Math.abs(diffDays)} days overdue`,
+      color: 'text-red-600',
+      badgeLabel: 'OVERDUE',
+      badgeColor: 'bg-red-50 text-red-700 border-red-100',
+      isOverdue: true
+    };
+  } else {
+    return {
+      text: `Due in ${diffDays} days`,
+      color: 'text-slate-500',
+      badgeLabel: 'PENDING',
+      badgeColor: 'bg-amber-50 text-amber-700 border-amber-100',
+      isOverdue: false
+    };
+  }
+};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 15 },
@@ -84,13 +112,17 @@ export default function InvoicesPage() {
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
             <button
-              onClick={() => exportCSV(invoices, 'invoices-export.csv', [
+              onClick={() => exportCSV(invoices.map(inv => ({
+                ...inv,
+                status: getDaysInfo(inv.dueDate).badgeLabel,
+                days: getDaysInfo(inv.dueDate).text
+              })), 'invoices-export.csv', [
                 { key: 'id', label: 'ID' },
                 { key: 'client', label: 'Client' },
                 { key: 'project', label: 'Project' },
                 { key: 'amount', label: 'Amount' },
                 { key: 'status', label: 'Status' },
-                { key: 'daysOverdue', label: 'Days Overdue' },
+                { key: 'days', label: 'Days' },
                 { key: 'dueDate', label: 'Due Date' },
               ])}
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition-all"
@@ -113,71 +145,76 @@ export default function InvoicesPage() {
 
         {/* Invoice List */}
         <div className="grid grid-cols-1 gap-4">
-          {invoices.map((inv) => (
-            <motion.div 
-              key={inv.id}
-              variants={fadeUp}
-              className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow group"
-            >
-              <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
+          {invoices.map((inv) => {
+            const daysInfo = getDaysInfo(inv.dueDate);
+            return (
+              <motion.div 
+                key={inv.id}
+                variants={fadeUp}
+                className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow group"
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                  {/* 1. Client & Project */}
+                  <div className="lg:col-span-3 min-w-0">
                     <h3 className="text-lg font-bold text-slate-900 truncate">{inv.client}</h3>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                      inv.status === 'Overdue' 
-                        ? 'bg-red-50 text-red-700 border-red-100' 
-                        : 'bg-amber-50 text-amber-700 border-amber-100'
-                    }`}>
-                      {inv.status}
-                    </span>
+                    <p className="text-sm text-slate-500 font-medium">{inv.project}</p>
                   </div>
-                  <p className="text-sm text-slate-500 font-medium">{inv.project}</p>
-                </div>
 
-                <div className="flex flex-wrap items-center gap-8">
-                  <div className="min-w-[120px]">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Amount</p>
+                  {/* 2. Amount */}
+                  <div className="lg:col-span-2">
+                    <p className="lg:hidden text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Amount</p>
                     <p className="text-lg font-bold text-slate-900 financial-figure">${inv.amount.toLocaleString()}</p>
                   </div>
-                  <div className="min-w-[120px]">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Due Date</p>
+
+                  {/* 3. Due Date */}
+                  <div className="lg:col-span-2">
+                    <p className="lg:hidden text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Due Date</p>
                     <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
                       <Calendar className="w-3.5 h-3.5 text-slate-400" />
                       {new Date(inv.dueDate).toLocaleDateString('en-AU', { day: '2-digit', month: 'short' })}
                     </div>
                   </div>
-                  {inv.daysOverdue > 0 && (
-                    <div className="min-w-[100px]">
-                      <p className="text-[10px] text-red-400 font-bold uppercase tracking-wider mb-1">Overdue</p>
-                      <p className="text-sm font-bold text-red-600">{inv.daysOverdue} days</p>
-                    </div>
-                  )}
-                </div>
 
-                <div className="flex items-center gap-2 pt-4 lg:pt-0 lg:border-l lg:border-slate-100 lg:pl-6">
-                  <button 
-                    onClick={() => handleRemind(inv)}
-                    disabled={loadingId === inv.id}
-                    className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all text-xs disabled:opacity-50"
-                  >
-                    {loadingId === inv.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />} Remind
-                  </button>
-                  <button 
-                    onClick={() => toast(`Calling ${inv.client}...`)}
-                    className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
-                  >
-                    <Phone className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => setSelectedInvoice(inv)}
-                    className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
+                  {/* 4. Status */}
+                  <div className="lg:col-span-1">
+                    <p className="lg:hidden text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Status</p>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border inline-block ${daysInfo.badgeColor}`}>
+                      {daysInfo.badgeLabel}
+                    </span>
+                  </div>
+
+                  {/* 5. Days */}
+                  <div className="lg:col-span-2">
+                    <p className="lg:hidden text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Days</p>
+                    <p className={`text-sm font-bold ${daysInfo.color}`}>{daysInfo.text}</p>
+                  </div>
+
+                  {/* 6. Actions */}
+                  <div className="lg:col-span-2 flex items-center justify-end gap-2 pt-4 lg:pt-0 lg:border-l lg:border-slate-100 lg:pl-6">
+                    <button 
+                      onClick={() => handleRemind(inv)}
+                      disabled={loadingId === inv.id}
+                      className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all text-xs disabled:opacity-50"
+                    >
+                      {loadingId === inv.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />} Remind
+                    </button>
+                    <button 
+                      onClick={() => toast(`Calling ${inv.client}...`)}
+                      className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+                    >
+                      <Phone className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => setSelectedInvoice(inv)}
+                      className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </motion.div>
 
@@ -217,12 +254,12 @@ export default function InvoicesPage() {
                   </div>
                   <div>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Status</p>
-                    <p className="text-sm font-bold text-slate-900">{selectedInvoice.status}</p>
+                    <p className="text-sm font-bold text-slate-900">{getDaysInfo(selectedInvoice.dueDate).badgeLabel}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Days Overdue</p>
-                    <p className={`text-sm font-bold ${selectedInvoice.daysOverdue > 0 ? 'text-red-600' : 'text-slate-900'}`}>
-                      {selectedInvoice.daysOverdue} days
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Days</p>
+                    <p className={`text-sm font-bold ${getDaysInfo(selectedInvoice.dueDate).color}`}>
+                      {getDaysInfo(selectedInvoice.dueDate).text}
                     </p>
                   </div>
                 </div>
