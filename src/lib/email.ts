@@ -23,7 +23,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
             <li>Set your business target margin to unlock intelligent profitability tracking.</li>
           </ol>
           <div style="margin-top: 30px; text-align: center;">
-            <a href="https://tradiepilot.com.au/onboarding" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Go to Onboarding</a>
+            <a href="https://tradiepilot.app/onboarding" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Go to Onboarding</a>
           </div>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
@@ -31,7 +31,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
           </p>
         </div>
       `,
-      text: `Hello ${name},\n\nWelcome to TradiePilot! We're thrilled to help you keep your profit and understand your numbers.\n\nNext steps to get started:\n1. Complete your business onboarding profile at /onboarding\n2. Connect your Xero/MYOB data\n3. Set your target margin\n\nGo to onboarding: https://tradiepilot.com.au/onboarding\n\nBest,\nThe TradiePilot Team`,
+      text: `Hello ${name},\n\nWelcome to TradiePilot! We're thrilled to help you keep your profit and understand your numbers.\n\nNext steps to get started:\n1. Complete your business onboarding profile at /onboarding\n2. Connect your Xero/MYOB data\n3. Set your target margin\n\nGo to onboarding: https://tradiepilot.app/onboarding\n\nBest,\nThe TradiePilot Team`,
     });
 
     if (error) {
@@ -80,7 +80,7 @@ export async function sendPaymentConfirmation(email: string, name: string, tierN
             All pro-tier automation features are now unlocked. If you haven't yet, log into your dashboard to set up your target margin and start tracking your job profitability.
           </p>
           <div style="margin-top: 30px; text-align: center;">
-            <a href="https://tradiepilot.com.au/dashboard" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Go to Dashboard</a>
+            <a href="https://tradiepilot.app/dashboard" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Go to Dashboard</a>
           </div>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
@@ -88,7 +88,7 @@ export async function sendPaymentConfirmation(email: string, name: string, tierN
           </p>
         </div>
       `,
-      text: `Hi ${name},\n\nYour payment has been successfully processed! You are now subscribed to the TradiePilot ${tierName} Plan.\n\nAmount Paid: $${amount.toFixed(2)} AUD\nBilling Period: Monthly\n\nLog in here: https://tradiepilot.com.au/dashboard\n\nBest,\nThe TradiePilot Team`,
+      text: `Hi ${name},\n\nYour payment has been successfully processed! You are now subscribed to the TradiePilot ${tierName} Plan.\n\nAmount Paid: ${amount.toFixed(2)} AUD\nBilling Period: Monthly\n\nLog in here: https://tradiepilot.app/dashboard\n\nBest,\nThe TradiePilot Team`,
     });
 
     if (error) {
@@ -121,7 +121,7 @@ export async function sendQuoteFollowUpReminder(email: string, name: string, quo
             Following up on quotes within 3-5 days increases conversion rates by up to 28%. We recommend sending a quick, friendly text or email from your Smart Quoting dashboard to nudge the client.
           </p>
           <div style="margin-top: 30px; text-align: center;">
-            <a href="https://tradiepilot.com.au/quotes" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Manage Quote #${quoteNumber}</a>
+            <a href="https://tradiepilot.app/quotes" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Manage Quote #${quoteNumber}</a>
           </div>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
@@ -129,7 +129,7 @@ export async function sendQuoteFollowUpReminder(email: string, name: string, quo
           </p>
         </div>
       `,
-      text: `Hi ${name},\n\nThis is an automated reminder that your customer hasn't accepted Quote #${quoteNumber} yet (Valued at $${amount.toLocaleString()}).\n\nFollowing up on quotes promptly increases conversion. Manage your quotes on your TradiePilot dashboard:\nhttps://tradiepilot.com.au/quotes\n\nBest,\nThe TradiePilot Team`,
+      text: `Hi ${name},\n\nThis is an automated reminder that your customer hasn't accepted Quote #${quoteNumber} yet (Valued at ${amount.toLocaleString()}).\n\nFollowing up on quotes promptly increases conversion. Manage your quotes on your TradiePilot dashboard:\nhttps://tradiepilot.app/quotes\n\nBest,\nThe TradiePilot Team`,
     });
 
     if (error) {
@@ -162,7 +162,7 @@ export async function sendInvoiceChaseReminder(email: string, name: string, invo
             TradiePilot has prepared an automated payment nudge. You can also view this invoice in your Invoices page to initiate a formal statutory demand notice or use our SOPA (Security of Payment Act) escalations if needed.
           </p>
           <div style="margin-top: 30px; text-align: center;">
-            <a href="https://tradiepilot.com.au/invoices" style="background-color: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Invoice Escalations</a>
+            <a href="https://tradiepilot.app/invoices" style="background-color: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Invoice Escalations</a>
           </div>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
@@ -170,7 +170,7 @@ export async function sendInvoiceChaseReminder(email: string, name: string, invo
           </p>
         </div>
       `,
-      text: `Hi ${name},\n\nWe've detected that Invoice #${invoiceNumber} (Outstanding balance: $${amount.toLocaleString()}) is now ${daysOverdue} days overdue.\n\nTradiePilot has prepared payment chases. Review outstanding invoices and SOPA escalations on your dashboard:\nhttps://tradiepilot.com.au/invoices\n\nBest,\nThe TradiePilot Team`,
+      text: `Hi ${name},\n\nWe've detected that Invoice #${invoiceNumber} (Outstanding balance: ${amount.toLocaleString()}) is now ${daysOverdue} days overdue.\n\nTradiePilot has prepared payment chases. Review outstanding invoices and SOPA escalations on your dashboard:\nhttps://tradiepilot.app/invoices\n\nBest,\nThe TradiePilot Team`,
     });
 
     if (error) {
