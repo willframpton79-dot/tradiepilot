@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_for_dev_mo
 export async function sendWelcomeEmail(email: string, name: string) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'TradiePilot <onboarding@resend.dev>',
+      from: 'TradiePilot <notifications@tradiepilot.app>',
       to: [email],
       subject: 'Welcome to TradiePilot — Let\'s Maximize Your Profit!',
       html: `
@@ -48,7 +48,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
 export async function sendPaymentConfirmation(email: string, name: string, tierName: string, amount: number) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'TradiePilot <onboarding@resend.dev>',
+      from: 'TradiePilot <notifications@tradiepilot.app>',
       to: [email],
       subject: `Payment Confirmed: Welcome to TradiePilot ${tierName}!`,
       html: `
@@ -105,7 +105,7 @@ export async function sendPaymentConfirmation(email: string, name: string, tierN
 export async function sendQuoteFollowUpReminder(email: string, name: string, quoteNumber: string, amount: number) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'TradiePilot <onboarding@resend.dev>',
+      from: 'TradiePilot <notifications@tradiepilot.app>',
       to: [email],
       subject: `Automated Quote Follow-up: Quote #${quoteNumber}`,
       html: `
@@ -146,7 +146,7 @@ export async function sendQuoteFollowUpReminder(email: string, name: string, quo
 export async function sendInvoiceChaseReminder(email: string, name: string, invoiceNumber: string, amount: number, daysOverdue: number) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'TradiePilot <onboarding@resend.dev>',
+      from: 'TradiePilot <notifications@tradiepilot.app>',
       to: [email],
       subject: `Overdue Invoice Alert: Invoice #${invoiceNumber} is ${daysOverdue} Days Overdue`,
       html: `
@@ -187,7 +187,7 @@ export async function sendInvoiceChaseReminder(email: string, name: string, invo
 export async function sendPaymentLink(clientName: string, clientEmail: string, jobName: string, amount: number, paymentUrl: string) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'TradiePilot Payments <billing@resend.dev>',
+      from: 'TradiePilot Payments <billing@tradiepilot.app>',
       to: [clientEmail],
       subject: `Secure Payment Request: ${jobName}`,
       html: `

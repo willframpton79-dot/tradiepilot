@@ -128,7 +128,7 @@ export const stats: StatCard[] = [
 export const activeJobs: Job[] = [
   {
     id: 'job_001',
-    name: 'Pyrmont Commercial Office Fit-Out',
+    name: 'Commercial Bathroom Fitout',
     client: 'Meridian Property Group',
     budget: 185000,
     cost: 107300,
@@ -140,7 +140,7 @@ export const activeJobs: Job[] = [
   },
   {
     id: 'job_002',
-    name: 'Surry Hills Apartment Complex',
+    name: 'Office Electrical Upgrade',
     client: 'Apex Commercial Developments',
     budget: 340000,
     cost: 210800,
@@ -152,7 +152,7 @@ export const activeJobs: Job[] = [
   },
   {
     id: 'job_003',
-    name: 'North Sydney Retail Refurbishment',
+    name: 'Rooftop Terrace Construction',
     client: 'Pacific Retail Partners',
     budget: 92000,
     cost: 99360,
@@ -164,7 +164,7 @@ export const activeJobs: Job[] = [
   },
   {
     id: 'job_004',
-    name: 'Parramatta Warehouse Extension',
+    name: 'Commercial Landscaping',
     client: 'NorthWest Build Co',
     budget: 210000,
     cost: 102900,
@@ -176,7 +176,7 @@ export const activeJobs: Job[] = [
   },
   {
     id: 'job_005',
-    name: 'Chatswood Medical Centre Fit-Out',
+    name: 'Industrial Roof Restoration',
     client: 'HealthCare Realty Trust',
     budget: 128000,
     cost: 84480,
@@ -192,7 +192,7 @@ export const quotes: Quote[] = [
   {
     id: 'Q-101',
     client: 'Meridian Property Group',
-    job: 'Level 4 Lobby Refurb',
+    job: 'Commercial Bathroom Fitout',
     amount: 145000,
     sentDate: '28 May 2026',
     daysSince: 4,
@@ -203,7 +203,7 @@ export const quotes: Quote[] = [
   {
     id: 'Q-102',
     client: 'Apex Commercial Developments',
-    job: 'Penthouse Balcony Remediation',
+    job: 'Office Electrical Upgrade',
     amount: 68000,
     sentDate: '15 May 2026',
     daysSince: 17,
@@ -214,7 +214,7 @@ export const quotes: Quote[] = [
   {
     id: 'Q-103',
     client: 'NorthWest Build Co',
-    job: 'Loading Dock Expansion',
+    job: 'Rooftop Terrace Construction',
     amount: 112000,
     sentDate: '22 May 2026',
     daysSince: 10,
@@ -227,7 +227,7 @@ export const quotes: Quote[] = [
 export const invoices: Invoice[] = [
   {
     id: 'INV-201',
-    job: 'Pyrmont Commercial Office Fit-Out',
+    job: 'Commercial Bathroom Fitout',
     client: 'Meridian Property Group',
     amount: 45000,
     sentDate: '10 May 2026',
@@ -237,7 +237,7 @@ export const invoices: Invoice[] = [
   },
   {
     id: 'INV-202',
-    job: 'Chatswood Medical Centre Fit-Out',
+    job: 'Industrial Roof Restoration',
     client: 'HealthCare Realty Trust',
     amount: 32000,
     sentDate: '25 May 2026',
@@ -247,7 +247,7 @@ export const invoices: Invoice[] = [
   },
   {
     id: 'INV-203',
-    job: 'North Sydney Retail Refurbishment',
+    job: 'Rooftop Terrace Construction',
     client: 'Pacific Retail Partners',
     amount: 12500,
     sentDate: '15 Apr 2026',
@@ -262,7 +262,7 @@ export const invoices: Invoice[] = [
 export const jobDetails: Record<string, JobDetail> = {
   'job_001': {
     id: 'job_001',
-    title: 'Pyrmont Commercial Office Fit-Out',
+    title: 'Commercial Bathroom Fitout',
     description: 'High-end office fit-out including custom workstations, boardroom integration, and kitchen breakout area.',
     client: {
       name: 'Meridian Property Group',
@@ -293,7 +293,7 @@ export const jobDetails: Record<string, JobDetail> = {
   },
   'job_002': {
     id: 'job_002',
-    title: 'Surry Hills Apartment Complex',
+    title: 'Office Electrical Upgrade',
     description: 'External remediation and internal common area upgrades for 24-unit complex.',
     client: {
       name: 'Apex Commercial Developments',
@@ -320,7 +320,7 @@ export const jobDetails: Record<string, JobDetail> = {
   },
   'job_003': {
     id: 'job_003',
-    title: 'North Sydney Retail Refurbishment',
+    title: 'Rooftop Terrace Construction',
     description: 'Shopfront replacement and interior retail display upgrades.',
     client: {
       name: 'Pacific Retail Partners',
@@ -348,7 +348,7 @@ export const jobDetails: Record<string, JobDetail> = {
   },
   'job_004': {
     id: 'job_004',
-    title: 'Parramatta Warehouse Extension',
+    title: 'Commercial Landscaping',
     description: '200sqm extension to existing industrial warehouse including concrete slab and portal frame.',
     client: {
       name: 'NorthWest Build Co',
@@ -375,7 +375,7 @@ export const jobDetails: Record<string, JobDetail> = {
   },
   'job_005': {
     id: 'job_005',
-    title: 'Chatswood Medical Centre Fit-Out',
+    title: 'Industrial Roof Restoration',
     description: 'Medical grade fit-out for private clinic including 4 consult rooms and sterile area.',
     client: {
       name: 'HealthCare Realty Trust',

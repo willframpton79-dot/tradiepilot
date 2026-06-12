@@ -21,11 +21,11 @@ import { exportCSV } from '@/lib/export';
 import { sampleData } from '@/lib/sampleData';
 
 const quotes = [
-  { id: '1', client: 'John Smith', project: 'Bathroom Renovation', value: 12500, status: 'Accepted', date: '2026-06-01' },
-  { id: '2', client: 'Sarah Johnson', project: 'Kitchen Electrical', value: 8400, status: 'Pending', date: '2026-06-03' },
-  { id: '3', client: 'Mike Wilson', project: 'Deck Construction', value: 24000, status: 'Pending', date: '2026-06-05' },
-  { id: '4', client: 'Emma Brown', project: 'Garden Landscaping', value: 15700, status: 'Draft', date: '2026-06-07' },
-  { id: '5', client: 'David Lee', project: 'Roof Repair', value: 3200, status: 'Rejected', date: '2026-06-08' },
+  { id: '1', client: 'Meridian Property Group', project: 'Commercial Bathroom Fitout', value: 12500, status: 'Accepted', date: '2026-06-01' },
+  { id: '2', client: 'Apex Commercial Developments', project: 'Office Electrical Upgrade', value: 8400, status: 'Pending', date: '2026-06-03' },
+  { id: '3', client: 'NorthWest Build Co', project: 'Rooftop Terrace Construction', value: 24000, status: 'Pending', date: '2026-06-05' },
+  { id: '4', client: 'HealthCare Realty Trust', project: 'Commercial Landscaping', value: 15700, status: 'Draft', date: '2026-06-07' },
+  { id: '5', client: 'Pacific Retail Partners', project: 'Industrial Roof Restoration', value: 3200, status: 'Rejected', date: '2026-06-08' },
 ];
 
 const statusStyles: Record<string, string> = {
@@ -301,8 +301,8 @@ export default function QuotesPage() {
               <div>
                 <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-wider mb-3">Priority Follow-up</p>
                 <div className="bg-white/10 rounded-xl p-3 border border-white/10">
-                  <p className="text-sm font-bold text-white">Sarah Johnson</p>
-                  <p className="text-xs text-indigo-200 mt-1">High-value lead for Kitchen Electrical</p>
+                  <p className="text-sm font-bold text-white">Apex Commercial Developments</p>
+                  <p className="text-xs text-indigo-200 mt-1">High-value lead for Office Electrical Upgrade</p>
                   <button className="mt-3 w-full bg-white text-indigo-600 text-xs font-bold py-2 rounded-lg hover:bg-indigo-50 transition-colors flex items-center justify-center gap-1">
                     Send Reminder <ArrowRight className="w-3 h-3" />
                   </button>
