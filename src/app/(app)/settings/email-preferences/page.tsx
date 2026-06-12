@@ -100,7 +100,7 @@ export default function EmailPreferenceSettings() {
           <div className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/50">
             <div className="pr-4">
               <p className="text-sm font-bold text-slate-900">Marketing & Tips</p>
-              <p className="text-xs text-slate-500">Insights on how to grow your trade business and special offers.</p>
+              <p className="text-xs text-slate-500">Insights on how to grow your construction business and special offers.</p>
             </div>
             <button
               type="button"

@@ -41,7 +41,8 @@ export async function PATCH(request: Request) {
     'basPeriod',
     'taxRate',
     'notifications',
-    'emailPreferences'
+    'emailPreferences',
+    'alertThresholds'
   ];
 
   const updateData: any = {};

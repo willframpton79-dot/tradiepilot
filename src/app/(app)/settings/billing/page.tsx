@@ -31,12 +31,23 @@ export default function BillingSettings() {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId: 'pro_monthly' }), // Example price ID
+        body: JSON.stringify({ plan: 'pro' }),
       });
-      const { url } = await res.json();
-      if (url) window.location.href = url;
-    } catch (error) {
-      toast.error('Failed to initiate checkout');
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to initiate checkout');
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      toast.error(error.message || 'Failed to initiate checkout');
     } finally {
       setLoading(false);
     }
@@ -67,15 +78,26 @@ export default function BillingSettings() {
               <h3 className="text-xl font-black text-slate-900 capitalize">{tier} Plan</h3>
             </div>
           </div>
-          {tier === 'free' && (
+          {tier === 'free' || tier === 'starter' ? (
             <button
               onClick={handleUpgrade}
               disabled={loading}
-              className="w-full sm:w-auto px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all disabled:opacity-50"
+              className="w-full sm:w-auto px-10 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {loading ? 'Processing...' : 'Upgrade to Pro'}
+              {loading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                <Zap className="w-4 h-4 fill-current" />
+              )}
+              Upgrade to Pro
             </button>
-          )}
+          ) : tier === 'pro' ? (
+            <button
+              className="w-full sm:w-auto px-10 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-md shadow-slate-100 flex items-center justify-center gap-2"
+            >
+              Upgrade to Enterprise
+            </button>
+          ) : null}
         </div>
 
         {/* Features */}

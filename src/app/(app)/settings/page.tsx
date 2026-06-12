@@ -55,7 +55,7 @@ const settingsSections = [
     items: [
       { label: 'Email Notifications', href: '/settings/notifications' },
       { label: 'Push Notifications', href: '/settings/notifications' },
-      { label: 'Alert Thresholds', href: '/settings/notifications' },
+      { label: 'Alert Thresholds', href: '/settings/alert-thresholds' },
     ],
     link: '/settings/notifications',
   },

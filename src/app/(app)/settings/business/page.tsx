@@ -68,7 +68,7 @@ export default function BusinessSettings() {
   return (
     <SettingsWrapper 
       title="Business Profile" 
-      description="Update your trade business details and operational targets."
+      description="Update your business details and operational targets."
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -88,7 +88,7 @@ export default function BusinessSettings() {
           
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-1">
-              Trade Type
+              Business Type
             </label>
             <select
               value={formData.tradeType}
@@ -96,13 +96,15 @@ export default function BusinessSettings() {
               className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
               required
             >
-              <option value="">Select trade...</option>
-              <option value="plumbing">Plumbing</option>
-              <option value="electrical">Electrical</option>
-              <option value="carpentry">Carpentry</option>
-              <option value="landscaping">Landscaping</option>
-              <option value="builder">General Builder</option>
-              <option value="other">Other</option>
+              <option value="">Select type...</option>
+              <option value="Builder / General Contractor">Builder / General Contractor</option>
+              <option value="Commercial Fit-Out">Commercial Fit-Out</option>
+              <option value="Civil & Infrastructure">Civil & Infrastructure</option>
+              <option value="Plumbing">Plumbing</option>
+              <option value="Electrical">Electrical</option>
+              <option value="HVAC">HVAC</option>
+              <option value="Landscaping">Landscaping</option>
+              <option value="Other">Other</option>
             </select>
           </div>
 

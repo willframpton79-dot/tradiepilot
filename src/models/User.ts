@@ -25,6 +25,13 @@ export interface IUser extends Document {
     invoiceChasers: boolean;
     marginAlerts: boolean;
   };
+  alertThresholds: {
+    marginThreshold: number;
+    overdueInvoiceAlert: boolean;
+    overdueInvoiceDays: number;
+    quoteExpiryAlert: boolean;
+    quoteExpiryDays: number;
+  };
   emailPreferences: {
     marketing: boolean;
     productUpdates: boolean;
@@ -55,6 +62,13 @@ const UserSchema = new Schema({
     quoteReminders: { type: Boolean, default: true },
     invoiceChasers: { type: Boolean, default: true },
     marginAlerts: { type: Boolean, default: true },
+  },
+  alertThresholds: {
+    marginThreshold: { type: Number, default: 20 },
+    overdueInvoiceAlert: { type: Boolean, default: true },
+    overdueInvoiceDays: { type: Number, default: 14 },
+    quoteExpiryAlert: { type: Boolean, default: true },
+    quoteExpiryDays: { type: Number, default: 7 },
   },
   emailPreferences: {
     marketing: { type: Boolean, default: false },
