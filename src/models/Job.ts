@@ -71,7 +71,7 @@ const ReceiptEntrySchema = new Schema({
 
 const JobSchema = new Schema({
   userEmail: { type: String, required: true, index: true },
-  jobId: { type: String, required: true, unique: true, index: true },
+  jobId: { type: String, required: true, index: true },
   title: { type: String, required: true },
   description: { type: String, default: '' },
   client: {
@@ -106,5 +106,7 @@ const JobSchema = new Schema({
 }, {
   timestamps: true,
 });
+
+JobSchema.index({ userEmail: 1, jobId: 1 }, { unique: true });
 
 export const Job = mongoose.models.Job || mongoose.model<IJob>('Job', JobSchema);

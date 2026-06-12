@@ -10,7 +10,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userEmail = await requireAuth();
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const userEmail = auth.email;
+
     const { id } = await params;
     await connectDB();
 
@@ -26,19 +29,15 @@ export async function GET(
     const job = await Job.findOne(query).lean();
     
     if (!job) {
-      // One last try: if it wasn't a valid ObjectId, maybe it's still a jobId
-      if (mongoose.Types.ObjectId.isValid(id)) {
-         const jobByJobId = await Job.findOne({ jobId: id, userEmail }).lean();
-         if (jobByJobId) return NextResponse.json(jobByJobId);
-      }
+      // One last try: if it was a valid ObjectId but not found, maybe it's actually a jobId string that looks like an ObjectId
+      const jobByJobId = await Job.findOne({ jobId: id, userEmail }).lean();
+      if (jobByJobId) return NextResponse.json(jobByJobId);
+      
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
     
     return NextResponse.json(job);
   } catch (error: any) {
-    if (error.message === 'Unauthorized') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
     console.error('GET /api/jobs/[id] error:', error);
     return NextResponse.json({ error: 'Failed to fetch job' }, { status: 500 });
   }
