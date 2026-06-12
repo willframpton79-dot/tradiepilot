@@ -107,17 +107,32 @@ function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* Dashboard Mockup with Sidebar - hidden on mobile */}
-        <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="mt-14 lg:mt-18 max-w-6xl mx-auto hidden sm:block">
-          <div className="bg-[#1e293b] rounded-xl shadow-2xl overflow-hidden border border-slate-700/50">
-            <div className="flex items-center gap-2 px-4 py-3 bg-slate-900 border-b border-slate-700/50">
-              <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-400" /><div className="w-3 h-3 rounded-full bg-amber-400" /><div className="w-3 h-3 rounded-full bg-green-400" /></div>
-              <div className="flex-1 flex justify-center"><div className="bg-slate-700/50 rounded-md px-3 py-1 text-xs text-slate-400">app.tradiepilot.com.au/dashboard</div></div>
+        {/* Premium Dashboard Screenshot Display */}
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.8, delay: 0.5 }} 
+          className="relative mx-auto max-w-5xl mt-16 hidden sm:block"
+        >
+          {/* Indigo glow behind frame */}
+          <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-3xl -z-10 scale-95" />
+          
+          {/* Browser chrome */}
+          <div className="rounded-xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.2)] border border-slate-200 bg-white"
+               style={{transform: 'perspective(1200px) rotateX(2deg)'}}>
+            <div className="bg-[#1e293b] px-4 py-3 flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-400"/>
+              <div className="w-3 h-3 rounded-full bg-amber-400"/>
+              <div className="w-3 h-3 rounded-full bg-green-400"/>
+              <div className="mx-auto bg-slate-700 rounded px-4 py-1 text-slate-300 text-xs">app.tradiepilot.com.au/dashboard</div>
             </div>
             <div className="bg-slate-100">
-              <img src="/images/dashboard.png" alt="TradiePilot Profit Dashboard" className="w-full rounded-b-lg" />
+              <img src="/images/dashboard.png" alt="TradiePilot Profit Dashboard" className="w-full block" />
             </div>
           </div>
+          
+          {/* Bottom gradient fade */}
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent pointer-events-none" />
         </motion.div>
       </div>
     </section>
@@ -262,12 +277,12 @@ function FeaturesSection() {
               </div>
             ))}
           </div>
-          {/* Product Screenshot */}
-          <div className="bg-slate-100 rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          {/* Premium Feature Screenshot Card */}
+          <div className="relative rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200 bg-slate-100">
             <img 
               src={active === 0 ? "/images/feature-dashboard.png" : active === 1 ? "/images/feature-quotes.png" : active === 2 ? "/images/feature-invoices.png" : "/images/feature-growth.png"}
-              alt={tabs[active]}
-              className="w-full h-auto"
+              alt={tabs[active]} 
+              className="w-full block" 
             />
           </div>
         </motion.div>
