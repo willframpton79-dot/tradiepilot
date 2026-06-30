@@ -127,7 +127,7 @@ export function calculateDSO(invoices: any[], count: number = 10): DSOData {
 
 // ─── Master KPI Calculation ─────────────────────────────────────
 
-export async function calculateKPIs(): Promise<KPIResult> {
+export async function calculateKPIs(userEmail: string): Promise<KPIResult> {
   let jobs: any[];
   let quotes: any[];
   let invoices: any[];
@@ -135,9 +135,9 @@ export async function calculateKPIs(): Promise<KPIResult> {
   if (DB_ENABLED) {
     try {
       await connectDB();
-      jobs = await Job.find({}).lean();
-      quotes = await Quote.find({}).lean();
-      invoices = await Invoice.find({}).lean();
+      jobs = await Job.find({ userEmail }).lean();
+      quotes = await Quote.find({ userEmail }).lean();
+      invoices = await Invoice.find({ userEmail }).lean();
     } catch {
       jobs = Object.values(sampleData.jobDetails);
       quotes = sampleData.quotes;
@@ -165,8 +165,8 @@ export async function calculateKPIs(): Promise<KPIResult> {
     try {
       await connectDB();
       await Insight.findOneAndUpdate(
-        { section: 'kpi' },
-        { $set: { data: result, userEmail: 'system' } },
+        { section: 'kpi', userEmail },
+        { $set: { data: result, userEmail } },
         { upsert: true, new: true }
       );
     } catch {

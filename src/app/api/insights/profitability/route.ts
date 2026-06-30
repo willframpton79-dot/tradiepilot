@@ -4,11 +4,12 @@ import { requireAuth } from '@/lib/session';
 
 export async function GET() {
   try {
-    await requireAuth();
-    const result = await calculateKPIs();
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const userEmail = auth.email;
+    const result = await calculateKPIs(userEmail);
     return NextResponse.json({ success: true, data: result.profitability });
   } catch (error: any) {
-    if (error.message === 'Unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     return NextResponse.json({ success: false, error: 'Failed' }, { status: 500 });
   }
 }
