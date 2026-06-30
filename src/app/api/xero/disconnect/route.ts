@@ -5,7 +5,9 @@ import { requireAuth } from '@/lib/session';
 
 export async function POST() {
   try {
-    const userEmail = await requireAuth();
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const userEmail = auth.email;
     await connectDB();
 
     await User.findOneAndUpdate(

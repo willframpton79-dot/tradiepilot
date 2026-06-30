@@ -5,7 +5,9 @@ import { requireAuth } from '@/lib/session';
 
 export async function GET() {
   try {
-    const userEmail = await requireAuth();
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const userEmail = auth.email;
     await connectDB();
 
     const user = await User.findOne({ email: userEmail }).select(

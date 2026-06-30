@@ -18,7 +18,7 @@ export async function GET() {
       clientId,
       clientSecret,
       redirectUris: [redirectUri],
-      scopes: ['openid', 'profile', 'email', 'accounting.invoices.read', 'accounting.contacts.read', 'accounting.banktransactions.read', 'offline_access'],
+      scopes: ['openid', 'profile', 'email', 'accounting.transactions.read', 'accounting.contacts.read', 'offline_access'],
     });
 
     const consentUrl = await xero.buildConsentUrl();

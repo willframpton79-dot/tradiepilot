@@ -15,7 +15,9 @@ function parseToken(token: any): string {
 
 export async function POST() {
   try {
-    const userEmail = await requireAuth();
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const userEmail = auth.email;
     await connectDB();
 
     const user = await User.findOne({ email: userEmail });
@@ -91,7 +93,7 @@ export async function POST() {
       else if (xInv.status === 'OVERDUE' || xInv.amountDue > 0) tpStatus = 'overdue';
 
       await Invoice.findOneAndUpdate(
-        { invoiceId: `xero_${xInv.invoiceID}` },
+        { invoiceId: `xero_${xInv.invoiceID}`, userEmail },
         {
           userEmail,
           invoiceId: `xero_${xInv.invoiceID}`,
