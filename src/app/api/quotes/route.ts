@@ -25,7 +25,9 @@ export async function GET() {
 // PATCH /api/quotes — update quote status (for follow-up tracking)
 export async function PATCH(request: NextRequest) {
   try {
-    const userEmail = await requireAuth();
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const userEmail = auth.email;
     await connectDB();
     const body = await request.json();
     const { quoteId, status, followups } = body;
@@ -50,9 +52,6 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json(updated);
   } catch (error: any) {
-    if (error.message === 'Unauthorized') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
     console.error('PATCH /api/quotes error:', error);
     return NextResponse.json({ error: 'Failed to update quote' }, { status: 500 });
   }

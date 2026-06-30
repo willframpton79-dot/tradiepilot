@@ -6,7 +6,9 @@ import { requireAuth } from '@/lib/session';
 // GET /api/insights — fetch all insight sections for current user
 export async function GET() {
   try {
-    const userEmail = await requireAuth();
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const userEmail = auth.email;
     await connectDB();
     const insights = await Insight.find({ userEmail }).lean();
 
@@ -17,9 +19,6 @@ export async function GET() {
 
     return NextResponse.json(result);
   } catch (error: any) {
-    if (error.message === 'Unauthorized') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
     console.error('GET /api/insights error:', error);
     return NextResponse.json({ error: 'Failed to fetch insights' }, { status: 500 });
   }
