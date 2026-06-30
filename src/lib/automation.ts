@@ -99,7 +99,7 @@ export interface ProfitLeakAnalysis {
   recommendations: string[];
 }
 
-export function analyzeQuoteFollowups(quotes: { id: string; client: string; job: string; amount: number; sentDate: string; daysSince: number; status: string; followups: number }[], thresholds: AlertThresholds = DEFAULT_THRESHOLDS): FollowUpAction[] {
+export function analyzeQuoteFollowups(quotes: { id: string; client: string; job: string; amount: number; sentDate: string; daysSince: number; status: string; followups: number }[], thresholds: AlertThresholds = DEFAULT_THRESHOLDS, businessName = 'Your Business'): FollowUpAction[] {
   const actions: FollowUpAction[] = [];
   if (!thresholds.quoteExpiryAlert) return actions;
 
@@ -115,7 +115,7 @@ export function analyzeQuoteFollowups(quotes: { id: string; client: string; job:
         targetId: q.id, targetType: 'quote', customerName: q.client, amount: q.amount, daysElapsed: daysSinceSent,
         recommendedAction: `Call ${q.client} immediately. Quote is losing relevance. Ask if they have questions or need a revised price.`,
         suggestedChannel: 'phone',
-        autoDraftMessage: `Hi ${q.client.split(' ')[0]}, just checking in on the ${q.job} quote ($${q.amount.toLocaleString()}) I sent ${daysSinceSent} days ago. Happy to answer any questions or adjust the scope. — Dave, OzWise Plumbing`,
+        autoDraftMessage: `Hi ${q.client.split(' ')[0]}, just checking in on the ${q.job} quote ($${q.amount.toLocaleString()}) I sent ${daysSinceSent} days ago. Happy to answer any questions or adjust the scope. — ${businessName}`,
       });
     }
 
@@ -127,7 +127,7 @@ export function analyzeQuoteFollowups(quotes: { id: string; client: string; job:
         targetId: q.id, targetType: 'quote', customerName: q.client, amount: q.amount, daysElapsed: daysSinceSent,
         recommendedAction: `Send a final "last chance" email with a limited-time discount offer (5% off if accepted within 7 days).`,
         suggestedChannel: 'email',
-        autoDraftMessage: `Hi ${q.client.split(' ')[0]}, I wanted to check one last time on the ${q.job} quote. As a courtesy, I can offer 5% off if you accept within the next 7 days. Let me know! — Dave, OzWise Plumbing`,
+        autoDraftMessage: `Hi ${q.client.split(' ')[0]}, I wanted to check one last time on the ${q.job} quote. As a courtesy, I can offer 5% off if you accept within the next 7 days. Let me know! — ${businessName}`,
       });
     }
 
@@ -139,7 +139,7 @@ export function analyzeQuoteFollowups(quotes: { id: string; client: string; job:
         targetId: q.id, targetType: 'quote', customerName: q.client, amount: q.amount, daysElapsed: daysSinceSent,
         recommendedAction: `Move to cold storage. Tag for re-engagement in 90 days. In the meantime, focus on warmer leads.`,
         suggestedChannel: 'email',
-        autoDraftMessage: `Hi ${q.client.split(' ')[0]}, just touching base on the ${q.job} quote. No pressure — the quote remains valid. Feel free to reach out anytime. — Dave`,
+        autoDraftMessage: `Hi ${q.client.split(' ')[0]}, just touching base on the ${q.job} quote. No pressure — the quote remains valid. Feel free to reach out anytime. — ${businessName}`,
       });
     }
   }
@@ -147,7 +147,7 @@ export function analyzeQuoteFollowups(quotes: { id: string; client: string; job:
   return actions;
 }
 
-export function analyzeInvoiceChases(invoices: { id: string; job: string; client: string; amount: number; sentDate: string; dueDate: string; daysOverdue: number; status: string }[], thresholds: AlertThresholds = DEFAULT_THRESHOLDS): FollowUpAction[] {
+export function analyzeInvoiceChases(invoices: { id: string; job: string; client: string; amount: number; sentDate: string; dueDate: string; daysOverdue: number; status: string }[], thresholds: AlertThresholds = DEFAULT_THRESHOLDS, businessName = 'Your Business'): FollowUpAction[] {
   const actions: FollowUpAction[] = [];
   if (!thresholds.overdueInvoiceAlert) return actions;
 
@@ -167,7 +167,7 @@ export function analyzeInvoiceChases(invoices: { id: string; job: string; client
         targetId: inv.id, targetType: 'invoice', customerName: inv.client, amount: inv.amount, daysElapsed: overdue,
         recommendedAction: `Send a final notice with a 7-day payment deadline via email and registered post.`,
         suggestedChannel: 'letter',
-        autoDraftMessage: `FINAL NOTICE: Invoice ${inv.id} for $${inv.amount.toLocaleString()} is now ${overdue} days overdue. Payment must be received within 7 days to avoid debt collection proceedings. — OzWise Plumbing Accounts`,
+        autoDraftMessage: `FINAL NOTICE: Invoice ${inv.id} for $${inv.amount.toLocaleString()} is now ${overdue} days overdue. Payment must be received within 7 days to avoid debt collection proceedings. — ${businessName} Accounts`,
       });
     }
 
@@ -179,7 +179,7 @@ export function analyzeInvoiceChases(invoices: { id: string; job: string; client
         targetId: inv.id, targetType: 'invoice', customerName: inv.client, amount: inv.amount, daysElapsed: overdue,
         recommendedAction: `Call the customer directly. Offer a payment plan if needed. Mention any late payment fees applicable per your terms.`,
         suggestedChannel: 'phone',
-        autoDraftMessage: `Hi ${inv.client.split(' ')[0]}, I'm following up on invoice ${inv.id} for $${inv.amount.toLocaleString()} which is now ${overdue} days overdue. Is there an issue with the work or can we arrange payment? Happy to set up a payment plan if needed. — Dave, OzWise Plumbing`,
+        autoDraftMessage: `Hi ${inv.client.split(' ')[0]}, I'm following up on invoice ${inv.id} for $${inv.amount.toLocaleString()} which is now ${overdue} days overdue. Is there an issue with the work or can we arrange payment? Happy to set up a payment plan if needed. — ${businessName}`,
       });
     }
 
@@ -191,7 +191,7 @@ export function analyzeInvoiceChases(invoices: { id: string; job: string; client
         targetId: inv.id, targetType: 'invoice', customerName: inv.client, amount: inv.amount, daysElapsed: overdue,
         recommendedAction: `Send a friendly email reminder with the invoice attached. No need to call yet.`,
         suggestedChannel: 'email',
-        autoDraftMessage: `Hi ${inv.client.split(' ')[0]}, just a friendly reminder that invoice ${inv.id} for $${inv.amount.toLocaleString()} was due ${overdue} days ago. Please let me know if you need anything else. Thanks! — Dave, OzWise Plumbing`,
+        autoDraftMessage: `Hi ${inv.client.split(' ')[0]}, just a friendly reminder that invoice ${inv.id} for $${inv.amount.toLocaleString()} was due ${overdue} days ago. Please let me know if you need anything else. Thanks! — ${businessName}`,
       });
     }
 
@@ -203,7 +203,7 @@ export function analyzeInvoiceChases(invoices: { id: string; job: string; client
         targetId: inv.id, targetType: 'invoice', customerName: inv.client, amount: inv.amount, daysElapsed: overdue,
         recommendedAction: `Send an automated SMS reminder. No phone call needed yet.`,
         suggestedChannel: 'sms',
-        autoDraftMessage: `Hi ${inv.client.split(' ')[0]}, quick heads up that invoice ${inv.id} for $${inv.amount.toLocaleString()} is due. Payment link: [URL]. Thanks! — OzWise Plumbing`,
+        autoDraftMessage: `Hi ${inv.client.split(' ')[0]}, quick heads up that invoice ${inv.id} for $${inv.amount.toLocaleString()} is due. Payment link: [URL]. Thanks! — ${businessName}`,
       });
     }
   }
@@ -275,6 +275,7 @@ export async function runAutomationEngine(userEmail?: string): Promise<Automatio
   let invoices: any[];
   let jobs: any[];
   let thresholds: AlertThresholds = DEFAULT_THRESHOLDS;
+  let businessName = 'Your Business';
 
   if (DB_ENABLED) {
     try {
@@ -291,9 +292,12 @@ export async function runAutomationEngine(userEmail?: string): Promise<Automatio
       jobs = await MongooseJob.find(filter).lean();
 
       if (userEmail) {
-        const user = await User.findOne({ email: userEmail }).select('alertThresholds').lean() as any;
+        const user = await User.findOne({ email: userEmail }).select('alertThresholds businessName').lean() as any;
         if (user?.alertThresholds) {
           thresholds = { ...DEFAULT_THRESHOLDS, ...user.alertThresholds };
+        }
+        if (user?.businessName) {
+          businessName = user.businessName;
         }
       }
     } catch {
@@ -307,8 +311,8 @@ export async function runAutomationEngine(userEmail?: string): Promise<Automatio
     jobs = Object.values(sampleData.jobDetails);
   }
 
-  const quoteActions = analyzeQuoteFollowups(quotes, thresholds);
-  const invoiceActions = analyzeInvoiceChases(invoices, thresholds);
+  const quoteActions = analyzeQuoteFollowups(quotes, thresholds, businessName);
+  const invoiceActions = analyzeInvoiceChases(invoices, thresholds, businessName);
   const { actions: leakActions } = analyzeProfitLeaks(jobs, thresholds);
   const allActions = [...quoteActions, ...invoiceActions, ...leakActions];
   const urgentActions = allActions.filter(a => a.priority === 'urgent');

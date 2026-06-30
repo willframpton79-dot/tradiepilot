@@ -67,7 +67,7 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: any[] }) {
                         (job.margin || job.marginPct) < 30 ? 'bg-amber-500' :
                         'bg-green-500'
                       }`}
-                      style={{ width: `${Math.min(100, Math.max(0, (job.margin || job.marginPct) * 2))}%` }}
+                      style={{ width: `${Math.min(100, Math.max(0, (job.margin || job.marginPct) * 2.5))}%` }}
                     />
                   </div>
                 </div>

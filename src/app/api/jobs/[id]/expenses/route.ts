@@ -59,9 +59,11 @@ export async function POST(
     job.marginPct = quotedExGst > 0 ? (marginAmount / quotedExGst) * 100 : 0;
     
     // Update status based on margin if needed
-    if (job.marginPct < (job.targetMarginPct || 15)) {
+    const targetPct = job.targetMarginPct || 30;
+    const criticalPct = Math.floor(targetPct / 2);
+    if (job.marginPct < criticalPct) {
       job.status = 'critical';
-    } else if (job.marginPct < (job.targetMarginPct || 30)) {
+    } else if (job.marginPct < targetPct) {
       job.status = 'on-track';
     }
 

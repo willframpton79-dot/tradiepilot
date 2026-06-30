@@ -120,7 +120,7 @@ export default function BillingSettings() {
           <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Included in your plan</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              'Up to 5 active jobs',
+              'Up to 10 active jobs',
               'Real-time job profitability',
               'Basic Xero sync',
               'Email support',
