@@ -142,7 +142,7 @@ export function analyzeInvoiceChases(invoices: { id: string; job: string; client
         title: `$${inv.amount.toLocaleString()} overdue for ${overdue} days — critical`,
         description: `Invoice for ${inv.job} at ${inv.client} is ${overdue} days past due.`,
         targetId: inv.id, targetType: 'invoice', customerName: inv.client, amount: inv.amount, daysElapsed: overdue,
-        recommendedAction: `Escalate to formal debt collection. Send final notice with 7-day deadline via registered post. Consider engaging a collection agency.`,
+        recommendedAction: `Send a final notice with a 7-day payment deadline via email and registered post.`,
         suggestedChannel: 'letter',
         autoDraftMessage: `FINAL NOTICE: Invoice ${inv.id} for $${inv.amount.toLocaleString()} is now ${overdue} days overdue. Payment must be received within 7 days to avoid debt collection proceedings. — OzWise Plumbing Accounts`,
       });
