@@ -36,22 +36,21 @@ export async function POST(req: Request) {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
-      
+
       const userId = session.client_reference_id || session.metadata?.userId;
       const userEmail = session.customer_email || session.metadata?.userEmail;
       const priceId = session.metadata?.priceId;
+      const stripeCustomerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
 
       if (!userId) {
         console.error('No userId found in checkout session client_reference_id or metadata');
         return NextResponse.json({ error: 'No userId found' }, { status: 400 });
       }
 
-      // Determine tier
       let tier: 'starter' | 'pro' | 'enterprise' | 'free' = 'free';
       if (priceId && priceId in PRICE_TO_TIER_MAP) {
         tier = PRICE_TO_TIER_MAP[priceId];
       } else {
-        // Fallback: try retrieving session line items to find subscription price ID if not in metadata
         try {
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
           const itemPriceId = lineItems.data[0]?.price?.id;
@@ -63,17 +62,12 @@ export async function POST(req: Request) {
         }
       }
 
-      // Update User Model
-      const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        { tier },
-        { new: true }
-      );
+      const updateFields: any = { tier };
+      if (stripeCustomerId) updateFields.stripeCustomerId = stripeCustomerId;
+
+      const updatedUser = await User.findByIdAndUpdate(userId, updateFields, { new: true });
 
       if (updatedUser) {
-        console.log(`Successfully updated User ${userId} to tier: ${tier}`);
-        
-        // Trigger payment confirmation email
         try {
           const amount = (session.amount_total || 0) / 100;
           await sendPaymentConfirmation(
@@ -88,6 +82,30 @@ export async function POST(req: Request) {
       } else {
         console.error(`User with ID ${userId} not found during webhook processing`);
       }
+    }
+
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object as Stripe.Subscription;
+      const stripeCustomerId = typeof subscription.customer === 'string'
+        ? subscription.customer
+        : subscription.customer.id;
+      const priceId = subscription.items.data[0]?.price?.id;
+      const tier = priceId && priceId in PRICE_TO_TIER_MAP
+        ? PRICE_TO_TIER_MAP[priceId]
+        : null;
+
+      if (tier) {
+        await User.findOneAndUpdate({ stripeCustomerId }, { tier });
+      }
+    }
+
+    if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as Stripe.Subscription;
+      const stripeCustomerId = typeof subscription.customer === 'string'
+        ? subscription.customer
+        : subscription.customer.id;
+
+      await User.findOneAndUpdate({ stripeCustomerId }, { tier: 'free' });
     }
 
     return NextResponse.json({ received: true });

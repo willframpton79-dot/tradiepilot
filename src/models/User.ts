@@ -5,6 +5,7 @@ export interface IUser extends Document {
   password: string;
   name: string;
   tier: 'free' | 'starter' | 'pro' | 'enterprise';
+  stripeCustomerId?: string;
   trialStartedAt?: Date;
   trialEndsAt?: Date;
   onboardingComplete: boolean;
@@ -45,6 +46,7 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   name: { type: String, default: '' },
   tier: { type: String, enum: ['free', 'starter', 'pro', 'enterprise'], default: 'free' },
+  stripeCustomerId: { type: String, default: '' },
   trialStartedAt: { type: Date },
   trialEndsAt: { type: Date },
   onboardingComplete: { type: Boolean, default: false },
