@@ -1,11 +1,12 @@
 'use client';
 
 import { useSession } from "next-auth/react";
-import { 
-  TrendingUp, 
-  DollarSign, 
-  ClipboardList, 
-  Clock, 
+import { useEffect, useState } from "react";
+import {
+  TrendingUp,
+  DollarSign,
+  ClipboardList,
+  Clock,
   AlertCircle,
   ArrowRight,
   Plus
@@ -29,6 +30,18 @@ const stagger = {
 
 export default function Dashboard() {
   const { data: session } = useSession();
+  const [userTier, setUserTier] = useState<string | undefined>(undefined);
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then(data => {
+        setUserTier(data.tier);
+        setTrialEndsAt(data.trialEndsAt || null);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="p-6 lg:p-10 max-w-[1600px] mx-auto">
@@ -62,8 +75,8 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Upgrade Banner (Conditional) */}
-        <UpgradeBanner />
+        {/* Upgrade Banner (free/trial users only) */}
+        <UpgradeBanner tier={userTier} trialEndsAt={trialEndsAt} />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

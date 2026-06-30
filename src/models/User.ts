@@ -5,6 +5,8 @@ export interface IUser extends Document {
   password: string;
   name: string;
   tier: 'free' | 'starter' | 'pro' | 'enterprise';
+  trialStartedAt?: Date;
+  trialEndsAt?: Date;
   onboardingComplete: boolean;
   targetMargin: number;
   tradeType: string;
@@ -43,6 +45,8 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   name: { type: String, default: '' },
   tier: { type: String, enum: ['free', 'starter', 'pro', 'enterprise'], default: 'free' },
+  trialStartedAt: { type: Date },
+  trialEndsAt: { type: Date },
   onboardingComplete: { type: Boolean, default: false },
   targetMargin: { type: Number, default: 0 },
   tradeType: { type: String, default: '' },

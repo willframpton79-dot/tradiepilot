@@ -16,7 +16,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email already registered' }, { status: 409 });
     }
     const hashed = await bcrypt.hash(password, 12);
-    const user = await User.create({ name, email, password: hashed });
+    const trialStartedAt = new Date();
+    const trialEndsAt = new Date(trialStartedAt.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const user = await User.create({ name, email, password: hashed, trialStartedAt, trialEndsAt });
 
     // Send Welcome Email (non-blocking / error-resilient)
     try {
