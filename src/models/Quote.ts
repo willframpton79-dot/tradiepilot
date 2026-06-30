@@ -4,6 +4,7 @@ export interface IQuote extends Document {
   quoteId: string;
   quoteNumber: string;
   client: string;
+  clientEmail: string;
   job: string;
   jobId?: string;
   amount: number;
@@ -23,6 +24,7 @@ const QuoteSchema = new Schema({
   quoteId: { type: String, required: true, unique: true, index: true },
   quoteNumber: { type: String, default: '' },
   client: { type: String, required: true },
+  clientEmail: { type: String, default: '' },
   job: { type: String, required: true },
   jobId: { type: String, default: '' },
   amount: { type: Number, default: 0 },

@@ -17,11 +17,11 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 
 const initialInvoices = [
-  { id: '1', client: 'Meridian Property Group', project: 'Commercial Kitchen Fitout', amount: 8400, dueDate: '2026-05-27', sentDate: '2026-05-13' },
-  { id: '2', client: 'Apex Commercial Developments', project: 'Level 3 Bathroom Amenities', amount: 12500, dueDate: '2026-06-15', sentDate: '2026-06-01' },
-  { id: '3', client: 'NorthWest Build Co', project: 'Landscaping & External Works', amount: 5600, dueDate: '2026-06-05', sentDate: '2026-05-22' },
-  { id: '4', client: 'Pacific Retail Partners', project: 'Rooftop Deck Construction', amount: 12457, dueDate: '2026-06-20', sentDate: '2026-06-06' },
-  { id: '5', client: 'CBD Office Ltd', project: 'Office Fit-out', amount: 42000, dueDate: '2026-05-09', sentDate: '2026-04-25' },
+  { id: '1', client: 'Meridian Property Group', clientEmail: '', project: 'Commercial Kitchen Fitout', amount: 8400, dueDate: '2026-05-27', sentDate: '2026-05-13' },
+  { id: '2', client: 'Apex Commercial Developments', clientEmail: '', project: 'Level 3 Bathroom Amenities', amount: 12500, dueDate: '2026-06-15', sentDate: '2026-06-01' },
+  { id: '3', client: 'NorthWest Build Co', clientEmail: '', project: 'Landscaping & External Works', amount: 5600, dueDate: '2026-06-05', sentDate: '2026-05-22' },
+  { id: '4', client: 'Pacific Retail Partners', clientEmail: '', project: 'Rooftop Deck Construction', amount: 12457, dueDate: '2026-06-20', sentDate: '2026-06-06' },
+  { id: '5', client: 'CBD Office Ltd', clientEmail: '', project: 'Office Fit-out', amount: 42000, dueDate: '2026-05-09', sentDate: '2026-04-25' },
 ];
 
 const getDaysInfo = (dueDate: string) => {
@@ -73,17 +73,18 @@ export default function InvoicesPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          clientEmail: inv.clientEmail,
           clientName: inv.client,
           projectName: inv.project,
           amount: inv.amount,
           dueDate: inv.dueDate
         }),
       });
-      
+
+      const data = await res.json();
       if (res.ok) {
-        toast.success(`Payment reminder sent for ${inv.project}`);
+        toast.success(`Reminder sent to ${inv.client}`);
       } else {
-        const data = await res.json();
         toast.error(data.error || 'Failed to send reminder');
       }
     } catch (err) {

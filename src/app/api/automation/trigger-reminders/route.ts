@@ -5,7 +5,7 @@ import { Quote } from '@/models/Quote';
 import { Invoice } from '@/models/Invoice';
 import { User } from '@/models/User';
 import { connectDB } from '@/lib/db';
-import { sendQuoteFollowUpReminder, sendInvoiceChaseReminder } from '@/lib/email';
+import { sendQuoteFollowUpReminder, sendClientInvoiceReminder } from '@/lib/email';
 
 export async function POST() {
   try {
@@ -68,18 +68,19 @@ export async function POST() {
       const invoice = await Invoice.findOne({ invoiceId: action.targetId, userEmail });
       if (!invoice) continue;
 
-      const alreadySentToday = invoice.lastReminderSent && 
+      const alreadySentToday = invoice.lastReminderSent &&
         new Date(invoice.lastReminderSent).toDateString() === todayStr;
 
       if (alreadySentToday) continue;
+      if (!invoice.clientEmail) continue;
 
       // Send Email
-      const result = await sendInvoiceChaseReminder(
-        userEmail,
-        userName,
-        invoice.invoiceNumber || invoice.invoiceId,
+      const result = await sendClientInvoiceReminder(
+        invoice.clientEmail,
+        invoice.client,
+        invoice.job,
         invoice.amount,
-        invoice.daysOverdue
+        invoice.dueDate
       );
 
       if (result.success) {

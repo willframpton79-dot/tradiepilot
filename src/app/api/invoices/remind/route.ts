@@ -1,22 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/session';
-import { sendInvoiceChaserNotification } from '@/lib/email';
+import { sendClientInvoiceReminder } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
-    const userEmail = auth.email;
 
     const body = await request.json();
-    const { clientName, projectName, amount, dueDate } = body;
+    const { clientEmail, clientName, projectName, amount, dueDate } = body;
 
     if (!clientName || !projectName || !amount || !dueDate) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const result = await sendInvoiceChaserNotification(
-      userEmail,
+    if (!clientEmail) {
+      return NextResponse.json(
+        { error: 'No client email on file for this invoice. Add one before sending a reminder.' },
+        { status: 400 }
+      );
+    }
+
+    const result = await sendClientInvoiceReminder(
+      clientEmail,
       clientName,
       projectName,
       amount,

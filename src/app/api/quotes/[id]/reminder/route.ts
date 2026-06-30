@@ -30,20 +30,17 @@ export async function POST(
       return NextResponse.json({ error: 'Quote not found' }, { status: 404 });
     }
 
-    // Determine recipient email
-    // The model currently only has a 'client' string (name), but no clientEmail.
-    // I should check if there's an associated job with a client email, 
-    // or just default to userEmail as per instructions.
-    // User said: "to the client's email address (or if no client email exists, to the logged-in user's email as a notification)"
-    
-    // For now, since the Quote model doesn't have clientEmail, I'll use userEmail 
-    // but label it as a notification.
-    const recipientEmail = userEmail; 
+    if (!quote.clientEmail) {
+      return NextResponse.json(
+        { error: 'No client email on file for this quote. Edit the quote to add one before sending a reminder.' },
+        { status: 400 }
+      );
+    }
 
     const result = await sendCustomQuoteReminder(
-      recipientEmail,
+      quote.clientEmail,
       quote.client,
-      quote.job || quote.project || 'Your Project',
+      quote.job || 'Your Project',
       quote.amountIncGst || quote.amount
     );
 

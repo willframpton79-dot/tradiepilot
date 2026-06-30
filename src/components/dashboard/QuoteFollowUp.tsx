@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Clock, Send, Phone, AlertTriangle, DollarSign, MessageSquare, ArrowRight } from "lucide-react";
+import { Clock, AlertTriangle, MessageSquare, ArrowRight, Loader2 } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { type Quote, quotes as fallbackQuotes } from "@/lib/sampleData";
 
 const statusConfig: any = {
@@ -15,6 +16,28 @@ const statusConfig: any = {
 export default function QuoteFollowUp({ quotes: propsQuotes }: { quotes?: any[] }) {
   const [quotes, setQuotes] = useState<any[]>(propsQuotes || []);
   const [isLoading, setIsLoading] = useState(!propsQuotes);
+  const [sendingId, setSendingId] = useState<string | null>(null);
+
+  const handleFollowUp = async (quote: any) => {
+    const id = quote._id || quote.id || quote.quoteId;
+    setSendingId(id);
+    try {
+      const res = await fetch(`/api/quotes/${id}/reminder`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Reminder sent to ${quote.client}`);
+        setQuotes(prev => prev.map(q =>
+          (q._id || q.id || q.quoteId) === id ? { ...q, status: 'followed-up' } : q
+        ));
+      } else {
+        toast.error(data.error || 'Failed to send reminder');
+      }
+    } catch {
+      toast.error('Something went wrong');
+    } finally {
+      setSendingId(null);
+    }
+  };
 
   useEffect(() => {
     if (propsQuotes) {
@@ -83,21 +106,11 @@ export default function QuoteFollowUp({ quotes: propsQuotes }: { quotes?: any[] 
                   isUrgent ? "bg-rose-50/30 border-rose-100" : "bg-white border-slate-100 hover:border-indigo/20 shadow-sm"
                 }`}
               >
-                <div className="flex items-start justify-between mb-3">
-                   <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${isUrgent ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-600'}`}>
-                        {isUrgent ? 'Urgent' : 'Pending'}
-                      </span>
-                      {isUrgent && <AlertTriangle className="w-3.5 h-3.5 text-rose-500 animate-pulse" />}
-                   </div>
-                   <div className="flex items-center gap-1.5">
-                      <button className="p-1.5 text-slate-400 hover:text-indigo hover:bg-indigo-50 rounded-lg transition-colors">
-                        <Phone className="w-3.5 h-3.5" />
-                      </button>
-                      <button className="p-1.5 text-slate-400 hover:text-indigo hover:bg-indigo-50 rounded-lg transition-colors">
-                        <Send className="w-3.5 h-3.5" />
-                      </button>
-                   </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${isUrgent ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-600'}`}>
+                    {isUrgent ? 'Urgent' : 'Pending'}
+                  </span>
+                  {isUrgent && <AlertTriangle className="w-3.5 h-3.5 text-rose-500 animate-pulse" />}
                 </div>
 
                 <div className="min-w-0 mb-3">
@@ -115,9 +128,15 @@ export default function QuoteFollowUp({ quotes: propsQuotes }: { quotes?: any[] 
                   </div>
                 </div>
                 
-                <button className="w-full mt-3 flex items-center justify-center gap-2 bg-indigo text-white text-xs font-bold py-2 rounded-lg hover:bg-indigo-hover transition-all">
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  Follow up now
+                <button
+                  onClick={() => handleFollowUp(quote)}
+                  disabled={sendingId === (quote._id || quote.id || quote.quoteId)}
+                  className="w-full mt-3 flex items-center justify-center gap-2 bg-indigo text-white text-xs font-bold py-2 rounded-lg hover:bg-indigo-hover transition-all disabled:opacity-50"
+                >
+                  {sendingId === (quote._id || quote.id || quote.quoteId)
+                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    : <MessageSquare className="w-3.5 h-3.5" />}
+                  {sendingId === (quote._id || quote.id || quote.quoteId) ? 'Sending...' : 'Follow up now'}
                 </button>
               </motion.div>
             );

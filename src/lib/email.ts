@@ -152,47 +152,6 @@ export async function sendQuoteFollowUpReminder(email: string, name: string, quo
   }
 }
 
-export async function sendInvoiceChaseReminder(email: string, name: string, invoiceNumber: string, amount: number, daysOverdue: number) {
-  const resend = await getResend();
-  try {
-    const { data, error } = await resend.emails.send({
-      from: 'TradiePilot <notifications@tradiepilot.app>',
-      to: [email],
-      subject: `Overdue Invoice Alert: Invoice #${invoiceNumber} is ${daysOverdue} Days Overdue`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h2 style="color: #ef4444; margin-bottom: 20px;">Overdue Invoice Warning</h2>
-          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
-            Hi ${name},
-          </p>
-          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
-            We've detected that <strong>Invoice #${invoiceNumber}</strong> (Outstanding balance: <strong>$${amount.toLocaleString()}</strong>) is now <strong>${daysOverdue} days overdue</strong>.
-          </p>
-          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
-            TradiePilot has prepared an automated payment nudge. You can also view this invoice in your Invoices page to initiate a formal statutory demand notice or use our SOPA (Security of Payment Act) escalations if needed.
-          </p>
-          <div style="margin-top: 30px; text-align: center;">
-            <a href="https://tradiepilot.app/invoices" style="background-color: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Invoice Escalations</a>
-          </div>
-          <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
-          <p style="font-size: 12px; color: #64748b; text-align: center;">
-            Automation Layer ABN 55 388 054 921, Australia. All rights reserved.
-          </p>
-        </div>
-      `,
-      text: `Hi ${name},\n\nWe've detected that Invoice #${invoiceNumber} (Outstanding balance: ${amount.toLocaleString()}) is now ${daysOverdue} days overdue.\n\nTradiePilot has prepared payment chases. Review outstanding invoices and SOPA escalations on your dashboard:\nhttps://tradiepilot.app/invoices\n\nBest,\nThe TradiePilot Team`,
-    });
-
-    if (error) {
-      console.error('Error sending invoice chase email:', error);
-      return { success: false, error };
-    }
-    return { success: true, data };
-  } catch (err: any) {
-    console.error('Failed to send invoice chase email:', err);
-    return { success: false, error: err.message || err };
-  }
-}
 
 export async function sendPaymentLink(clientName: string, clientEmail: string, jobName: string, amount: number, paymentUrl: string) {
   const resend = await getResend();
@@ -290,19 +249,25 @@ export async function sendCustomQuoteReminder(toEmail: string, clientName: strin
   }
 }
 
-export async function sendInvoiceChaserNotification(toEmail: string, clientName: string, projectName: string, amount: number, dueDate: string) {
+export async function sendClientInvoiceReminder(clientEmail: string, clientName: string, projectName: string, amount: number, dueDate: string) {
   const resend = await getResend();
   const formattedDate = new Date(dueDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
   try {
     const { data, error } = await resend.emails.send({
       from: 'TradiePilot <notifications@tradiepilot.app>',
-      to: [toEmail],
-      subject: `Payment reminder sent — ${clientName}`,
+      to: [clientEmail],
+      subject: `Payment reminder: ${projectName}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h2 style="color: #4f46e5; margin-bottom: 20px;">Payment Reminder Sent</h2>
+          <h2 style="color: #4f46e5; margin-bottom: 20px;">Payment Reminder</h2>
           <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
-            A payment reminder has been sent for <strong>${projectName}</strong>, <strong>$${amount.toLocaleString()}</strong>, due <strong>${formattedDate}</strong>.
+            Dear ${clientName},
+          </p>
+          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
+            This is a friendly reminder that payment of <strong>$${amount.toLocaleString()}</strong> for <strong>${projectName}</strong> was due on <strong>${formattedDate}</strong>.
+          </p>
+          <p style="font-size: 16px; line-height: 1.6; color: #1e293b;">
+            Please arrange payment at your earliest convenience. If you have any questions or believe this has been sent in error, please don't hesitate to get in touch.
           </p>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #64748b; text-align: center;">
@@ -310,16 +275,16 @@ export async function sendInvoiceChaserNotification(toEmail: string, clientName:
           </p>
         </div>
       `,
-      text: `A payment reminder has been sent for ${projectName}, $${amount.toLocaleString()}, due ${formattedDate}.`,
+      text: `Dear ${clientName},\n\nThis is a friendly reminder that payment of $${amount.toLocaleString()} for ${projectName} was due on ${formattedDate}.\n\nPlease arrange payment at your earliest convenience. If you have any questions, please get in touch.\n\nKind regards`,
     });
 
     if (error) {
-      console.error('Error sending invoice chaser notification:', error);
+      console.error('Error sending client invoice reminder:', error);
       return { success: false, error };
     }
     return { success: true, data };
   } catch (err: any) {
-    console.error('Failed to send invoice chaser notification:', err);
+    console.error('Failed to send client invoice reminder:', err);
     return { success: false, error: err.message || err };
   }
 }

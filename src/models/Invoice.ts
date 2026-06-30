@@ -5,6 +5,7 @@ export interface IInvoice extends Document {
   invoiceNumber: string;
   job: string;
   client: string;
+  clientEmail: string;
   amount: number;
   amountExGst: number;
   amountIncGst: number;
@@ -23,6 +24,7 @@ const InvoiceSchema = new Schema({
   invoiceNumber: { type: String, default: '' },
   job: { type: String, required: true },
   client: { type: String, required: true },
+  clientEmail: { type: String, default: '' },
   amount: { type: Number, default: 0 },
   amountExGst: { type: Number, default: 0 },
   amountIncGst: { type: Number, default: 0 },
