@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
   BarChart3, TrendingUp, DollarSign, Clock,
@@ -324,16 +325,22 @@ const plans = [
 ];
 
 function PricingSection() {
-  const handleCheckout = async (priceId: string) => {
-    if (priceId === "price_enterprise") {
+  const { data: session } = useSession();
+
+  const handleCheckout = async (planName: string) => {
+    if (planName === "enterprise") {
       window.location.href = "/contact-sales";
       return;
     }
+    if (!session) {
+      window.location.href = `/signup?plan=${planName}`;
+      return;
+    }
     try {
-      const res = await fetch('/api/checkout', {
+      const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId }),
+        body: JSON.stringify({ plan: planName }),
       });
       const data = await res.json();
       if (data.url) {
@@ -341,7 +348,6 @@ function PricingSection() {
       }
     } catch (err) {
       console.error("Checkout error:", err);
-      window.location.href = "/signup";
     }
   };
 
@@ -376,8 +382,8 @@ function PricingSection() {
                   Contact Sales
                 </Link>
               ) : (
-                <button 
-                  onClick={() => handleCheckout(plan.id)}
+                <button
+                  onClick={() => handleCheckout(plan.name.toLowerCase())}
                   className={`w-full mt-6 block text-center font-semibold px-5 py-3 rounded-lg transition-all text-sm ${plan.popular ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
                 >
                   Start Free Trial
