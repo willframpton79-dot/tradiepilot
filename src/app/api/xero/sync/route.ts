@@ -101,6 +101,7 @@ export async function POST() {
           invoiceNumber: xInv.invoiceNumber || '',
           job: xInv.reference || 'Xero Import',
           client: xInv.contact?.name || 'Unknown',
+          clientEmail: xInv.contact?.emailAddress || '',
           amount,
           amountExGst: Math.round(amountExGst * 100) / 100,
           amountIncGst,

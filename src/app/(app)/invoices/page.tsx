@@ -13,16 +13,11 @@ import {
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { exportCSV } from "@/lib/export";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 
-const initialInvoices = [
-  { id: '1', client: 'Meridian Property Group', clientEmail: '', project: 'Commercial Kitchen Fitout', amount: 8400, dueDate: '2026-05-27', sentDate: '2026-05-13' },
-  { id: '2', client: 'Apex Commercial Developments', clientEmail: '', project: 'Level 3 Bathroom Amenities', amount: 12500, dueDate: '2026-06-15', sentDate: '2026-06-01' },
-  { id: '3', client: 'NorthWest Build Co', clientEmail: '', project: 'Landscaping & External Works', amount: 5600, dueDate: '2026-06-05', sentDate: '2026-05-22' },
-  { id: '4', client: 'Pacific Retail Partners', clientEmail: '', project: 'Rooftop Deck Construction', amount: 12457, dueDate: '2026-06-20', sentDate: '2026-06-06' },
-  { id: '5', client: 'CBD Office Ltd', clientEmail: '', project: 'Office Fit-out', amount: 42000, dueDate: '2026-05-09', sentDate: '2026-04-25' },
-];
+const fmtAmount = (n: number) =>
+  n >= 1000 ? `$${Math.round(n / 1000)}k` : `$${n.toLocaleString()}`;
 
 const getDaysInfo = (dueDate: string) => {
   const today = new Date();
@@ -62,9 +57,31 @@ const stagger = {
 };
 
 export default function InvoicesPage() {
-  const [invoices] = useState(initialInvoices);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [fetching, setFetching] = useState(true);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/invoices')
+      .then(r => r.ok ? r.json() : [])
+      .then((data: any[]) =>
+        setInvoices(data.map(inv => ({
+          ...inv,
+          id: inv._id?.toString() || inv.invoiceId,
+          project: inv.job,
+        })))
+      )
+      .catch(() => {})
+      .finally(() => setFetching(false));
+  }, []);
+
+  const totalOutstanding = invoices
+    .filter(inv => inv.status !== 'paid')
+    .reduce((sum, inv) => sum + (inv.amount || 0), 0);
+  const totalOverdue = invoices
+    .filter(inv => inv.status === 'overdue')
+    .reduce((sum, inv) => sum + (inv.amount || 0), 0);
 
   const handleRemind = async (inv: any) => {
     setLoadingId(inv.id);
@@ -93,6 +110,14 @@ export default function InvoicesPage() {
       setLoadingId(null);
     }
   };
+
+  if (fetching) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-10 max-w-6xl mx-auto">
@@ -132,13 +157,13 @@ export default function InvoicesPage() {
             </button>
             <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-4 sm:gap-6 bg-indigo-50 px-4 sm:px-6 py-4 rounded-2xl border border-indigo-100">
               <div>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total</p>
-                <p className="text-xl sm:text-2xl font-bold text-indigo-700 financial-figure">$81k</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Outstanding</p>
+                <p className="text-xl sm:text-2xl font-bold text-indigo-700 financial-figure">{fmtAmount(totalOutstanding)}</p>
               </div>
               <div className="hidden sm:block w-px h-10 bg-indigo-200" />
               <div>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Overdue</p>
-                <p className="text-xl sm:text-2xl font-bold text-red-600 financial-figure">$28k</p>
+                <p className="text-xl sm:text-2xl font-bold text-red-600 financial-figure">{fmtAmount(totalOverdue)}</p>
               </div>
             </div>
           </div>
@@ -146,6 +171,12 @@ export default function InvoicesPage() {
 
         {/* Invoice List */}
         <div className="grid grid-cols-1 gap-4">
+          {invoices.length === 0 && (
+            <div className="text-center py-16 text-slate-400">
+              <p className="font-medium text-sm">No invoices found.</p>
+              <p className="text-xs mt-1">Connect your Xero account in Settings to sync invoices automatically.</p>
+            </div>
+          )}
           {invoices.map((inv) => {
             const daysInfo = getDaysInfo(inv.dueDate);
             return (
