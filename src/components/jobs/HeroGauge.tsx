@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 interface HeroGaugeProps {
   quotedTotal: number;
   actualTotal: number;
+  targetMarginPct?: number;
 }
 
-export default function HeroGauge({ quotedTotal, actualTotal }: HeroGaugeProps) {
+export default function HeroGauge({ quotedTotal, actualTotal, targetMarginPct = 30 }: HeroGaugeProps) {
   const margin = quotedTotal - actualTotal;
   const marginPct = (margin / quotedTotal) * 100;
   const isNegative = margin < 0;
@@ -14,8 +15,8 @@ export default function HeroGauge({ quotedTotal, actualTotal }: HeroGaugeProps) 
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   const displayPct = Math.max(0, Math.min(100, marginPct));
-  // Cap at 60% margin = full arc so realistic target margins look healthy, not empty
-  const fillRatio = Math.min(displayPct / 60, 1);
+  // At target margin → ~67% fill (looks healthy); at 1.5× target → full arc
+  const fillRatio = Math.min(displayPct / (targetMarginPct * 1.5), 1);
   const offset = circumference - fillRatio * circumference;
 
   const color = isNegative ? "#ef4444" : marginPct >= 30 ? "#10b981" : marginPct >= 20 ? "#f59e0b" : "#ef4444";
@@ -42,14 +43,14 @@ export default function HeroGauge({ quotedTotal, actualTotal }: HeroGaugeProps) 
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <motion.span 
+          <motion.span
             className="text-3xl lg:text-4xl font-bold tracking-tight"
             style={{ color }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
           >
             {formattedPct}
           </motion.span>
-          <motion.span 
+          <motion.span
             className="text-[10px] font-bold uppercase tracking-widest mt-1"
             style={{ color }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
@@ -59,8 +60,8 @@ export default function HeroGauge({ quotedTotal, actualTotal }: HeroGaugeProps) 
         </div>
       </div>
 
-      <motion.div 
-        className="flex items-center gap-8 mt-6"
+      <motion.div
+        className="flex items-center gap-6 sm:gap-8 mt-6"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
       >
         <div className="text-center">

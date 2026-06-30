@@ -343,8 +343,8 @@ export default function JobDetailPage() {
           </Link>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{job.title || job.name}</h1>
-              <div className="flex items-center gap-4 mt-2 text-slate-500 font-medium">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{job.title || job.name}</h1>
+              <div className="flex flex-wrap items-center gap-3 mt-2 text-slate-500 font-medium">
                 <div className="flex items-center gap-1.5">
                   <User className="w-4 h-4" /> {job.client?.name}
                 </div>
@@ -353,7 +353,7 @@ export default function JobDetailPage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className={`px-3 py-1 border rounded-full text-xs font-bold uppercase tracking-wider ${
                 job.status === 'active' || job.status === 'on-track' ? 'bg-green-50 text-green-700 border-green-100' : 
                 job.status === 'critical' ? 'bg-red-50 text-red-700 border-red-100' :
@@ -405,7 +405,10 @@ export default function JobDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center">
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">Current Margin</h3>
-            <ProfitGauge margin={(job.marginPct !== undefined ? job.marginPct : (job.margin || 0)) / 100} />
+            <ProfitGauge
+              margin={(job.marginPct !== undefined ? job.marginPct : (job.margin || 0)) / 100}
+              targetMarginPct={job.targetMarginPct || 30}
+            />
           </motion.div>
 
           <motion.div variants={fadeUp} className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
