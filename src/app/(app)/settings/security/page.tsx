@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import SettingsWrapper from '@/components/settings/SettingsWrapper';
 import { toast } from 'react-hot-toast';
-import { Shield, Key, Smartphone } from 'lucide-react';
+import { Key } from 'lucide-react';
 
 export default function SecuritySettings() {
   const [loading, setLoading] = useState(false);
@@ -96,25 +96,6 @@ export default function SecuritySettings() {
           </form>
         </section>
 
-        {/* Sessions Placeholder */}
-        <div className="pt-8 border-t border-slate-100">
-          <div className="flex items-center gap-2 mb-4">
-            <Smartphone className="w-5 h-5 text-slate-400" />
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Active Sessions</h3>
-          </div>
-          <div className="p-4 rounded-xl border border-slate-100 bg-slate-50 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-slate-200">
-                <Shield className="w-4 h-4 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-slate-900">Current Session</p>
-                <p className="text-xs text-slate-500">Sydney, Australia • Chrome on macOS</p>
-              </div>
-            </div>
-            <span className="text-[10px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded uppercase">Active Now</span>
-          </div>
-        </div>
       </div>
     </SettingsWrapper>
   );

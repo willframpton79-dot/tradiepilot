@@ -14,8 +14,25 @@ import { connectDB } from '@/lib/db';
 import { Quote } from '@/models/Quote';
 import { Invoice } from '@/models/Invoice';
 import { Job as MongooseJob } from '@/models/Job';
+import { User } from '@/models/User';
 import sampleData, { type Quote as QuoteType, type Invoice as InvoiceType, type JobDetail, type Job as SampleJob } from '@/lib/sampleData';
 import insightsData from '@/lib/insightsData';
+
+interface AlertThresholds {
+  marginThreshold: number;
+  overdueInvoiceAlert: boolean;
+  overdueInvoiceDays: number;
+  quoteExpiryAlert: boolean;
+  quoteExpiryDays: number;
+}
+
+const DEFAULT_THRESHOLDS: AlertThresholds = {
+  marginThreshold: 20,
+  overdueInvoiceAlert: true,
+  overdueInvoiceDays: 14,
+  quoteExpiryAlert: true,
+  quoteExpiryDays: 7,
+};
 
 const DB_ENABLED = !!process.env.MONGODB_URI;
 const NOW = new Date();
@@ -82,14 +99,15 @@ export interface ProfitLeakAnalysis {
   recommendations: string[];
 }
 
-export function analyzeQuoteFollowups(quotes: { id: string; client: string; job: string; amount: number; sentDate: string; daysSince: number; status: string; followups: number }[]): FollowUpAction[] {
+export function analyzeQuoteFollowups(quotes: { id: string; client: string; job: string; amount: number; sentDate: string; daysSince: number; status: string; followups: number }[], thresholds: AlertThresholds = DEFAULT_THRESHOLDS): FollowUpAction[] {
   const actions: FollowUpAction[] = [];
+  if (!thresholds.quoteExpiryAlert) return actions;
 
   for (const q of quotes) {
     if (q.status === 'won' || q.status === 'lost') continue;
     const daysSinceSent = q.daysSince;
 
-    if (q.status === 'pending' && daysSinceSent >= 14 && q.followups === 0) {
+    if (q.status === 'pending' && daysSinceSent >= thresholds.quoteExpiryDays * 2 && q.followups === 0) {
       actions.push({
         id: `qfu_urgent_${q.id}`, type: 'quote_followup', priority: 'urgent',
         title: `Quote sent ${daysSinceSent} days ago — no response`,
@@ -101,7 +119,7 @@ export function analyzeQuoteFollowups(quotes: { id: string; client: string; job:
       });
     }
 
-    if (q.status === 'followed-up' && daysSinceSent >= 7) {
+    if (q.status === 'followed-up' && daysSinceSent >= thresholds.quoteExpiryDays) {
       actions.push({
         id: `qfu_high_${q.id}`, type: 'quote_followup', priority: 'high',
         title: `Followed up ${q.followups}x — still no decision`,
@@ -129,14 +147,19 @@ export function analyzeQuoteFollowups(quotes: { id: string; client: string; job:
   return actions;
 }
 
-export function analyzeInvoiceChases(invoices: { id: string; job: string; client: string; amount: number; sentDate: string; dueDate: string; daysOverdue: number; status: string }[]): FollowUpAction[] {
+export function analyzeInvoiceChases(invoices: { id: string; job: string; client: string; amount: number; sentDate: string; dueDate: string; daysOverdue: number; status: string }[], thresholds: AlertThresholds = DEFAULT_THRESHOLDS): FollowUpAction[] {
   const actions: FollowUpAction[] = [];
+  if (!thresholds.overdueInvoiceAlert) return actions;
+
+  const alertDays = thresholds.overdueInvoiceDays;
+  const criticalDays = alertDays * 2;
+  const mediumDays = Math.floor(alertDays / 2);
 
   for (const inv of invoices) {
     if (inv.status === 'paid') continue;
     const overdue = inv.daysOverdue;
 
-    if (overdue >= 30) {
+    if (overdue >= criticalDays) {
       actions.push({
         id: `inv_crit_${inv.id}`, type: 'invoice_chase', priority: 'urgent',
         title: `$${inv.amount.toLocaleString()} overdue for ${overdue} days — critical`,
@@ -148,7 +171,7 @@ export function analyzeInvoiceChases(invoices: { id: string; job: string; client
       });
     }
 
-    if (overdue >= 14 && overdue < 30) {
+    if (overdue >= alertDays && overdue < criticalDays) {
       actions.push({
         id: `inv_high_${inv.id}`, type: 'invoice_chase', priority: 'high',
         title: `$${inv.amount.toLocaleString()} overdue — ${overdue} days`,
@@ -160,7 +183,7 @@ export function analyzeInvoiceChases(invoices: { id: string; job: string; client
       });
     }
 
-    if (overdue >= 7 && overdue < 14) {
+    if (overdue >= mediumDays && overdue < alertDays) {
       actions.push({
         id: `inv_med_${inv.id}`, type: 'invoice_chase', priority: 'medium',
         title: `$${inv.amount.toLocaleString()} payment reminder — ${overdue} days overdue`,
@@ -172,7 +195,7 @@ export function analyzeInvoiceChases(invoices: { id: string; job: string; client
       });
     }
 
-    if (overdue > 0 && overdue < 7) {
+    if (overdue > 0 && overdue < mediumDays) {
       actions.push({
         id: `inv_low_${inv.id}`, type: 'invoice_chase', priority: 'low',
         title: `$${inv.amount.toLocaleString()} — ${overdue} day(s) overdue`,
@@ -188,7 +211,7 @@ export function analyzeInvoiceChases(invoices: { id: string; job: string; client
   return actions;
 }
 
-export function analyzeProfitLeaks(jobs: { jobId?: string; id?: string; title: string; client?: any; customer?: any; status: string; quotedTotal: number; actualTotal: number; quotedLabour: number; actualLabour: number; quotedMaterials: number; actualMaterials: number; marginPct: number; margin: number; timeLog?: any[]; receiptLog?: any[] }[]): { actions: FollowUpAction[]; analyses: ProfitLeakAnalysis[] } {
+export function analyzeProfitLeaks(jobs: { jobId?: string; id?: string; title: string; client?: any; customer?: any; status: string; quotedTotal: number; actualTotal: number; quotedLabour: number; actualLabour: number; quotedMaterials: number; actualMaterials: number; marginPct: number; margin: number; timeLog?: any[]; receiptLog?: any[] }[], thresholds: AlertThresholds = DEFAULT_THRESHOLDS): { actions: FollowUpAction[]; analyses: ProfitLeakAnalysis[] } {
   const actions: FollowUpAction[] = [];
   const analyses: ProfitLeakAnalysis[] = [];
 
@@ -206,14 +229,14 @@ export function analyzeProfitLeaks(jobs: { jobId?: string; id?: string; title: s
     const materialsOverrunAmount = job.actualMaterials - job.quotedMaterials;
 
     let riskLevel: 'critical' | 'high' | 'medium' | 'low' = 'low';
-    if (projectedMarginPct < -10) riskLevel = 'critical';
-    else if (projectedMarginPct < 0) riskLevel = 'high';
-    else if (projectedMarginPct < 20) riskLevel = 'medium';
+    if (projectedMarginPct < 0) riskLevel = 'critical';
+    else if (projectedMarginPct < thresholds.marginThreshold / 2) riskLevel = 'high';
+    else if (projectedMarginPct < thresholds.marginThreshold) riskLevel = 'medium';
 
     const recommendations: string[] = [];
     if (labourOverrunAmount > 0) recommendations.push(`Labour is $${labourOverrunAmount.toFixed(2)} over quote. Review time entries for inefficiencies or scope creep.`);
     if (materialsOverrunAmount > 0) recommendations.push(`Materials are $${materialsOverrunAmount.toFixed(2)} over quote. Check for unapproved purchases.`);
-    if (projectedMarginPct < 15 && projectedMarginPct > 0) recommendations.push(`Projected margin of ${projectedMarginPct.toFixed(1)}% is below the target of 30%.`);
+    if (projectedMarginPct > 0 && projectedMarginPct < thresholds.marginThreshold) recommendations.push(`Projected margin of ${projectedMarginPct.toFixed(1)}% is below your target of ${thresholds.marginThreshold}%.`);
     if (projectedMarginPct < 0) recommendations.push(`JOB IS PROJECTED TO LOSE MONEY. Immediate action required.`);
     if (recommendations.length === 0) recommendations.push(`Job is tracking within budget. Continue monitoring.`);
 
@@ -251,6 +274,7 @@ export async function runAutomationEngine(userEmail?: string): Promise<Automatio
   let quotes: any[];
   let invoices: any[];
   let jobs: any[];
+  let thresholds: AlertThresholds = DEFAULT_THRESHOLDS;
 
   if (DB_ENABLED) {
     try {
@@ -265,6 +289,13 @@ export async function runAutomationEngine(userEmail?: string): Promise<Automatio
         id: inv.invoiceId || inv._id?.toString()
       }));
       jobs = await MongooseJob.find(filter).lean();
+
+      if (userEmail) {
+        const user = await User.findOne({ email: userEmail }).select('alertThresholds').lean() as any;
+        if (user?.alertThresholds) {
+          thresholds = { ...DEFAULT_THRESHOLDS, ...user.alertThresholds };
+        }
+      }
     } catch {
       quotes = sampleData.quotes;
       invoices = sampleData.invoices;
@@ -276,9 +307,9 @@ export async function runAutomationEngine(userEmail?: string): Promise<Automatio
     jobs = Object.values(sampleData.jobDetails);
   }
 
-  const quoteActions = analyzeQuoteFollowups(quotes);
-  const invoiceActions = analyzeInvoiceChases(invoices);
-  const { actions: leakActions } = analyzeProfitLeaks(jobs);
+  const quoteActions = analyzeQuoteFollowups(quotes, thresholds);
+  const invoiceActions = analyzeInvoiceChases(invoices, thresholds);
+  const { actions: leakActions } = analyzeProfitLeaks(jobs, thresholds);
   const allActions = [...quoteActions, ...invoiceActions, ...leakActions];
   const urgentActions = allActions.filter(a => a.priority === 'urgent');
 
@@ -302,12 +333,20 @@ export async function runAutomationEngine(userEmail?: string): Promise<Automatio
 
 export async function runProfitLeakAnalysis(userEmail?: string): Promise<{ actions: FollowUpAction[]; analyses: ProfitLeakAnalysis[] }> {
   let jobs: any[];
+  let thresholds: AlertThresholds = DEFAULT_THRESHOLDS;
 
   if (DB_ENABLED) {
     try {
       await connectDB();
       const filter = userEmail ? { userEmail, status: 'active' } : { status: 'active' };
       jobs = await MongooseJob.find(filter).lean();
+
+      if (userEmail) {
+        const user = await User.findOne({ email: userEmail }).select('alertThresholds').lean() as any;
+        if (user?.alertThresholds) {
+          thresholds = { ...DEFAULT_THRESHOLDS, ...user.alertThresholds };
+        }
+      }
     } catch {
       jobs = Object.values(sampleData.jobDetails).filter(j => j.status === 'active');
     }
@@ -315,5 +354,6 @@ export async function runProfitLeakAnalysis(userEmail?: string): Promise<{ actio
     jobs = Object.values(sampleData.jobDetails).filter(j => j.status === 'active');
   }
 
-  const { actions, analyses } = analyzeProfitLeaks(jobs); return { actions, analyses };
+  const { actions, analyses } = analyzeProfitLeaks(jobs, thresholds);
+  return { actions, analyses };
 }

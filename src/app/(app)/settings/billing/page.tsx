@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import SettingsWrapper from '@/components/settings/SettingsWrapper';
 import { toast } from 'react-hot-toast';
-import { CreditCard, CheckCircle2, Zap } from 'lucide-react';
+import { CreditCard, CheckCircle2, Zap, ExternalLink } from 'lucide-react';
 
 export default function BillingSettings() {
   const [loading, setLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [tier, setTier] = useState('free');
 
@@ -24,6 +25,20 @@ export default function BillingSettings() {
     };
     fetchData();
   }, []);
+
+  const handleManageBilling = async () => {
+    setPortalLoading(true);
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to open portal');
+      if (data.url) window.location.href = data.url;
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to open billing portal');
+    } finally {
+      setPortalLoading(false);
+    }
+  };
 
   const handleUpgrade = async () => {
     setLoading(true);
@@ -118,16 +133,22 @@ export default function BillingSettings() {
           </div>
         </div>
 
-        {/* Billing History Placeholder */}
+        {/* Billing Portal */}
         <div className="pt-8 border-t border-slate-100">
-          <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">Billing History</h4>
-          <div className="rounded-xl border border-dashed border-slate-200 p-8 flex flex-col items-center justify-center text-center">
-            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-3">
-              <CreditCard className="w-6 h-6 text-slate-400" />
-            </div>
-            <p className="text-sm text-slate-500 font-medium">No invoices yet.</p>
-            <p className="text-xs text-slate-400 mt-1">Your billing history will appear here after your first payment.</p>
-          </div>
+          <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">Billing &amp; Invoices</h4>
+          <p className="text-sm text-slate-500 mb-4">
+            View your invoices, update your payment method, or cancel your subscription via the Stripe billing portal.
+          </p>
+          <button
+            onClick={handleManageBilling}
+            disabled={portalLoading}
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition-all disabled:opacity-50"
+          >
+            {portalLoading
+              ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-400" />
+              : <ExternalLink className="w-4 h-4" />}
+            Manage Billing
+          </button>
         </div>
       </div>
     </SettingsWrapper>
