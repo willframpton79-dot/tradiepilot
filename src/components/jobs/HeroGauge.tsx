@@ -14,7 +14,9 @@ export default function HeroGauge({ quotedTotal, actualTotal }: HeroGaugeProps) 
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   const displayPct = Math.max(0, Math.min(100, marginPct));
-  const offset = circumference - (displayPct / 100) * circumference;
+  // Cap at 60% margin = full arc so realistic target margins look healthy, not empty
+  const fillRatio = Math.min(displayPct / 60, 1);
+  const offset = circumference - fillRatio * circumference;
 
   const color = isNegative ? "#ef4444" : marginPct >= 30 ? "#10b981" : marginPct >= 20 ? "#f59e0b" : "#ef4444";
   const label = isNegative ? "Loss" : marginPct >= 30 ? "Strong" : marginPct >= 20 ? "Caution" : "Critical";

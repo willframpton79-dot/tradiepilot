@@ -32,6 +32,7 @@ export default function Dashboard() {
   const { data: session } = useSession();
   const [userTier, setUserTier] = useState<string | undefined>(undefined);
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [overdueAmount, setOverdueAmount] = useState<number | null>(null);
 
   useEffect(() => {
     fetch('/api/settings')
@@ -41,6 +42,16 @@ export default function Dashboard() {
         setTrialEndsAt(data.trialEndsAt || null);
       })
       .catch(() => {});
+
+    fetch('/api/invoices')
+      .then(r => r.ok ? r.json() : [])
+      .then((invoices: any[]) => {
+        const total = invoices
+          .filter((inv: any) => inv.status === 'overdue')
+          .reduce((sum: number, inv: any) => sum + (inv.amount || 0), 0);
+        setOverdueAmount(total);
+      })
+      .catch(() => setOverdueAmount(0));
   }, []);
 
   return (
@@ -81,39 +92,47 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <motion.div variants={fadeUp}>
-            <StatCard 
-              label="Active Jobs" 
-              value="5" 
-              trend="+1 this month" 
-              trendType="positive"
-              icon={ClipboardList}
-            />
+            <Link href="/jobs" className="block">
+              <StatCard
+                label="Active Jobs"
+                value="5"
+                trend="+1 this month"
+                trendType="positive"
+                icon={ClipboardList}
+              />
+            </Link>
           </motion.div>
           <motion.div variants={fadeUp}>
-            <StatCard 
-              label="Avg. Margin" 
-              value="31.4%" 
-              trend="+1.2%" 
-              trendType="positive"
-              icon={TrendingUp}
-            />
+            <Link href="/growth" className="block">
+              <StatCard
+                label="Avg. Margin"
+                value="31.4%"
+                trend="+1.2%"
+                trendType="positive"
+                icon={TrendingUp}
+              />
+            </Link>
           </motion.div>
           <motion.div variants={fadeUp}>
-            <StatCard 
-              label="Pending Quotes" 
-              value="$325,000" 
-              trend="3 quotes" 
-              icon={Clock}
-            />
+            <Link href="/quotes" className="block">
+              <StatCard
+                label="Pending Quotes"
+                value="$325,000"
+                trend="3 quotes"
+                icon={Clock}
+              />
+            </Link>
           </motion.div>
           <motion.div variants={fadeUp}>
-            <StatCard 
-              label="Overdue Invoices" 
-              value="$57,500" 
-              trend="Action required" 
-              trendType="negative"
-              icon={AlertCircle}
-            />
+            <Link href="/invoices" className="block">
+              <StatCard
+                label="Overdue Invoices"
+                value={overdueAmount === null ? '…' : overdueAmount === 0 ? '$0' : `$${overdueAmount.toLocaleString()}`}
+                trend={overdueAmount === null || overdueAmount === 0 ? 'All clear' : 'Action required'}
+                trendType={overdueAmount && overdueAmount > 0 ? 'negative' : 'positive'}
+                icon={AlertCircle}
+              />
+            </Link>
           </motion.div>
         </div>
 
@@ -161,9 +180,9 @@ export default function Dashboard() {
               <div>
                 <h4 className="text-sm font-bold text-slate-800">Margin Warning</h4>
                 <p className="text-xs text-slate-500 mt-1">North Sydney Retail job has dropped below 0% margin due to structural variations.</p>
-                <button className="mt-3 text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                <Link href="/jobs" className="mt-3 text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
                   Investigate <ArrowRight className="w-3 h-3" />
-                </button>
+                </Link>
               </div>
             </div>
             
@@ -174,9 +193,9 @@ export default function Dashboard() {
               <div>
                 <h4 className="text-sm font-bold text-slate-800">Growth Opportunity</h4>
                 <p className="text-xs text-slate-500 mt-1">Commercial office fit-outs show a 12% higher margin than other services this quarter.</p>
-                <button className="mt-3 text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                <Link href="/growth" className="mt-3 text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
                   View Analysis <ArrowRight className="w-3 h-3" />
-                </button>
+                </Link>
               </div>
             </div>
           </div>

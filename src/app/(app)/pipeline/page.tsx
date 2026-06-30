@@ -35,11 +35,20 @@ const formatDate = (date: Date) => {
 
 // --- Pipeline Component ---
 export default function PipelinePage() {
-  // We'll base the timeline on a fixed start date for the demo (June 1, 2026)
-  // or use the earliest start date from our sample jobs.
-  const timelineStart = new Date('2026-06-01');
-  const weeks = Array.from({ length: 12 }, (_, i) => addDays(timelineStart, i * 7));
-  const timelineEnd = addDays(timelineStart, 12 * 7);
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  const timelineStart = useMemo(() => addDays(new Date('2026-06-01'), weekOffset * 7), [weekOffset]);
+  const timelineEnd = useMemo(() => addDays(timelineStart, 12 * 7), [timelineStart]);
+  const weeks = useMemo(() => Array.from({ length: 12 }, (_, i) => addDays(timelineStart, i * 7)), [timelineStart]);
+
+  const timelineLabel = useMemo(() => {
+    const startMonth = timelineStart.toLocaleDateString('en-AU', { month: 'long' });
+    const endMonth = timelineEnd.toLocaleDateString('en-AU', { month: 'long' });
+    const startYear = timelineStart.getFullYear();
+    const endYear = timelineEnd.getFullYear();
+    if (startYear === endYear) return `${startMonth} — ${endMonth} ${startYear}`;
+    return `${startMonth} ${startYear} — ${endMonth} ${endYear}`;
+  }, [timelineStart, timelineEnd]);
 
   const jobs = useMemo(() => {
     return sampleData.jobs.map(job => {
@@ -170,11 +179,11 @@ export default function PipelinePage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors">
+              <button onClick={() => setWeekOffset(o => o - 1)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors">
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <span className="text-sm font-semibold text-slate-700 px-2">June — August 2026</span>
-              <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors">
+              <span className="text-sm font-semibold text-slate-700 px-2">{timelineLabel}</span>
+              <button onClick={() => setWeekOffset(o => o + 1)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors">
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
@@ -283,7 +292,7 @@ export default function PipelinePage() {
           </div>
 
           <div className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-200">
-            <h3 className="font-bold mb-2 flex items-center gap-2 text-sm">
+            <h3 className="font-bold mb-2 flex items-center gap-2 text-sm text-white">
               <Clock className="w-4 h-4" /> Pipeline Insight
             </h3>
             <p className="text-xs text-indigo-100 leading-relaxed">

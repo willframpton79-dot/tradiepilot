@@ -4,7 +4,9 @@ export default function ProfitGauge({ margin }: { margin: number }) {
   const percentage = Math.max(0, Math.min(100, margin * 100));
   const radius = 35;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (percentage / 100) * circumference;
+  // Cap at 60% margin = full arc so 30%+ target performance looks healthy, not empty
+  const fillRatio = Math.min(percentage / 60, 1);
+  const offset = circumference - fillRatio * circumference;
 
   let color = "#22c55e"; // green
   if (margin < 0.2) color = "#ef4444"; // red

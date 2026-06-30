@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import dynamic from 'next/dynamic';
 import { 
   BarChart, 
@@ -114,9 +115,9 @@ export default function GrowthPage() {
                 </div>
               </div>
 
-              <button className="w-full py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all text-sm flex items-center justify-center gap-2">
+              <Link href="/settings/alert-thresholds" className="w-full py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all text-sm flex items-center justify-center gap-2">
                 Update Goals <ArrowUpRight className="w-4 h-4" />
-              </button>
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -147,9 +148,9 @@ export default function GrowthPage() {
                   <p className="text-sm text-slate-500 leading-relaxed">{insight.description}</p>
                 </div>
                 
-                <button className="mt-6 text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 group">
+                <Link href="/jobs" className="mt-6 text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 group">
                   Learn more <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </button>
+                </Link>
               </motion.div>
             ))}
           </div>
