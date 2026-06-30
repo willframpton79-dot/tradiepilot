@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
 import { Invoice } from '@/models/Invoice';
 import { requireAuth } from '@/lib/session';
+import { encryptToken, decryptToken } from '@/lib/crypto';
 
 function parseToken(token: any): string {
   if (!token) return '';
@@ -41,8 +42,8 @@ export async function POST() {
     });
 
     // Set tokens using the public setTokenSet method
-    const accessToken = parseToken(user.xeroAccessToken);
-    const refreshToken = parseToken(user.xeroRefreshToken);
+    const accessToken = parseToken(decryptToken(user.xeroAccessToken));
+    const refreshToken = parseToken(decryptToken(user.xeroRefreshToken));
     const expiresAt = user.xeroTokenExpiresAt || 0;
 
     xero.setTokenSet({
@@ -59,8 +60,8 @@ export async function POST() {
         await User.findOneAndUpdate(
           { email: userEmail },
           {
-            xeroAccessToken: JSON.stringify(newTokenSet.accessToken),
-            xeroRefreshToken: JSON.stringify(newTokenSet.refreshToken),
+            xeroAccessToken: encryptToken(JSON.stringify(newTokenSet.accessToken)),
+            xeroRefreshToken: encryptToken(JSON.stringify(newTokenSet.refreshToken)),
             xeroTokenExpiresAt: newExpiresAt ? new Date(newExpiresAt).getTime() : 0,
           }
         );

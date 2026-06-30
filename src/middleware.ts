@@ -13,6 +13,7 @@ export const config = {
     "/growth/:path*",
     "/invoices/:path*",
     "/jobs/:path*",
+    "/pipeline/:path*",
     "/settings/:path*",
   ],
   // /contact-sales and /api/contact-sales are intentionally excluded and public

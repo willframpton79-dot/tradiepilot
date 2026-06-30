@@ -19,11 +19,11 @@ export const authOptions = {
         await connectDB();
         const user = await User.findOne({ email: credentials.email }).lean() as any;
         if (!user) {
-          throw new Error('No user found with this email');
+          throw new Error('Invalid email or password');
         }
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) {
-          throw new Error('Invalid password');
+          throw new Error('Invalid email or password');
         }
         return {
           id: user._id.toString(),

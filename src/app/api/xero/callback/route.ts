@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-options';
+import { encryptToken } from '@/lib/crypto';
 
 export async function GET(req: NextRequest) {
   try {
@@ -47,8 +48,8 @@ export async function GET(req: NextRequest) {
       { email: session.user.email },
       {
         $set: {
-          xeroAccessToken: JSON.stringify(tokenSet.accessToken),
-          xeroRefreshToken: JSON.stringify(tokenSet.refreshToken),
+          xeroAccessToken: encryptToken(JSON.stringify(tokenSet.accessToken)),
+          xeroRefreshToken: encryptToken(JSON.stringify(tokenSet.refreshToken)),
           xeroTenantId: tenantId,
           xeroTokenExpiresAt: expiresAt ? new Date(expiresAt).getTime() : 0,
           xeroConnectedAt: new Date().toISOString(),
