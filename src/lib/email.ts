@@ -26,7 +26,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
           </p>
           <ol style="font-size: 16px; line-height: 1.6; color: #1e293b; padding-left: 20px;">
             <li>Complete your business onboarding profile.</li>
-            <li>Connect your accounting software (Xero, MYOB, or QuickBooks).</li>
+            <li>Connect your Xero account to pull in live invoice and contact data.</li>
             <li>Set your business target margin to unlock intelligent profitability tracking.</li>
           </ol>
           <div style="margin-top: 30px; text-align: center;">
@@ -38,7 +38,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
           </p>
         </div>
       `,
-      text: `Hello ${formattedName},\n\nWelcome to TradiePilot! We're thrilled to help you keep your profit and understand your numbers.\n\nNext steps to get started:\n1. Complete your business onboarding profile at /onboarding\n2. Connect your Xero/MYOB data\n3. Set your target margin\n\nGo to onboarding: https://tradiepilot.app/onboarding\n\nBest,\nThe TradiePilot Team`,
+      text: `Hello ${formattedName},\n\nWelcome to TradiePilot! We're thrilled to help you keep your profit and understand your numbers.\n\nNext steps to get started:\n1. Complete your business onboarding profile at /onboarding\n2. Connect your Xero account to pull in live invoice and contact data\n3. Set your target margin\n\nGo to onboarding: https://tradiepilot.app/onboarding\n\nBest,\nThe TradiePilot Team`,
     });
 
     if (error) {

@@ -269,7 +269,7 @@ function IntegrationsRow() {
   return (
     <section className="bg-slate-50 border-y border-slate-200 py-12 lg:py-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-6">Works alongside the tools you already use</p>
+        <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-6">Designed to complement your existing workflow tools</p>
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="flex flex-wrap justify-center gap-3">
           {tools.map((t, i) => (
             <motion.span key={t} variants={fadeUp} custom={i}
@@ -320,8 +320,8 @@ function IndustriesGrid() {
 // ─── Pricing ───
 const plans = [
   { id: "price_starter", name: "Starter", price: 97, desc: "For construction businesses ready to take control of their job margins.", features: ["Up to 10 active jobs", "Profit dashboard", "Quote follow-up alerts", "Invoice chasing", "Email support"], popular: false },
-  { id: "price_pro", name: "Pro", price: 197, desc: "For growing teams that need the full toolkit.", features: ["Unlimited active jobs", "Everything in Starter", "Growth intelligence", "Xero & MYOB sync", "Priority support"], popular: true },
-  { id: "price_enterprise", name: "Enterprise", price: 497, desc: "For larger operations with advanced needs.", features: ["Everything in Pro", "Multi-crew management", "Custom integrations", "Dedicated account manager", "API access"], popular: false },
+  { id: "price_pro", name: "Pro", price: 197, desc: "For growing teams that need the full toolkit.", features: ["Unlimited active jobs", "Everything in Starter", "Growth intelligence", "Xero sync", "Priority support"], popular: true },
+  { id: "price_enterprise", name: "Enterprise", price: 497, desc: "For larger operations with advanced needs.", features: ["Everything in Pro", "Track crew labour rates for accurate job costing", "Custom integrations", "Dedicated account manager", "API access"], popular: false },
 ];
 
 function PricingSection() {
