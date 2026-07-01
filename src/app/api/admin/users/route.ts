@@ -63,10 +63,13 @@ export async function GET() {
     };
   });
 
+  const PAID_TIERS = new Set(['solo', 'starter', 'pro', 'enterprise']);
+
   const total = enriched.length;
   const activeTrials = enriched.filter(u => u.trialStatus === 'active').length;
   const expiredTrials = enriched.filter(u => u.trialStatus === 'expired').length;
-  const paying = enriched.filter(u => u.tier !== 'free').length;
+  // Only count explicitly paid tiers — guards against null/unknown DB values
+  const paying = enriched.filter(u => PAID_TIERS.has(u.tier)).length;
 
   return NextResponse.json({ users: enriched, stats: { total, activeTrials, expiredTrials, paying } });
 }

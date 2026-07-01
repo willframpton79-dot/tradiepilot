@@ -113,7 +113,7 @@ export default function AdminPage() {
     // Status filter
     if (statusFilter !== 'all') {
       list = list.filter(u => {
-        if (statusFilter === 'paying') return u.tier !== 'free';
+        if (statusFilter === 'paying') return normaliseTier(u.tier) !== 'free';
         if (statusFilter === 'active') return u.trialStatus === 'active';
         if (statusFilter === 'expired') return u.trialStatus === 'expired';
         if (statusFilter === 'none') return u.tier === 'free' && u.trialStatus === 'none';
@@ -289,7 +289,7 @@ export default function AdminPage() {
 
                         {/* Trial */}
                         <td className="px-4 py-3 whitespace-nowrap">
-                          {u.tier === 'free' ? (
+                          {displayTier === 'free' ? (
                             <span className={`inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${TRIAL_COLORS[u.trialStatus]}`}>
                               {u.trialStatus}
                             </span>
