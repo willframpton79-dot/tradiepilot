@@ -18,6 +18,15 @@ interface ProfitCoachProps {
   isAdmin?: boolean;
 }
 
+// Claude sometimes returns action as "[text](url)" — parse it out
+function parseAction(action: string, link: string): { label: string; href: string } {
+  const mdLink = action.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+  if (mdLink) {
+    return { label: mdLink[1], href: mdLink[2] || link || '/dashboard' };
+  }
+  return { label: action, href: link || '/dashboard' };
+}
+
 const borderColor = {
   warning: 'border-l-red-400',
   opportunity: 'border-l-emerald-400',
@@ -173,12 +182,17 @@ export default function ProfitCoach({ tier, isAdmin = false }: ProfitCoachProps)
                 </div>
                 <p className="text-sm font-bold text-slate-900 mb-1">{insight.title}</p>
                 <p className="text-xs text-slate-500 leading-relaxed mb-4">{insight.body}</p>
-                <Link
-                  href={insight.link || '/dashboard'}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-all"
-                >
-                  {insight.action} <ArrowRight className="w-3 h-3" />
-                </Link>
+                {(() => {
+                  const { label, href } = parseAction(insight.action, insight.link);
+                  return (
+                    <Link
+                      href={href}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-all"
+                    >
+                      {label} <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  );
+                })()}
               </div>
             ))}
           </div>
