@@ -4,13 +4,17 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SettingsWrapper from '@/components/settings/SettingsWrapper';
 import { toast } from 'react-hot-toast';
-import { CheckCircle2, Zap, ExternalLink } from 'lucide-react';
+import { CheckCircle2, Zap, ExternalLink, Mail, X, Send, Loader2 } from 'lucide-react';
 
 function BillingContent() {
   const [loading, setLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [tier, setTier] = useState('free');
+  const [reportModal, setReportModal] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportContent, setReportContent] = useState<{ subject: string; body: string } | null>(null);
+  const [sendingReport, setSendingReport] = useState(false);
   const searchParams = useSearchParams();
   const checkoutStatus = searchParams.get('checkout');
 
@@ -34,6 +38,46 @@ function BillingContent() {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  const handlePreviewReport = async () => {
+    setReportLoading(true);
+    setReportModal(true);
+    setReportContent(null);
+    try {
+      const res = await fetch('/api/ai/weekly-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preview: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate report');
+      setReportContent({ subject: data.subject, body: data.preview });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to generate report preview');
+      setReportModal(false);
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  const handleSendReport = async () => {
+    setSendingReport(true);
+    try {
+      const res = await fetch('/api/ai/weekly-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preview: false }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send report');
+      toast.success('Weekly report sent to your inbox');
+      setReportModal(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send report');
+    } finally {
+      setSendingReport(false);
+    }
+  };
 
   const handleManageBilling = async () => {
     setPortalLoading(true);
@@ -160,6 +204,27 @@ function BillingContent() {
           </div>
         </div>
 
+        {/* AI Weekly Report Preview — Pro/Enterprise only */}
+        {(tier === 'pro' || tier === 'enterprise') && (
+          <div className="pt-8 border-t border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Weekly Profit Report</h4>
+                <p className="text-sm text-slate-500 mt-1">
+                  Every Monday morning TradiePilot sends you a personalised profit summary. Preview what this week&apos;s report looks like.
+                </p>
+              </div>
+              <button
+                onClick={handlePreviewReport}
+                className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-100"
+              >
+                <Mail className="w-4 h-4" />
+                Preview this week&apos;s report
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Billing Portal */}
         <div className="pt-8 border-t border-slate-100">
           <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">Billing &amp; Invoices</h4>
@@ -178,6 +243,60 @@ function BillingContent() {
           </button>
         </div>
       </div>
+      {/* Report Preview Modal */}
+      {reportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] flex flex-col">
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <div>
+                <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Weekly Profit Report</p>
+                <h3 className="text-base font-bold text-slate-900 mt-0.5 truncate">
+                  {reportContent?.subject || 'Generating…'}
+                </h3>
+              </div>
+              <button onClick={() => setReportModal(false)} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-all">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {reportLoading ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-4">
+                  <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+                  <p className="text-sm text-slate-500">Generating your weekly report…</p>
+                </div>
+              ) : reportContent ? (
+                <div className="space-y-3">
+                  {reportContent.body.split('\n\n').map((para, i) => (
+                    <p key={i} className="text-sm text-slate-700 leading-relaxed">
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            {/* Modal footer */}
+            {reportContent && (
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
+                <button onClick={() => setReportModal(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800 transition-colors">
+                  Close
+                </button>
+                <button
+                  onClick={handleSendReport}
+                  disabled={sendingReport}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all disabled:opacity-50"
+                >
+                  {sendingReport ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  Send to my inbox
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </SettingsWrapper>
   );
 }
