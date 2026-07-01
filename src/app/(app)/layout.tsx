@@ -1,4 +1,5 @@
 import Sidebar from "@/components/Sidebar";
+import AskTradiePilot from "@/components/dashboard/AskTradiePilot";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -7,6 +8,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
         {children}
       </main>
+      <AskTradiePilot />
     </div>
   );
 }
