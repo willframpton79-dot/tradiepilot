@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
@@ -19,12 +19,17 @@ function Hero() {
     <section className="relative pt-28 pb-20 lg:pt-36 lg:pb-28 overflow-hidden bg-gradient-to-b from-[#eef2ff] via-white to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center max-w-4xl mx-auto">
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-green-50 border border-green-200/60 rounded-full px-4 py-1.5 mb-6">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-green-50 border border-green-200/60 rounded-full px-4 py-1.5 mb-3">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
             </span>
             <span className="text-sm font-medium text-green-700">Profit intelligence for Australian construction &amp; trades</span>
+          </motion.div>
+          <motion.div variants={fadeUp} className="flex justify-center mb-6">
+            <span className="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200/70 rounded-full px-3.5 py-1 text-xs font-semibold text-indigo-700">
+              🤖 Now with AI Profit Coach
+            </span>
           </motion.div>
           <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight tracking-tight">
             Not Just a Dashboard.{" "}
@@ -77,6 +82,25 @@ function Hero() {
             </div>
           </div>
           
+          {/* AI Profit Coach floating card */}
+          <motion.div
+            initial={{ opacity: 0, x: 30, y: 10 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.1 }}
+            className="absolute bottom-16 right-4 lg:-right-6 w-64 bg-white rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.18)] border border-slate-200 border-l-4 border-l-red-400 p-4 z-10"
+          >
+            <div className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 mb-2">
+              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+              AI Profit Coach
+            </div>
+            <p className="text-xs font-bold text-slate-800 mb-1 leading-snug">Labour blowout on Northside Warehouse</p>
+            <p className="text-[10px] text-slate-500 leading-relaxed mb-3">Running $2,100 over quote. Review time entries before it eats into your margin.</p>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-indigo-600">Review time entries →</span>
+              <span className="text-[9px] text-slate-300">Just now</span>
+            </div>
+          </motion.div>
+
           {/* Bottom gradient fade */}
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent pointer-events-none" />
         </motion.div>
@@ -177,22 +201,102 @@ function ProblemSection() {
   );
 }
 
+// ─── AI Profit Coach mock card ───
+function ProfitCoachMock() {
+  return (
+    <div className="p-6 space-y-3">
+      <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-red-400 p-5 shadow-sm">
+        <div className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-50 text-red-600 mb-3">
+          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+          Warning
+        </div>
+        <p className="text-sm font-bold text-slate-900 mb-1.5">Labour blowout on Northside Warehouse Extension</p>
+        <p className="text-xs text-slate-500 leading-relaxed mb-4">Labour is running $2,100 over quote on this job. If the trend continues, you&apos;ll be under your 30% target margin by completion. Review time entries this week before it eats further into profit.</p>
+        <button className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-all">
+          Review time entries <ArrowRight className="w-3 h-3" />
+        </button>
+      </div>
+      <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-emerald-400 p-5 shadow-sm opacity-60">
+        <div className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 mb-3">
+          <TrendingUp className="w-3 h-3" /> Opportunity
+        </div>
+        <p className="text-sm font-bold text-slate-900 mb-1.5">Bathroom renos tracking at 42% margin</p>
+        <p className="text-xs text-slate-500 leading-relaxed mb-4">Your last 4 bathroom renos averaged 42% — your highest-margin job type. Consider quoting more of them this quarter.</p>
+        <button className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg">
+          View growth analysis <ArrowRight className="w-3 h-3" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Ask TradiePilot mock chat ───
+function AskTradiePilotMock() {
+  return (
+    <div className="p-5 space-y-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+      {/* Header */}
+      <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+        <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center">
+          <svg className="w-3.5 h-3.5 text-white fill-white/50" viewBox="0 0 24 24" fill="currentColor"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+        </div>
+        <span className="text-sm font-bold text-slate-900">Ask TradiePilot</span>
+        <span className="ml-auto text-[10px] text-slate-400">3 / 20 messages today</span>
+      </div>
+      {/* User message */}
+      <div className="flex justify-end">
+        <div className="bg-indigo-600 text-white text-xs leading-relaxed px-3 py-2.5 rounded-2xl rounded-tr-sm max-w-[80%]">
+          What&apos;s the job that&apos;s gonna make me the most profit?
+        </div>
+      </div>
+      {/* AI response */}
+      <div className="flex gap-2.5">
+        <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+          <svg className="w-3 h-3 text-indigo-600 fill-indigo-200" viewBox="0 0 24 24" fill="currentColor"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+        </div>
+        <div className="bg-slate-50 border border-slate-100 text-slate-700 text-xs leading-relaxed px-3 py-2.5 rounded-2xl rounded-tl-sm max-w-[85%]">
+          Based on your current active jobs, <strong>Northside Warehouse Extension</strong> is tracking at 38% margin — your strongest job right now. Worth keeping an eye on your Parramatta job too, it&apos;s close to target but labour costs are creeping up.
+        </div>
+      </div>
+      {/* Follow-up user message */}
+      <div className="flex justify-end">
+        <div className="bg-indigo-600 text-white text-xs leading-relaxed px-3 py-2.5 rounded-2xl rounded-tr-sm max-w-[80%]">
+          Any invoices I should chase this week?
+        </div>
+      </div>
+      {/* Typing indicator */}
+      <div className="flex gap-2.5">
+        <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+          <svg className="w-3 h-3 text-indigo-600 fill-indigo-200" viewBox="0 0 24 24" fill="currentColor"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+        </div>
+        <div className="bg-slate-50 border border-slate-100 rounded-2xl rounded-tl-sm px-3 py-2.5">
+          <div className="flex items-center gap-1 py-0.5">
+            <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0ms]" />
+            <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:150ms]" />
+            <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:300ms]" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Features Section ───
 function FeaturesSection() {
   const [active, setActive] = useState(0);
-  const tabs = ["Profit dashboard", "Quote follow-up", "Invoice chaser", "Growth intelligence"];
-  const tabContent = [
+  const tabs = ["Profit dashboard", "Quote follow-up", "Invoice chaser", "Growth intelligence", "AI Profit Coach", "Ask TradiePilot"];
+
+  interface TabContent {
+    heading?: string;
+    items: string[];
+    visual?: ReactNode;
+  }
+
+  const tabContent: TabContent[] = [
     {
       items: [
         "Real-time margin tracking on every active job — see problems before they cost you",
         "Custom profit alerts when a job slips below your target margin",
         "One-click drill-down into job costing, time logs, and receipts",
-      ],
-      mockRows: [
-        { name: "Woollahra Bathroom Reno", margin: "$3,244", pct: 46 },
-        { name: "Bondi Electrical Upgrade", margin: "$412", pct: 18 },
-        { name: "CBD Office Fit-Out", margin: "$8,930", pct: 38 },
-        { name: "Surry Hills Hot Water", margin: "-$258", pct: -13 },
       ],
     },
     {
@@ -201,22 +305,12 @@ function FeaturesSection() {
         "Smart prioritisation: urgent, high-value leads surface first",
         "One-click send with pre-written, customisable follow-up messages",
       ],
-      mockRows: [
-        { name: "Wilson Family — Paint", margin: "$15,800", pct: null },
-        { name: "Greenwood Cafe — Fitout", margin: "$42,000", pct: null },
-        { name: "Parkinson — HWS", margin: "$3,800", pct: null },
-      ],
     },
     {
       items: [
         "Overdue invoices ranked by severity — know who to chase first",
         "Automated reminder sequences via email and SMS",
         "Escalation triggers for invoices past 30 days",
-      ],
-      mockRows: [
-        { name: "Kitchen Reno — Smith", margin: "$28,700", pct: null },
-        { name: "Bathroom Demo — Jones", margin: "$15,900", pct: null },
-        { name: "Roof Repair — Williams", margin: "$10,200", pct: null },
       ],
     },
     {
@@ -225,14 +319,35 @@ function FeaturesSection() {
         "Suburb hotspot mapping — find where your next job should be",
         "Personalised marketing recommendations based on your actual data",
       ],
-      mockRows: [
-        { name: "Emma & James Patterson", margin: "$7,029", pct: null },
-        { name: "Newtown Strata Corp", margin: "$4,850", pct: null },
-        { name: "Bella Vista Cafe", margin: "$8,900", pct: null },
+    },
+    {
+      heading: "AI that reads your numbers so you don't have to",
+      items: [
+        "Proactive alerts when a job's margin is slipping — before it's too late to raise a variation",
+        "Flags quotes that have gone quiet and suggests when to follow up",
+        "Refreshes daily, based on your real job data — not generic advice",
       ],
+      visual: <ProfitCoachMock />,
+    },
+    {
+      heading: "Ask your business a question. Get a real answer.",
+      items: [
+        "Answers based on your real business data, not a generic chatbot",
+        "Ask anything — margins, cash flow, what to prioritise today",
+        "Available on every page, one click away",
+      ],
+      visual: <AskTradiePilotMock />,
     },
   ];
+
   const current = tabContent[active];
+
+  const imageMap: Record<number, string> = {
+    0: "/images/feature-dashboard.png",
+    1: "/images/feature-quotes.png",
+    2: "/images/feature-invoices.png",
+    3: "/images/feature-growth.png",
+  };
 
   return (
     <section id="features" className="bg-white py-16 lg:py-24" style={{ scrollBehavior: 'smooth' }}>
@@ -244,8 +359,12 @@ function FeaturesSection() {
         <div className="flex flex-wrap justify-center gap-2 mb-10">
           {tabs.map((t, i) => (
             <button key={t} onClick={() => setActive(i)}
-              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${active === i ? "bg-indigo-600 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
-              {t}
+              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                active === i
+                  ? i >= 4 ? "bg-indigo-600 text-white shadow-md ring-2 ring-indigo-500/30" : "bg-indigo-600 text-white shadow-md"
+                  : i >= 4 ? "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}>
+              {i >= 4 && <span className="mr-1.5">✦</span>}{t}
             </button>
           ))}
         </div>
@@ -253,6 +372,19 @@ function FeaturesSection() {
         <motion.div key={active} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           <div className="space-y-5">
+            {current.heading && (
+              <h3 className="text-xl lg:text-2xl font-bold text-slate-900 leading-snug">{current.heading}</h3>
+            )}
+            {active === 4 && (
+              <p className="text-base text-slate-500 leading-relaxed">
+                Every day, TradiePilot&apos;s AI checks your active jobs against their quoted margin, flags quotes going cold, and spots invoices worth chasing — then tells you exactly what to do about it in plain English. Not a dashboard you have to interpret. An answer.
+              </p>
+            )}
+            {active === 5 && (
+              <p className="text-base text-slate-500 leading-relaxed">
+                Which job&apos;s making me the most money? What should I chase this week? Do I have any invoices at risk? Ask TradiePilot answers using your actual jobs, quotes, and invoices — not generic advice. It&apos;s your own numbers, explained in plain English, any time you want them.
+              </p>
+            )}
             {current.items.map((item, i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0 mt-0.5">
@@ -262,13 +394,15 @@ function FeaturesSection() {
               </div>
             ))}
           </div>
-          {/* Premium Feature Screenshot Card */}
-          <div className="relative rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200 bg-slate-100">
-            <img 
-              src={active === 0 ? "/images/feature-dashboard.png" : active === 1 ? "/images/feature-quotes.png" : active === 2 ? "/images/feature-invoices.png" : "/images/feature-growth.png"}
-              alt={tabs[active]} 
-              className="w-full block" 
-            />
+          {/* Visual: custom node or image */}
+          <div className={`relative rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200 ${current.visual ? "bg-slate-50" : "bg-slate-100"}`}>
+            {current.visual ?? (
+              <img
+                src={imageMap[active]}
+                alt={tabs[active]}
+                className="w-full block"
+              />
+            )}
           </div>
         </motion.div>
       </div>
@@ -354,6 +488,10 @@ const objections = [
     q: '"We\'ve tried software before and it never got used."',
     a: "The adoption champion is your office manager — not you on the tools. TradiePilot is designed for the person already handling invoice reconciliation and cost matching. It makes their existing job faster and more powerful. The owner sees the output; the admin drives the input.",
   },
+  {
+    q: '"Is this just another chatbot that makes things up?"',
+    a: "No. Ask TradiePilot and the AI Profit Coach only work from your actual business data — your jobs, your quotes, your invoices, your costs. If your margin on the Northside job is 38%, it says 38%. It doesn't hallucinate a number. There's no generic advice, no recycled content. It reads your numbers, explains them in plain English, and tells you what to do about it. If there's no data, it says so.",
+  },
 ];
 
 function ObjectionsSection() {
@@ -408,7 +546,7 @@ const plans = [
     name: "Pro",
     price: 149,
     desc: "For small crews of 2–10 staff who need the full toolkit.",
-    features: ["Unlimited active jobs", "Everything in Solo", "Full Xero sync", "AI weekly profit report", "Priority support"],
+    features: ["Unlimited active jobs", "Full Xero sync", "AI Profit Coach — daily insights on every job", "Ask TradiePilot — chat with your business data", "Weekly AI profit report every Monday", "Priority support"],
     popular: true,
   },
   {
