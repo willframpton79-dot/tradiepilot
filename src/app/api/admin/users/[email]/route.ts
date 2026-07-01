@@ -5,6 +5,8 @@ import { User } from '@/models/User';
 import { Job } from '@/models/Job';
 import { Quote } from '@/models/Quote';
 import { Invoice } from '@/models/Invoice';
+import { Staff } from '@/models/Staff';
+import { AiCache } from '@/models/AiCache';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ email: string }> }) {
   const auth = await requireAdmin();
@@ -85,4 +87,28 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ email:
 
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
   return NextResponse.json({ success: true, user });
+}
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ email: string }> }) {
+  const auth = await requireAdmin();
+  if (auth instanceof NextResponse) return auth;
+
+  const { email } = await params;
+  const userEmail = decodeURIComponent(email);
+
+  await connectDB();
+
+  const user = await User.findOne({ email: userEmail }).lean();
+  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+  await Promise.all([
+    User.deleteOne({ email: userEmail }),
+    Job.deleteMany({ userEmail }),
+    Quote.deleteMany({ userEmail }),
+    Invoice.deleteMany({ userEmail }),
+    Staff.deleteMany({ userEmail }),
+    AiCache.deleteMany({ userEmail }),
+  ]);
+
+  return NextResponse.json({ success: true });
 }

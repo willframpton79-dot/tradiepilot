@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Users, TrendingUp, AlertCircle, CheckCircle2, Search, ChevronRight, RefreshCw } from 'lucide-react';
+import { Users, TrendingUp, AlertCircle, CheckCircle2, Search, ChevronRight, RefreshCw, ChevronDown } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 
@@ -15,6 +15,8 @@ interface AdminUser {
   trialEndsAt: string | null;
   xeroConnected: boolean;
   jobCount: number;
+  quoteCount: number;
+  activationScore: number;
   onboardingComplete: boolean;
   createdAt: string;
 }
@@ -26,10 +28,16 @@ interface Stats {
   paying: number;
 }
 
+// Normalise tier value for display — handles null, 'starter', unknown
+function normaliseTier(tier: string | null | undefined): string {
+  if (!tier) return 'free';
+  if (tier === 'starter') return 'solo';
+  return tier;
+}
+
 const TIER_COLORS: Record<string, string> = {
   free: 'bg-slate-100 text-slate-600',
   solo: 'bg-blue-100 text-blue-700',
-  starter: 'bg-purple-100 text-purple-700',
   pro: 'bg-indigo-100 text-indigo-700',
   enterprise: 'bg-amber-100 text-amber-700',
 };
@@ -42,11 +50,30 @@ const TRIAL_COLORS: Record<string, string> = {
 
 const TIERS = ['free', 'solo', 'pro', 'enterprise'];
 
+type StatusFilter = 'all' | 'active' | 'expired' | 'paying' | 'none';
+type SortKey = 'newest' | 'oldest' | 'tier' | 'activation';
+
+const TIER_ORDER: Record<string, number> = { enterprise: 0, pro: 1, solo: 2, free: 3 };
+
+function ActivationBadge({ score }: { score: number }) {
+  const color =
+    score === 4 ? 'bg-emerald-100 text-emerald-700' :
+    score >= 2 ? 'bg-amber-100 text-amber-700' :
+    'bg-red-100 text-red-600';
+  return (
+    <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${color}`}>
+      {score}/4
+    </span>
+  );
+}
+
 export default function AdminPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [sortKey, setSortKey] = useState<SortKey>('newest');
   const [tierSelects, setTierSelects] = useState<Record<string, string>>({});
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
 
@@ -59,7 +86,7 @@ export default function AdminPage() {
       setUsers(data.users);
       setStats(data.stats);
       const selects: Record<string, string> = {};
-      for (const u of data.users) selects[u.email] = u.tier;
+      for (const u of data.users) selects[u.email] = normaliseTier(u.tier);
       setTierSelects(selects);
     } catch {
       toast.error('Failed to load admin data');
@@ -71,14 +98,40 @@ export default function AdminPage() {
   useEffect(() => { fetchUsers(); }, []);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return users;
-    const q = search.toLowerCase();
-    return users.filter(u =>
-      u.email.toLowerCase().includes(q) ||
-      u.name.toLowerCase().includes(q) ||
-      u.businessName.toLowerCase().includes(q),
-    );
-  }, [users, search]);
+    let list = [...users];
+
+    // Search
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(u =>
+        u.email.toLowerCase().includes(q) ||
+        u.name.toLowerCase().includes(q) ||
+        u.businessName.toLowerCase().includes(q),
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      list = list.filter(u => {
+        if (statusFilter === 'paying') return u.tier !== 'free';
+        if (statusFilter === 'active') return u.trialStatus === 'active';
+        if (statusFilter === 'expired') return u.trialStatus === 'expired';
+        if (statusFilter === 'none') return u.tier === 'free' && u.trialStatus === 'none';
+        return true;
+      });
+    }
+
+    // Sort
+    list.sort((a, b) => {
+      if (sortKey === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (sortKey === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sortKey === 'tier') return (TIER_ORDER[normaliseTier(a.tier)] ?? 9) - (TIER_ORDER[normaliseTier(b.tier)] ?? 9);
+      if (sortKey === 'activation') return b.activationScore - a.activationScore;
+      return 0;
+    });
+
+    return list;
+  }, [users, search, statusFilter, sortKey]);
 
   const patch = async (email: string, body: Record<string, unknown>, label: string) => {
     setActionLoading(prev => ({ ...prev, [email + label]: true }));
@@ -100,6 +153,14 @@ export default function AdminPage() {
       setActionLoading(prev => ({ ...prev, [email + label]: false }));
     }
   };
+
+  const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'active', label: 'Active Trial' },
+    { key: 'expired', label: 'Expired Trial' },
+    { key: 'paying', label: 'Paying' },
+    { key: 'none', label: 'No Trial' },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -132,7 +193,7 @@ export default function AdminPage() {
           ].map(card => (
             <div key={card.label} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
               <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${card.color}`}>
-                <card.icon className="w-4.5 h-4.5 w-[18px] h-[18px]" />
+                <card.icon className="w-[18px] h-[18px]" />
               </div>
               <p className="text-2xl font-bold text-slate-900">{loading ? '—' : card.value}</p>
               <p className="text-xs text-slate-500 mt-0.5">{card.label}</p>
@@ -142,18 +203,52 @@ export default function AdminPage() {
 
         {/* User table */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search by name, email or business…"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 transition-all"
-              />
+          {/* Toolbar */}
+          <div className="px-5 py-4 border-b border-slate-100 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search by name, email or business…"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 transition-all"
+                />
+              </div>
+              {/* Sort */}
+              <div className="relative">
+                <select
+                  value={sortKey}
+                  onChange={e => setSortKey(e.target.value as SortKey)}
+                  className="appearance-none text-xs border border-slate-200 rounded-lg pl-3 pr-7 py-2 bg-white text-slate-600 outline-none focus:border-indigo-400 cursor-pointer"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="tier">By tier</option>
+                  <option value="activation">By activation</option>
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+              </div>
+              <span className="text-xs text-slate-400 shrink-0">{filtered.length} user{filtered.length !== 1 ? 's' : ''}</span>
             </div>
-            <span className="text-xs text-slate-400 shrink-0">{filtered.length} user{filtered.length !== 1 ? 's' : ''}</span>
+
+            {/* Status filters */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {STATUS_FILTERS.map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setStatusFilter(f.key)}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all ${
+                    statusFilter === f.key
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {loading ? (
@@ -167,7 +262,7 @@ export default function AdminPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100">
-                    {['User', 'Tier', 'Trial', 'Signed up', 'Xero', 'Jobs', 'Actions'].map(h => (
+                    {['User', 'Tier', 'Trial', 'Activation', 'Signed up', 'Xero', 'Jobs', 'Actions'].map(h => (
                       <th key={h} className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -175,6 +270,7 @@ export default function AdminPage() {
                 <tbody className="divide-y divide-slate-50">
                   {filtered.map(u => {
                     const busy = (label: string) => !!actionLoading[u.email + label];
+                    const displayTier = normaliseTier(u.tier);
                     return (
                       <tr key={u.email} className="hover:bg-slate-50/50 transition-colors">
                         {/* User */}
@@ -186,8 +282,8 @@ export default function AdminPage() {
 
                         {/* Tier */}
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className={`inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${TIER_COLORS[u.tier] || 'bg-slate-100 text-slate-500'}`}>
-                            {u.tier}
+                          <span className={`inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${TIER_COLORS[displayTier] || 'bg-slate-100 text-slate-500'}`}>
+                            {displayTier}
                           </span>
                         </td>
 
@@ -202,6 +298,11 @@ export default function AdminPage() {
                               subscriber
                             </span>
                           )}
+                        </td>
+
+                        {/* Activation */}
+                        <td className="px-4 py-3">
+                          <ActivationBadge score={u.activationScore} />
                         </td>
 
                         {/* Signup */}
@@ -224,16 +325,15 @@ export default function AdminPage() {
                         {/* Actions */}
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            {/* Tier select + apply */}
                             <select
-                              value={tierSelects[u.email] ?? u.tier}
+                              value={tierSelects[u.email] ?? displayTier}
                               onChange={e => setTierSelects(prev => ({ ...prev, [u.email]: e.target.value }))}
                               className="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700 outline-none focus:border-indigo-400"
                             >
                               {TIERS.map(t => <option key={t} value={t}>{t}</option>)}
                             </select>
                             <button
-                              disabled={busy('tier') || tierSelects[u.email] === u.tier}
+                              disabled={busy('tier') || tierSelects[u.email] === displayTier}
                               onClick={() => patch(u.email, { tier: tierSelects[u.email] }, 'tier')}
                               className="text-[11px] font-bold px-2.5 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-all"
                             >

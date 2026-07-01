@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { ArrowLeft, Send, Loader2, Briefcase, FileText, Receipt, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Briefcase, FileText, Receipt, RefreshCw, Mail, Trash2, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface UserDetail {
   email: string;
@@ -24,7 +25,7 @@ interface UserDetail {
 const TIER_COLORS: Record<string, string> = {
   free: 'bg-slate-100 text-slate-600',
   solo: 'bg-blue-100 text-blue-700',
-  starter: 'bg-purple-100 text-purple-700',
+  starter: 'bg-blue-100 text-blue-700',
   pro: 'bg-indigo-100 text-indigo-700',
   enterprise: 'bg-amber-100 text-amber-700',
 };
@@ -32,6 +33,7 @@ const TIER_COLORS: Record<string, string> = {
 export default function AdminUserDetail({ params }: { params: Promise<{ email: string }> }) {
   const { email } = use(params);
   const userEmail = decodeURIComponent(email);
+  const router = useRouter();
 
   const [user, setUser] = useState<UserDetail | null>(null);
   const [jobs, setJobs] = useState<any[]>([]);
@@ -41,6 +43,17 @@ export default function AdminUserDetail({ params }: { params: Promise<{ email: s
   const [notes, setNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [triggeringReport, setTriggeringReport] = useState(false);
+
+  // Delete state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
+  // Send message state
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [msgSubject, setMsgSubject] = useState('A message from TradiePilot');
+  const [msgBody, setMsgBody] = useState('');
+  const [sendingMsg, setSendingMsg] = useState(false);
 
   const fetchDetail = async () => {
     setLoading(true);
@@ -97,6 +110,45 @@ export default function AdminUserDetail({ params }: { params: Promise<{ email: s
     }
   };
 
+  const deleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/users/${encodeURIComponent(userEmail)}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || 'Failed to delete');
+      }
+      toast.success('Account deleted');
+      router.push('/admin');
+    } catch (e: any) {
+      toast.error(e.message || 'Delete failed');
+      setDeleting(false);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!msgBody.trim()) return;
+    setSendingMsg(true);
+    try {
+      const res = await fetch('/api/admin/send-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail, subject: msgSubject, message: msgBody }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send');
+      toast.success('Message sent');
+      setShowMessageModal(false);
+      setMsgBody('');
+      setMsgSubject('A message from TradiePilot');
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to send message');
+    } finally {
+      setSendingMsg(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -113,6 +165,8 @@ export default function AdminUserDetail({ params }: { params: Promise<{ email: s
     );
   }
 
+  const tierLabel = user.tier === 'starter' ? 'solo' : (user.tier || 'free');
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -125,14 +179,23 @@ export default function AdminUserDetail({ params }: { params: Promise<{ email: s
             <h1 className="text-base font-bold text-slate-900">{user.name || user.email}</h1>
             <p className="text-xs text-slate-500">{user.email} · {user.businessName || 'No business name'}</p>
           </div>
-          <button
-            onClick={triggerReport}
-            disabled={triggeringReport}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50"
-          >
-            {triggeringReport ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-            Send Weekly Report
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowMessageModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:border-indigo-300 hover:text-indigo-600 transition-all"
+            >
+              <Mail className="w-3.5 h-3.5" />
+              Send Message
+            </button>
+            <button
+              onClick={triggerReport}
+              disabled={triggeringReport}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50"
+            >
+              {triggeringReport ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+              Send Weekly Report
+            </button>
+          </div>
         </div>
       </div>
 
@@ -142,7 +205,7 @@ export default function AdminUserDetail({ params }: { params: Promise<{ email: s
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3">
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Account</h2>
             {[
-              ['Tier', <span key="t" className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${TIER_COLORS[user.tier] || 'bg-slate-100 text-slate-500'}`}>{user.tier}</span>],
+              ['Tier', <span key="t" className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${TIER_COLORS[user.tier] || 'bg-slate-100 text-slate-500'}`}>{tierLabel}</span>],
               ['Trial', user.trialStatus === 'none' ? '—' : `${user.trialStatus}${user.trialEndsAt ? ' · ' + new Date(user.trialEndsAt).toLocaleDateString('en-AU') : ''}`],
               ['Signed up', user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'],
               ['Onboarding', user.onboardingComplete ? '✓ Complete' : '✗ Incomplete'],
@@ -300,7 +363,120 @@ export default function AdminUserDetail({ params }: { params: Promise<{ email: s
             </div>
           )}
         </div>
+
+        {/* Danger Zone */}
+        <div className="rounded-xl border-2 border-red-200 p-6">
+          <h2 className="text-sm font-bold text-red-600 uppercase tracking-wider mb-1">Danger Zone</h2>
+          <p className="text-xs text-slate-500 mb-4">
+            Permanently deletes this user account and all associated data — jobs, quotes, invoices, staff, and AI cache. This cannot be undone.
+          </p>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 transition-all"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Delete Account
+          </button>
+        </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-slate-900">Delete Account</h3>
+              <button onClick={() => { setShowDeleteModal(false); setDeleteConfirmText(''); }} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-all">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-slate-600 mb-1">
+              This will permanently delete <strong>{userEmail}</strong> and all their data.
+            </p>
+            <p className="text-sm text-slate-600 mb-4">Type <strong>DELETE</strong> to confirm.</p>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={e => setDeleteConfirmText(e.target.value)}
+              placeholder="Type DELETE"
+              className="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:border-red-400 focus:ring-2 focus:ring-red-500/10 transition-all mb-4 font-mono"
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeleteConfirmText(''); }}
+                className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteAccount}
+                disabled={deleteConfirmText !== 'DELETE' || deleting}
+                className="inline-flex items-center gap-2 px-5 py-2 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 transition-all disabled:opacity-40"
+              >
+                {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Delete permanently
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Send message modal */}
+      {showMessageModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-base font-bold text-slate-900">Send Message</h3>
+              <button onClick={() => setShowMessageModal(false)} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-all">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">To</label>
+                <input
+                  type="text"
+                  value={userEmail}
+                  readOnly
+                  className="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-400 cursor-not-allowed"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Subject</label>
+                <input
+                  type="text"
+                  value={msgSubject}
+                  onChange={e => setMsgSubject(e.target.value)}
+                  className="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Message</label>
+                <textarea
+                  value={msgBody}
+                  onChange={e => setMsgBody(e.target.value)}
+                  rows={6}
+                  placeholder="Write your message…"
+                  className="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 transition-all resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end mt-5">
+              <button onClick={() => setShowMessageModal(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={sendMessage}
+                disabled={!msgBody.trim() || !msgSubject.trim() || sendingMsg}
+                className="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-40"
+              >
+                {sendingMsg ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
