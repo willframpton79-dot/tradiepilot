@@ -1,29 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import SettingsWrapper from '@/components/settings/SettingsWrapper';
 import { toast } from 'react-hot-toast';
-import { CreditCard, CheckCircle2, Zap, ExternalLink } from 'lucide-react';
+import { CheckCircle2, Zap, ExternalLink } from 'lucide-react';
 
-export default function BillingSettings() {
+function BillingContent() {
   const [loading, setLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [tier, setTier] = useState('free');
+  const searchParams = useSearchParams();
+  const checkoutStatus = searchParams.get('checkout');
+
+  const fetchTier = async () => {
+    try {
+      const res = await fetch('/api/settings');
+      const data = await res.json();
+      setTier(data.tier || 'free');
+    } catch (error) {
+      toast.error('Failed to load billing info');
+    } finally {
+      setFetching(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch('/api/settings');
-        const data = await res.json();
-        setTier(data.tier || 'free');
-      } catch (error) {
-        toast.error('Failed to load billing info');
-      } finally {
-        setFetching(false);
-      }
-    };
-    fetchData();
+    fetchTier();
+    // Re-poll once after 3s to pick up the tier update from the Stripe webhook
+    if (checkoutStatus === 'success') {
+      const timer = setTimeout(fetchTier, 3000);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const handleManageBilling = async () => {
@@ -48,9 +57,9 @@ export default function BillingSettings() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: 'pro' }),
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.error || 'Failed to initiate checkout');
       }
@@ -77,11 +86,28 @@ export default function BillingSettings() {
   }
 
   return (
-    <SettingsWrapper 
-      title="Billing & Subscription" 
+    <SettingsWrapper
+      title="Billing & Subscription"
       description="Manage your subscription plan and billing history."
     >
       <div className="space-y-8">
+        {/* Post-checkout banners */}
+        {checkoutStatus === 'success' && (
+          <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold text-emerald-800">Payment successful — welcome to Pro!</p>
+              <p className="text-xs text-emerald-700 mt-0.5">Your plan is being activated. If it doesn&apos;t update in the next few seconds, refresh the page.</p>
+            </div>
+          </div>
+        )}
+        {checkoutStatus === 'cancelled' && (
+          <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-xl p-4">
+            <Zap className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-sm font-medium text-amber-800">Checkout was cancelled — no charge was made. Upgrade any time below.</p>
+          </div>
+        )}
+
         {/* Current Plan */}
         <div className="p-6 rounded-2xl bg-indigo-50 border border-indigo-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -152,5 +178,13 @@ export default function BillingSettings() {
         </div>
       </div>
     </SettingsWrapper>
+  );
+}
+
+export default function BillingSettings() {
+  return (
+    <Suspense>
+      <BillingContent />
+    </Suspense>
   );
 }
