@@ -15,6 +15,7 @@ interface Insight {
 
 interface ProfitCoachProps {
   tier?: string;
+  isAdmin?: boolean;
 }
 
 const borderColor = {
@@ -47,13 +48,13 @@ function SkeletonCard() {
   );
 }
 
-export default function ProfitCoach({ tier }: ProfitCoachProps) {
+export default function ProfitCoach({ tier, isAdmin = false }: ProfitCoachProps) {
   const [insights, setInsights] = useState<Insight[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isGated = tier === 'free' || tier === 'solo';
+  const isGated = !isAdmin && (tier === 'free' || tier === 'solo');
   const tierKnown = tier !== undefined;
 
   const fetchInsights = useCallback(async (refresh = false) => {

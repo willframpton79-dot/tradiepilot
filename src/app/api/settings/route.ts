@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-options';
 import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
+import { isAdminEmail } from '@/lib/session';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -17,7 +18,12 @@ export async function GET() {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  return NextResponse.json(user);
+  const data = user.toObject ? user.toObject() : { ...user };
+  if (isAdminEmail(data.email)) {
+    data.tier = 'enterprise';
+    data.isAdmin = true;
+  }
+  return NextResponse.json(data);
 }
 
 export async function PATCH(request: Request) {

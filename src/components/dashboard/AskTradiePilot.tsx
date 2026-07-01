@@ -19,11 +19,12 @@ export default function AskTradiePilot() {
   const [usageRemaining, setUsageRemaining] = useState<number | null>(null);
   const [usageUsed, setUsageUsed] = useState(0);
   const [tier, setTier] = useState<string | undefined>(undefined);
+  const [isAdmin, setIsAdmin] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const hasFetchedUsage = useRef(false);
 
-  const isGated = tier === 'free' || tier === 'solo';
+  const isGated = !isAdmin && (tier === 'free' || tier === 'solo');
 
   // Fetch tier and today's usage when panel first opens
   useEffect(() => {
@@ -35,6 +36,7 @@ export default function AskTradiePilot() {
       fetch('/api/ai/chat').then(r => r.ok ? r.json() : { remaining: 20, used: 0 }),
     ]).then(([settings, usage]) => {
       setTier((settings.tier as string) || 'free');
+      setIsAdmin(!!(settings as any).isAdmin);
       setUsageRemaining(usage.remaining ?? 20);
       setUsageUsed(usage.used ?? 0);
     }).catch(() => {

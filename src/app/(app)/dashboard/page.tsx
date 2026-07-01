@@ -33,6 +33,7 @@ export default function Dashboard() {
   const { data: session } = useSession();
   const [userTier, setUserTier] = useState<string | undefined>(undefined);
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [overdueAmount, setOverdueAmount] = useState<number | null>(null);
   const [activeJobCount, setActiveJobCount] = useState<number | null>(null);
   const [avgMargin, setAvgMargin] = useState<number | null>(null);
@@ -44,6 +45,7 @@ export default function Dashboard() {
       .then(data => {
         setUserTier(data.tier);
         setTrialEndsAt(data.trialEndsAt || null);
+        setIsAdmin(!!data.isAdmin);
       })
       .catch(() => {});
 
@@ -165,7 +167,7 @@ export default function Dashboard() {
 
         {/* AI Profit Coach */}
         <motion.div variants={fadeUp}>
-          <ProfitCoach tier={userTier} />
+          <ProfitCoach tier={userTier} isAdmin={isAdmin} />
         </motion.div>
 
         {/* Main Grid */}

@@ -15,6 +15,7 @@ export const config = {
     "/jobs/:path*",
     "/pipeline/:path*",
     "/settings/:path*",
+    "/admin/:path*",
   ],
   // /contact-sales and /api/contact-sales are intentionally excluded and public
 };

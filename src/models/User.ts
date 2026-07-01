@@ -41,6 +41,7 @@ export interface IUser extends Document {
     marketing: boolean;
     productUpdates: boolean;
   };
+  adminNotes?: string;
 }
 
 const UserSchema = new Schema({
@@ -84,6 +85,7 @@ const UserSchema = new Schema({
     marketing: { type: Boolean, default: false },
     productUpdates: { type: Boolean, default: true },
   },
+  adminNotes: { type: String, default: '' },
 }, { timestamps: true });
 
 export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
