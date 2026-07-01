@@ -9,9 +9,11 @@ export interface IUser extends Document {
   trialStartedAt?: Date;
   trialEndsAt?: Date;
   onboardingComplete: boolean;
+  userRole?: 'owner' | 'admin';
   targetMargin: number;
   tradeType: string;
   businessName: string;
+  jobManagementTool?: string;
   state: string;
   staffCount: string;
   xeroAccessToken?: string;
@@ -50,9 +52,11 @@ const UserSchema = new Schema({
   trialStartedAt: { type: Date },
   trialEndsAt: { type: Date },
   onboardingComplete: { type: Boolean, default: false },
+  userRole: { type: String, enum: ['owner', 'admin'], default: null },
   targetMargin: { type: Number, default: 0 },
   tradeType: { type: String, default: '' },
   businessName: { type: String, default: '' },
+  jobManagementTool: { type: String, default: '' },
   state: { type: String, default: '' },
   staffCount: { type: String, default: '' },
   xeroAccessToken: { type: String, default: '' },

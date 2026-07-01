@@ -33,6 +33,9 @@ export default function Dashboard() {
   const [userTier, setUserTier] = useState<string | undefined>(undefined);
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [overdueAmount, setOverdueAmount] = useState<number | null>(null);
+  const [activeJobCount, setActiveJobCount] = useState<number | null>(null);
+  const [avgMargin, setAvgMargin] = useState<number | null>(null);
+  const [pendingQuotesTotal, setPendingQuotesTotal] = useState<number | null>(null);
 
   useEffect(() => {
     fetch('/api/settings')
@@ -52,6 +55,29 @@ export default function Dashboard() {
         setOverdueAmount(total);
       })
       .catch(() => setOverdueAmount(0));
+
+    fetch('/api/jobs')
+      .then(r => r.ok ? r.json() : [])
+      .then((jobs: any[]) => {
+        const active = jobs.filter((j: any) => j.status?.toLowerCase() !== 'completed');
+        setActiveJobCount(active.length);
+        if (jobs.length > 0) {
+          const avg = jobs.reduce((sum: number, j: any) => sum + (j.marginPct || 0), 0) / jobs.length;
+          setAvgMargin(parseFloat(avg.toFixed(1)));
+        } else {
+          setAvgMargin(0);
+        }
+      })
+      .catch(() => { setActiveJobCount(0); setAvgMargin(0); });
+
+    fetch('/api/quotes')
+      .then(r => r.ok ? r.json() : [])
+      .then((quotes: any[]) => {
+        const pending = quotes.filter((q: any) => !['won', 'lost'].includes(q.status));
+        const total = pending.reduce((sum: number, q: any) => sum + (q.amount || 0), 0);
+        setPendingQuotesTotal(total);
+      })
+      .catch(() => setPendingQuotesTotal(0));
   }, []);
 
   return (
@@ -95,8 +121,8 @@ export default function Dashboard() {
             <Link href="/jobs" className="block">
               <StatCard
                 label="Active Jobs"
-                value="5"
-                trend="+1 this month"
+                value={activeJobCount === null ? '…' : activeJobCount.toString()}
+                trend={activeJobCount === null ? '' : `${activeJobCount} job${activeJobCount !== 1 ? 's' : ''}`}
                 trendType="positive"
                 icon={ClipboardList}
               />
@@ -106,9 +132,9 @@ export default function Dashboard() {
             <Link href="/growth" className="block">
               <StatCard
                 label="Avg. Margin"
-                value="31.4%"
-                trend="+1.2%"
-                trendType="positive"
+                value={avgMargin === null ? '…' : `${avgMargin}%`}
+                trend={avgMargin === null ? '' : avgMargin >= 30 ? 'On target' : avgMargin > 0 ? 'Below target' : 'No jobs yet'}
+                trendType={avgMargin !== null && avgMargin >= 30 ? 'positive' : 'negative'}
                 icon={TrendingUp}
               />
             </Link>
@@ -117,8 +143,8 @@ export default function Dashboard() {
             <Link href="/quotes" className="block">
               <StatCard
                 label="Pending Quotes"
-                value="$325,000"
-                trend="3 quotes"
+                value={pendingQuotesTotal === null ? '…' : pendingQuotesTotal === 0 ? '$0' : `$${pendingQuotesTotal.toLocaleString()}`}
+                trend={pendingQuotesTotal === null ? '' : pendingQuotesTotal === 0 ? 'No open quotes' : 'Awaiting response'}
                 icon={Clock}
               />
             </Link>
@@ -147,10 +173,10 @@ export default function Dashboard() {
           <div className="space-y-8">
             <motion.div variants={fadeUp} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
               <h3 className="text-lg font-bold text-slate-900 mb-6">Profit Gauge</h3>
-              <ProfitGauge margin={0.314} />
+              <ProfitGauge margin={avgMargin !== null ? avgMargin / 100 : 0} />
               <div className="mt-6 pt-6 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-sm font-bold text-slate-700">Target Margin</span>
-                <span className="text-sm font-bold text-slate-400">30.0%</span>
+                <span className="text-sm font-bold text-slate-700">Avg. Margin</span>
+                <span className="text-sm font-bold text-slate-400">{avgMargin !== null ? `${avgMargin}%` : '…'}</span>
               </div>
             </motion.div>
 

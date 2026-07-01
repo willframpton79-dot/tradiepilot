@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Clock, AlertCircle } from "lucide-react";
-import { type Job, activeJobs as fallbackJobs } from "@/lib/sampleData";
 
 export default function ActiveJobs({ jobs: propsJobs }: { jobs?: any[] }) {
-  const [jobs, setJobs] = useState<any[]>(propsJobs || fallbackJobs.slice(0, 5));
-  const [isLoading, setIsLoading] = useState(false);
+  const [jobs, setJobs] = useState<any[]>(propsJobs || []);
+  const [isLoading, setIsLoading] = useState(!propsJobs);
 
   useEffect(() => {
     if (propsJobs) {
@@ -16,13 +15,15 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: any[] }) {
     }
     async function fetchJobs() {
       try {
-        const res = await fetch("/api/data");
-        const data = await res.json();
-        if (data.jobs && Array.isArray(data.jobs) && data.jobs.length > 0) {
-          setJobs(data.jobs.slice(0, 5));
+        const res = await fetch("/api/jobs");
+        if (res.ok) {
+          const data = await res.json();
+          setJobs(Array.isArray(data) ? data.slice(0, 5) : []);
         }
-      } catch (error) {
-        // keep fallback already set in useState
+      } catch {
+        // leave empty
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchJobs();
@@ -41,7 +42,11 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: any[] }) {
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-thin -mx-6 px-6">
-        {jobs.length > 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-10">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600" />
+          </div>
+        ) : jobs.length > 0 ? (
           <div className="divide-y divide-slate-100">
             {jobs.map((job) => (
               <Link
@@ -93,6 +98,7 @@ export default function ActiveJobs({ jobs: propsJobs }: { jobs?: any[] }) {
             <p className="text-sm text-slate-400">No active jobs found.</p>
           </div>
         )}
+
       </div>
     </div>
   );

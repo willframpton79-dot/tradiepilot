@@ -1,37 +1,81 @@
 'use client';
 
 import { useState } from "react";
-import { 
-  Building2, 
-  Database, 
-  TrendingUp, 
-  ChevronRight, 
+import { useRouter } from "next/navigation";
+import {
+  Building2,
+  Database,
+  TrendingUp,
+  ChevronRight,
   ChevronLeft,
   CheckCircle2,
   BarChart3,
+  ShieldCheck,
   Users,
-  ShieldCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
 
-const steps = [
-  { id: 1, name: "Business Setup", icon: Building2 },
-  { id: 2, name: "Connect Data", icon: Database },
-  { id: 3, name: "Set Margin", icon: TrendingUp },
-];
+const TOTAL_STEPS = 4;
 
 export default function OnboardingPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     businessName: "",
     industry: "Plumbing",
+    userRole: "" as "owner" | "admin" | "",
     dataTool: "Xero",
+    jobManagementTool: "",
     targetMargin: 35,
   });
 
-  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 3));
+  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, TOTAL_STEPS));
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+
+  const handleComplete = async () => {
+    setSaving(true);
+    try {
+      await fetch('/api/onboarding/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessName: formData.businessName,
+          industry: formData.industry,
+          userRole: formData.userRole || undefined,
+          jobManagementTool: formData.jobManagementTool,
+          targetMargin: formData.targetMargin,
+        }),
+      });
+    } catch {
+      // non-blocking — proceed to dashboard regardless
+    } finally {
+      router.push('/dashboard');
+    }
+  };
+
+  const toolOptions = [
+    {
+      label: "Xero",
+      value: "Xero",
+      note: "Connect Xero in Settings after setup to sync invoices automatically.",
+    },
+    {
+      label: "I use Tradify / ServiceM8 / Simpro",
+      value: "tradify_servicem8_simpro",
+      note: null,
+    },
+    {
+      label: "I use spreadsheets",
+      value: "spreadsheets",
+      note: null,
+    },
+    {
+      label: "I'll set this up later",
+      value: "",
+      note: null,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -45,12 +89,14 @@ export default function OnboardingPage() {
             <span className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">TradiePilot</span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
-            <span className="text-[10px] sm:text-sm text-slate-400 font-medium">Step {currentStep} of 3</span>
+            <span className="text-[10px] sm:text-sm text-slate-400 font-medium">
+              Step {currentStep} of {TOTAL_STEPS}
+            </span>
             <div className="w-16 sm:w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
-              <motion.div 
+              <motion.div
                 className="h-full bg-indigo-600"
-                initial={{ width: "33%" }}
-                animate={{ width: `${(currentStep / 3) * 100}%` }}
+                initial={{ width: `${(1 / TOTAL_STEPS) * 100}%` }}
+                animate={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
               />
             </div>
           </div>
@@ -61,6 +107,8 @@ export default function OnboardingPage() {
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="max-w-xl w-full">
           <AnimatePresence mode="wait">
+
+            {/* Step 1 — Business Setup */}
             {currentStep === 1 && (
               <motion.div
                 key="step1"
@@ -75,24 +123,24 @@ export default function OnboardingPage() {
                 <div className="mt-8 space-y-6">
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">Business Name</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Apex Plumbing & Drainage"
+                    <input
+                      type="text"
+                      placeholder="e.g. Apex Plumbing &amp; Drainage"
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-sm sm:text-base"
                       value={formData.businessName}
-                      onChange={(e) => setFormData({...formData, businessName: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">Primary Industry</label>
                     <div className="grid grid-cols-2 gap-3">
-                      {["Plumbing", "Electrical", "Building", "HVAC", "Landscaping", "Other"].map(ind => (
+                      {["Plumbing", "Electrical", "Building", "HVAC & Mechanical", "Fit-Out", "Other"].map(ind => (
                         <button
                           key={ind}
-                          onClick={() => setFormData({...formData, industry: ind})}
+                          onClick={() => setFormData({ ...formData, industry: ind })}
                           className={`px-3 sm:px-4 py-3 rounded-xl text-xs sm:text-sm font-bold border transition-all ${
-                            formData.industry === ind 
-                              ? "bg-indigo-50 border-indigo-600 text-indigo-700" 
+                            formData.industry === ind
+                              ? "bg-indigo-50 border-indigo-600 text-indigo-700"
                               : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
                           }`}
                         >
@@ -103,7 +151,7 @@ export default function OnboardingPage() {
                   </div>
                 </div>
 
-                <button 
+                <button
                   onClick={nextStep}
                   disabled={!formData.businessName}
                   className="mt-10 w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -113,9 +161,79 @@ export default function OnboardingPage() {
               </motion.div>
             )}
 
+            {/* Step 2 — Who's setting this up? */}
             {currentStep === 2 && (
               <motion.div
                 key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="bg-white rounded-3xl p-6 sm:p-10 shadow-xl shadow-slate-200/60 border border-slate-100"
+              >
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Who&apos;s setting this up?</h2>
+                <p className="text-slate-500 mt-2 font-medium">This helps us personalise your dashboard and weekly reports.</p>
+
+                <div className="mt-8 space-y-3">
+                  {[
+                    {
+                      value: "owner" as const,
+                      label: "I'm the business owner",
+                      desc: "You run the business and make the calls.",
+                    },
+                    {
+                      value: "admin" as const,
+                      label: "I manage the admin / books",
+                      desc: "You handle the office side — invoicing, cost tracking, reconciliation.",
+                    },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setFormData({ ...formData, userRole: opt.value })}
+                      className={`w-full text-left flex items-start gap-4 px-5 py-4 rounded-2xl border transition-all ${
+                        formData.userRole === opt.value
+                          ? "bg-indigo-50 border-indigo-600 shadow-sm"
+                          : "bg-white border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        formData.userRole === opt.value ? "border-indigo-600 bg-indigo-600" : "border-slate-300"
+                      }`}>
+                        {formData.userRole === opt.value && (
+                          <div className="w-2 h-2 rounded-full bg-white" />
+                        )}
+                      </div>
+                      <div>
+                        <p className={`font-bold text-sm sm:text-base ${formData.userRole === opt.value ? "text-indigo-700" : "text-slate-700"}`}>
+                          {opt.label}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-0.5">{opt.desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-10 flex gap-3">
+                  <button
+                    onClick={prevStep}
+                    className="flex-1 bg-slate-50 text-slate-600 font-bold py-3 sm:py-4 rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                  >
+                    <ChevronLeft className="w-5 h-5" /> Back
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    disabled={!formData.userRole}
+                    className="flex-[2] bg-indigo-600 text-white font-bold py-3 sm:py-4 rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Continue <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 3 — Connect your tools */}
+            {currentStep === 3 && (
+              <motion.div
+                key="step3"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -125,30 +243,36 @@ export default function OnboardingPage() {
                 <p className="text-slate-500 mt-2 font-medium">TradiePilot works alongside your current software.</p>
 
                 <div className="mt-8 space-y-3">
-                  {["Xero", "MYOB", "QuickBooks", "ServiceM8", "Fergus", "I'll do this later"].map(tool => (
-                    <button
-                      key={tool}
-                      onClick={() => setFormData({...formData, dataTool: tool})}
-                      className={`w-full flex items-center justify-between px-6 py-3 sm:py-4 rounded-2xl border transition-all ${
-                        formData.dataTool === tool 
-                          ? "bg-indigo-50 border-indigo-600 text-indigo-700 shadow-sm" 
-                          : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                      }`}
-                    >
-                      <span className="font-bold text-sm sm:text-base">{tool}</span>
-                      {formData.dataTool === tool && <CheckCircle2 className="w-5 h-5" />}
-                    </button>
+                  {toolOptions.map(tool => (
+                    <div key={tool.value}>
+                      <button
+                        onClick={() => setFormData({ ...formData, dataTool: tool.value === "Xero" ? "Xero" : "other", jobManagementTool: tool.value !== "Xero" ? tool.value : "" })}
+                        className={`w-full flex items-center justify-between px-6 py-3 sm:py-4 rounded-2xl border transition-all ${
+                          (tool.value === "Xero" ? formData.dataTool === "Xero" : formData.jobManagementTool === tool.value)
+                            ? "bg-indigo-50 border-indigo-600 text-indigo-700 shadow-sm"
+                            : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                        }`}
+                      >
+                        <span className="font-bold text-sm sm:text-base">{tool.label}</span>
+                        {(tool.value === "Xero" ? formData.dataTool === "Xero" : formData.jobManagementTool === tool.value) && (
+                          <CheckCircle2 className="w-5 h-5" />
+                        )}
+                      </button>
+                      {tool.note && (tool.value === "Xero" ? formData.dataTool === "Xero" : false) && (
+                        <p className="text-xs text-slate-400 mt-1.5 ml-1">{tool.note}</p>
+                      )}
+                    </div>
                   ))}
                 </div>
 
                 <div className="mt-10 flex gap-3">
-                  <button 
+                  <button
                     onClick={prevStep}
                     className="flex-1 bg-slate-50 text-slate-600 font-bold py-3 sm:py-4 rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
                     <ChevronLeft className="w-5 h-5" /> Back
                   </button>
-                  <button 
+                  <button
                     onClick={nextStep}
                     className="flex-[2] bg-indigo-600 text-white font-bold py-3 sm:py-4 rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
@@ -158,9 +282,10 @@ export default function OnboardingPage() {
               </motion.div>
             )}
 
-            {currentStep === 3 && (
+            {/* Step 4 — Set target margin */}
+            {currentStep === 4 && (
               <motion.div
-                key="step3"
+                key="step4"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -173,17 +298,17 @@ export default function OnboardingPage() {
                   <div className="inline-flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-full border-8 border-indigo-50 bg-white text-3xl sm:text-4xl font-black text-indigo-600 mb-8">
                     {formData.targetMargin}%
                   </div>
-                  
-                  <input 
-                    type="range" 
-                    min="10" 
-                    max="60" 
+
+                  <input
+                    type="range"
+                    min="10"
+                    max="60"
                     step="1"
                     className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                     value={formData.targetMargin}
-                    onChange={(e) => setFormData({...formData, targetMargin: parseInt(e.target.value)})}
+                    onChange={(e) => setFormData({ ...formData, targetMargin: parseInt(e.target.value) })}
                   />
-                  
+
                   <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase mt-2">
                     <span>Low (10%)</span>
                     <span>Industry Avg (35%)</span>
@@ -194,26 +319,32 @@ export default function OnboardingPage() {
                 <div className="mt-8 bg-indigo-50 rounded-2xl p-4 sm:p-6 border border-indigo-100 flex items-start gap-4">
                   <ShieldCheck className="w-6 h-6 text-indigo-600 shrink-0" />
                   <p className="text-xs sm:text-sm text-indigo-900 font-medium leading-relaxed">
-                    A {formData.targetMargin}% target margin means for every $1,000 you bill, you aim for ${((formData.targetMargin/100)*1000).toLocaleString()} in profit after all costs.
+                    A {formData.targetMargin}% target margin means for every $1,000 you bill, you aim for ${((formData.targetMargin / 100) * 1000).toLocaleString()} in profit after all costs.
                   </p>
                 </div>
 
                 <div className="mt-10 flex gap-3">
-                  <button 
+                  <button
                     onClick={prevStep}
                     className="flex-1 bg-slate-50 text-slate-600 font-bold py-3 sm:py-4 rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
                     <ChevronLeft className="w-5 h-5" /> Back
                   </button>
-                  <Link 
-                    href="/dashboard"
-                    className="flex-[2] bg-indigo-600 text-white font-bold py-3 sm:py-4 rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                  <button
+                    onClick={handleComplete}
+                    disabled={saving}
+                    className="flex-[2] bg-indigo-600 text-white font-bold py-3 sm:py-4 rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-50"
                   >
-                    Complete Setup <CheckCircle2 className="w-5 h-5" />
-                  </Link>
+                    {saving ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                    ) : (
+                      <>Complete Setup <CheckCircle2 className="w-5 h-5" /></>
+                    )}
+                  </button>
                 </div>
               </motion.div>
             )}
+
           </AnimatePresence>
         </div>
       </main>
