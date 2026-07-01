@@ -18,6 +18,7 @@ import ActiveJobs from "@/components/dashboard/ActiveJobs";
 import QuoteFollowUp from "@/components/dashboard/QuoteFollowUp";
 import ProfitGauge from "@/components/dashboard/ProfitGauge";
 import UpgradeBanner from "@/components/dashboard/UpgradeBanner";
+import ProfitCoach from "@/components/dashboard/ProfitCoach";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -161,6 +162,11 @@ export default function Dashboard() {
             </Link>
           </motion.div>
         </div>
+
+        {/* AI Profit Coach */}
+        <motion.div variants={fadeUp}>
+          <ProfitCoach tier={userTier} />
+        </motion.div>
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
