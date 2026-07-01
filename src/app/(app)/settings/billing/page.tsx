@@ -119,7 +119,7 @@ function BillingContent() {
               <h3 className="text-xl font-black text-slate-900 capitalize">{tier} Plan</h3>
             </div>
           </div>
-          {tier === 'free' || tier === 'starter' ? (
+          {(tier === 'free' || tier === 'solo' || tier === 'starter') ? (
             <button
               onClick={handleUpgrade}
               disabled={loading}
@@ -130,13 +130,14 @@ function BillingContent() {
               ) : (
                 <Zap className="w-4 h-4 fill-current" />
               )}
-              Upgrade to Pro
+              Upgrade to Pro — $149/mo
             </button>
           ) : tier === 'pro' ? (
             <button
+              onClick={() => window.location.href = '/contact-sales'}
               className="w-full sm:w-auto px-10 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-md shadow-slate-100 flex items-center justify-center gap-2"
             >
-              Upgrade to Enterprise
+              Upgrade to Enterprise — $497/mo
             </button>
           ) : null}
         </div>
@@ -145,12 +146,12 @@ function BillingContent() {
         <div className="space-y-4">
           <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Included in your plan</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              'Up to 10 active jobs',
-              'Real-time job profitability',
-              'Basic Xero sync',
-              'Email support',
-            ].map((feature) => (
+            {(tier === 'pro' || tier === 'enterprise'
+              ? tier === 'enterprise'
+                ? ['Unlimited active jobs', 'Full Xero sync', 'AI weekly profit report', 'Multi-crew job costing', 'Custom workflow configuration', 'Dedicated onboarding', 'Phone support']
+                : ['Unlimited active jobs', 'Full Xero sync', 'AI weekly profit report', 'Priority support']
+              : ['Up to 5 active jobs', 'Real-time job profitability', 'Basic Xero sync', 'Email support']
+            ).map((feature) => (
               <div key={feature} className="flex items-center gap-2 text-sm text-slate-600">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 {feature}

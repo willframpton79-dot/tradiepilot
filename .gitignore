@@ -28,3 +28,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local test scripts — do not deploy
+scripts/expire-trial.js
+scripts/check-user.js

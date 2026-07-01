@@ -319,28 +319,49 @@ function IndustriesGrid() {
 
 // ─── Pricing ───
 const plans = [
-  { id: "price_starter", name: "Starter", price: 97, desc: "For construction businesses ready to take control of their job margins.", features: ["Up to 10 active jobs", "Profit dashboard", "Quote follow-up alerts", "Invoice chasing", "Email support"], popular: false },
-  { id: "price_pro", name: "Pro", price: 197, desc: "For growing teams that need the full toolkit.", features: ["Unlimited active jobs", "Everything in Starter", "Growth intelligence", "Xero sync", "Priority support"], popular: true },
-  { id: "price_enterprise", name: "Enterprise", price: 497, desc: "For larger operations with advanced needs.", features: ["Everything in Pro", "Track crew labour rates for accurate job costing", "Custom integrations", "Dedicated account manager", "API access"], popular: false },
+  {
+    id: "solo",
+    name: "Solo",
+    price: 49,
+    desc: "For sole operators and 1–2 staff running up to 5 active jobs.",
+    features: ["Up to 5 active jobs", "Real-time job profitability", "Quote follow-up alerts", "Invoice chasing", "Basic Xero sync", "Email support"],
+    popular: false,
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: 149,
+    desc: "For small crews of 2–10 staff who need the full toolkit.",
+    features: ["Unlimited active jobs", "Everything in Solo", "Full Xero sync", "AI weekly profit report", "Priority support"],
+    popular: true,
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    price: 497,
+    desc: "For established operators with multiple crews and custom workflows.",
+    features: ["Everything in Pro", "Multi-crew job costing", "Custom workflow configuration", "Dedicated onboarding", "Phone support"],
+    popular: false,
+  },
 ];
 
 function PricingSection() {
   const { data: session } = useSession();
 
-  const handleCheckout = async (planName: string) => {
-    if (planName === "enterprise") {
+  const handleCheckout = async (planId: string) => {
+    if (planId === "enterprise") {
       window.location.href = "/contact-sales";
       return;
     }
     if (!session) {
-      window.location.href = `/signup?plan=${planName}`;
+      window.location.href = `/signup?plan=${planId}`;
       return;
     }
     try {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planName }),
+        body: JSON.stringify({ plan: planId }),
       });
       const data = await res.json();
       if (data.url) {
@@ -374,8 +395,8 @@ function PricingSection() {
                   </li>
                 ))}
               </ul>
-              {plan.name === "Enterprise" ? (
-                <Link 
+              {plan.id === "enterprise" ? (
+                <Link
                   href="/contact-sales"
                   className="w-full mt-6 block text-center font-semibold px-5 py-3 rounded-lg transition-all text-sm bg-slate-100 text-slate-700 hover:bg-slate-200"
                 >
@@ -383,7 +404,7 @@ function PricingSection() {
                 </Link>
               ) : (
                 <button
-                  onClick={() => handleCheckout(plan.name.toLowerCase())}
+                  onClick={() => handleCheckout(plan.id)}
                   className={`w-full mt-6 block text-center font-semibold px-5 py-3 rounded-lg transition-all text-sm ${plan.popular ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
                 >
                   Start Free Trial

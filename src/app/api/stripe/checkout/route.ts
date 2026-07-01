@@ -7,10 +7,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummykeyforb
   apiVersion: '2024-12-18.acacia' as any,
 });
 
-const PRICE_IDS = {
-  starter: 'price_1TcJIo1opAZJp3NeliN654IQ',
-  pro: 'price_1TcJJH1opAZJp3NeMhk5l8UH',
-  enterprise: 'price_1Tgfuq1opAZJp3NeZdCMfqcu',
+// Create new Stripe products at $49/mo, $149/mo, $497/mo and set these env vars
+const PRICE_IDS: Record<string, string> = {
+  solo: process.env.STRIPE_PRICE_SOLO || 'price_placeholder_solo',         // $49/mo
+  pro: process.env.STRIPE_PRICE_PRO || 'price_placeholder_pro',            // $149/mo
+  enterprise: process.env.STRIPE_PRICE_ENTERPRISE || 'price_placeholder_enterprise', // $497/mo
+  starter: process.env.STRIPE_PRICE_SOLO || 'price_placeholder_solo',      // legacy → solo
 };
 
 export async function POST(req: Request) {

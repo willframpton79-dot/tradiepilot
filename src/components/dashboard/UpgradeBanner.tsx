@@ -78,7 +78,7 @@ export default function UpgradeBanner({ tier, trialEndsAt }: UpgradeBannerProps)
             <div className="text-center sm:text-left">
               <h3 className="text-base sm:text-xl font-bold tracking-tight text-white">Unlock Unlimited Profit Intelligence</h3>
               <p className="text-indigo-100 text-[10px] sm:text-sm mt-1 font-medium max-w-xl">
-                {trialCopy} Upgrade to Pro to unlock unlimited active jobs, Xero sync, and Suburban Hotspot mapping.
+                {trialCopy} Upgrade to unlock unlimited active jobs, full Xero sync, and AI weekly profit reports — from $49/month.
               </p>
             </div>
           </div>

@@ -4,7 +4,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
-  tier: 'free' | 'starter' | 'pro' | 'enterprise';
+  tier: 'free' | 'solo' | 'starter' | 'pro' | 'enterprise';
   stripeCustomerId?: string;
   trialStartedAt?: Date;
   trialEndsAt?: Date;
@@ -45,7 +45,7 @@ const UserSchema = new Schema({
   email: { type: String, required: true, unique: true, index: true },
   password: { type: String, required: true },
   name: { type: String, default: '' },
-  tier: { type: String, enum: ['free', 'starter', 'pro', 'enterprise'], default: 'free' },
+  tier: { type: String, enum: ['free', 'solo', 'starter', 'pro', 'enterprise'], default: 'free' },
   stripeCustomerId: { type: String, default: '' },
   trialStartedAt: { type: Date },
   trialEndsAt: { type: Date },

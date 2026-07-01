@@ -8,7 +8,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummykeyforb
   apiVersion: '2024-12-18.acacia' as any,
 });
 
-const PRICE_TO_TIER_MAP: Record<string, 'starter' | 'pro' | 'enterprise'> = {
+const PRICE_TO_TIER_MAP: Record<string, 'solo' | 'starter' | 'pro' | 'enterprise'> = {
+  // New pricing (set STRIPE_PRICE_SOLO/PRO/ENTERPRISE in env)
+  ...(process.env.STRIPE_PRICE_SOLO ? { [process.env.STRIPE_PRICE_SOLO]: 'solo' as const } : {}),
+  ...(process.env.STRIPE_PRICE_PRO ? { [process.env.STRIPE_PRICE_PRO]: 'pro' as const } : {}),
+  ...(process.env.STRIPE_PRICE_ENTERPRISE ? { [process.env.STRIPE_PRICE_ENTERPRISE]: 'enterprise' as const } : {}),
+  // Legacy price IDs kept for existing subscribers
   'price_1TcJIo1opAZJp3NeliN654IQ': 'starter',
   'price_1TcJJH1opAZJp3NeMhk5l8UH': 'pro',
   'price_1Tgfuq1opAZJp3NeZdCMfqcu': 'enterprise',
@@ -47,7 +52,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'No userId found' }, { status: 400 });
       }
 
-      let tier: 'starter' | 'pro' | 'enterprise' | 'free' = 'free';
+      let tier: 'solo' | 'starter' | 'pro' | 'enterprise' | 'free' = 'free';
       if (priceId && priceId in PRICE_TO_TIER_MAP) {
         tier = PRICE_TO_TIER_MAP[priceId];
       } else {
