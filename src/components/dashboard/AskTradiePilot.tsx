@@ -10,6 +10,33 @@ interface Message {
 
 const GREETING = "Ask me anything about your business — margins, quotes, invoices, what to focus on this week.";
 
+function renderMarkdown(text: string) {
+  return text.split('\n').map((line, i) => {
+    // Convert **bold** spans within the line
+    const parts = line.split(/(\*\*[^*]+\*\*)/g).map((part, j) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={j}>{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+
+    // Bullet list line
+    if (/^[-*•]\s/.test(line)) {
+      return (
+        <div key={i} className="flex gap-1.5 mt-1 first:mt-0">
+          <span className="shrink-0 mt-0.5">•</span>
+          <span>{parts.map((p, j) => <span key={j}>{p}</span>).slice(1)}</span>
+        </div>
+      );
+    }
+
+    // Blank line → spacer
+    if (line.trim() === '') return <div key={i} className="h-2" />;
+
+    return <div key={i}>{parts}</div>;
+  });
+}
+
 export default function AskTradiePilot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -178,7 +205,7 @@ export default function AskTradiePilot() {
                 <Sparkles className="w-3 h-3 text-indigo-600" />
               </div>
               <div className="bg-slate-50 border border-slate-100 rounded-2xl rounded-tl-sm px-3 py-2.5 max-w-[85%]">
-                <p className="text-xs text-slate-600 leading-relaxed">{GREETING}</p>
+                <div className="text-xs text-slate-600 leading-relaxed">{GREETING}</div>
               </div>
             </div>
 
@@ -195,7 +222,9 @@ export default function AskTradiePilot() {
                     ? 'bg-indigo-600 text-white rounded-tr-sm'
                     : 'bg-slate-50 border border-slate-100 text-slate-700 rounded-tl-sm'
                 }`}>
-                  <p className="text-xs leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                  <div className="text-xs leading-relaxed">
+                    {msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
+                  </div>
                 </div>
               </div>
             ))}
@@ -208,7 +237,7 @@ export default function AskTradiePilot() {
                 </div>
                 <div className="bg-slate-50 border border-slate-100 rounded-2xl rounded-tl-sm px-3 py-2.5 max-w-[85%]">
                   {streamingContent ? (
-                    <p className="text-xs leading-relaxed whitespace-pre-wrap text-slate-700">{streamingContent}</p>
+                    <div className="text-xs leading-relaxed text-slate-700">{renderMarkdown(streamingContent)}</div>
                   ) : (
                     <div className="flex items-center gap-1 py-0.5">
                       <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0ms]" />
