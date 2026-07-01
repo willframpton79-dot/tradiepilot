@@ -30,8 +30,11 @@ function Hero() {
             Not Just a Dashboard.{" "}
             <span className="text-indigo-600">Your Entire Profit Engine.</span>
           </motion.h1>
-          <motion.p variants={fadeUp} className="mt-6 text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
-            Purpose-built for construction and trades businesses doing $500K&ndash;$3M — connect your tools, track every dollar, and know exactly where you&apos;re making money.
+          <motion.p variants={fadeUp} className="mt-5 text-xl sm:text-2xl font-semibold text-slate-700 max-w-2xl mx-auto leading-snug">
+            Real-time job profit &mdash; before the accountant runs the numbers.
+          </motion.p>
+          <motion.p variants={fadeUp} className="mt-4 text-base sm:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
+            Built for Australian trades businesses doing $500K&ndash;$3M. Connect your tools, track every dollar, and know exactly where you&apos;re making money before the quarterly review tells you it&apos;s too late.
           </motion.p>
           <motion.div variants={fadeUp} className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="/signup" className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-7 py-3.5 rounded-lg shadow-lg shadow-indigo-200/50 transition-all text-base">
@@ -84,23 +87,33 @@ function Hero() {
 
 // ─── Stats Strip ───
 function StatsStrip() {
+  const stats = [
+    { val: "3,217", label: "Construction insolvencies in 2024" },
+    { val: "27%", label: "Of all national corporate failures" },
+    { val: "92%", label: "Involved businesses with fewer than 5 staff" },
+    { val: "$4.3B", label: "In unpaid ATO obligations across the trades sector" },
+  ];
   return (
-    <section className="bg-white border-b border-slate-200 py-12 lg:py-16">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="bg-slate-900 py-14 lg:py-20">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.p initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+          className="text-center text-sm font-bold text-indigo-400 uppercase tracking-widest mb-3">
+          The Burning Platform
+        </motion.p>
+        <motion.p initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+          className="text-center text-xl sm:text-2xl font-bold text-white mb-10 max-w-3xl mx-auto leading-snug">
+          Australian construction is losing money in a predictable, preventable way. TradiePilot is built to fix it.
+        </motion.p>
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={stagger}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          {[
-            { val: "$340K", label: "Average revenue recovered per year", icon: TrendingUp },
-            { val: "23%", label: "Average margin improvement", icon: TrendingUp },
-            { val: "4.2×", label: "Return on subscription investment", icon: TrendingUp },
-          ].map((s, i) => (
-            <motion.div key={i} variants={fadeUp} custom={i}>
-              <p className="text-4xl lg:text-5xl font-bold text-indigo-600">{s.val}</p>
-              <p className="text-sm text-slate-500 mt-1.5">{s.label}</p>
+          className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 text-center">
+          {stats.map((s, i) => (
+            <motion.div key={i} variants={fadeUp} custom={i} className="bg-white/5 rounded-2xl p-5 border border-white/10">
+              <p className="text-3xl lg:text-4xl font-bold text-indigo-400">{s.val}</p>
+              <p className="text-xs sm:text-sm text-slate-400 mt-2 leading-snug">{s.label}</p>
             </motion.div>
           ))}
         </motion.div>
-        <p className="text-center text-xs text-slate-400 mt-8">Based on modelled outcomes from TradiePilot&apos;s profit tracking methodology.</p>
+        <p className="text-center text-xs text-slate-500 mt-8">Source: ASIC corporate insolvency data, ATO debt statistics 2024.</p>
       </div>
     </section>
   );
@@ -289,7 +302,9 @@ function IndustriesGrid() {
     { emoji: "🔨", title: "Builders", desc: "Track project margins across multiple sites and crews.", emojiLabel: "hammer" },
     { emoji: "🔧", title: "Plumbers", desc: "Know which call-outs are profitable and which aren't.", emojiLabel: "wrench" },
     { emoji: "⚡", title: "Electricians", desc: "Stop losing money on fixed-price switchboard upgrades.", emojiLabel: "zap" },
-    { emoji: "❄️", title: "HVAC", desc: "Optimise maintenance contract profitability year-round.", emojiLabel: "snowflake" },
+    { emoji: "❄️", title: "HVAC & Mechanical", desc: "Optimise maintenance contract profitability year-round.", emojiLabel: "snowflake" },
+    { emoji: "🏗️", title: "Fit-Out Contractors", desc: "Stay on top of multi-trade margins on commercial fit-outs.", emojiLabel: "building" },
+    { emoji: "🌿", title: "Landscaping", desc: "Know your profit per project before the last load of mulch lands.", emojiLabel: "leaf" },
   ];
   return (
     <section id="industries" className="bg-white py-16 lg:py-24">
@@ -299,7 +314,7 @@ function IndustriesGrid() {
           Built for construction and trades businesses
         </motion.h2>
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((item, i) => (
             <motion.div key={i} variants={fadeUp} custom={i}
               className="bg-white rounded-xl border border-slate-200 p-6 hover:border-indigo-200 hover:shadow-lg transition-all group">
@@ -309,6 +324,67 @@ function IndustriesGrid() {
               <a href="/signup" className="mt-3 theme-smooth-scroll inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 group-hover:gap-1.5 transition-all">
                 Learn more <ChevronRight className="w-3.5 h-3.5" />
               </a>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Objections ───
+const objections = [
+  {
+    q: '"I already use Simpro / Tradify — doesn\'t that do this?"',
+    a: "Simpro manages your jobs and schedule. It doesn't give you a live profit number per job that links back to a warranty service call two years later. Ask Simpro what your current job's real net margin is today — it won't tell you without a manual export and an accountant.",
+  },
+  {
+    q: '"My bookkeeper does this for me monthly."',
+    a: "Your bookkeeper tells you what happened. By that point the job is finished and the money is gone. TradiePilot tells you what is happening — while there's still a conversation to have with the client about the variation, or a call-back cost to dispute.",
+  },
+  {
+    q: '"$149 a month is a lot for software we might not use."',
+    a: "One undocumented variation claim or warranty callback typically costs $3,000–$12,000. One captured and documented cost allocation in your first month pays for more than a full year at the Pro rate. Compare it to 10 hours of bookkeeper reconciliation time — not to Tradify.",
+  },
+  {
+    q: '"My admin doesn\'t have time to learn new software."',
+    a: "TradiePilot is designed for the admin — not an add-on for the owner on the tools. Setup takes one session. The daily workflow is: costs get logged as they happen, the dashboard updates automatically. Your admin saves time, not spends it.",
+  },
+  {
+    q: '"We\'ve tried software before and it never got used."',
+    a: "The adoption champion is your office manager — not you on the tools. TradiePilot is designed for the person already handling invoice reconciliation and cost matching. It makes their existing job faster and more powerful. The owner sees the output; the admin drives the input.",
+  },
+];
+
+function ObjectionsSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  return (
+    <section className="bg-slate-50 py-16 lg:py-24">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
+          <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-slate-900">The questions we get asked</motion.h2>
+          <motion.p variants={fadeUp} className="mt-3 text-slate-500">Honest answers to the objections we hear from trades businesses every week.</motion.p>
+        </motion.div>
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-3">
+          {objections.map((item, i) => (
+            <motion.div key={i} variants={fadeUp} custom={i}
+              className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+              <button
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="w-full flex items-center justify-between px-6 py-5 text-left gap-4"
+              >
+                <span className="text-sm sm:text-base font-semibold text-slate-800">{item.q}</span>
+                <span className={`shrink-0 text-indigo-600 transition-transform duration-200 ${openIndex === i ? "rotate-45" : ""}`}>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </span>
+              </button>
+              {openIndex === i && (
+                <div className="px-6 pb-5">
+                  <p className="text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-4">{item.a}</p>
+                </div>
+              )}
             </motion.div>
           ))}
         </motion.div>
@@ -489,6 +565,7 @@ export default function LandingPage() {
       <FeaturesSection />
       <IntegrationsRow />
       <IndustriesGrid />
+      <ObjectionsSection />
       <PricingSection />
       <QSSection />
       <CTASection />

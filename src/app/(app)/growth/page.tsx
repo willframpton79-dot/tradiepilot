@@ -124,11 +124,14 @@ export default function GrowthPage() {
 
         {/* Insights Section */}
         <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
               <Lightbulb className="w-5 h-5 text-amber-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 tracking-tight">Smart Insights</h3>
+            <span className="text-xs font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded-full px-3 py-1">
+              Example insights — connect Xero and add jobs to see your real data
+            </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -158,9 +161,9 @@ export default function GrowthPage() {
 
         {/* Industry Benchmark Section */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
                 <BarChart3 className="w-5 h-5 text-indigo-600" />
               </div>
               <div>
@@ -168,9 +171,12 @@ export default function GrowthPage() {
                 <p className="text-sm text-slate-500">TradiePilot Profit Index</p>
               </div>
             </div>
-            <div className="hidden sm:block">
+            <div className="hidden sm:flex flex-col items-end gap-2">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">
                 Based on anonymised TradiePilot network data
+              </span>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-100">
+                Example insights — connect Xero and add jobs to see your real data
               </span>
             </div>
           </div>
